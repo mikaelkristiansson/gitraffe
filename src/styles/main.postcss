@@ -1,0 +1,136 @@
+@import './themes.postcss';
+@import './card.css';
+@import './diff.postcss';
+@import './syntax-highlighting.css';
+@import './text.css';
+@import './tokens.css';
+@import './tooltip.css';
+@import './text-input.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS VARIABLES */
+:root {
+	--transition-fast: 0.06s ease-in-out;
+	--transition-medium: 0.1s ease-in-out;
+	--transition-slow: 0.2s ease-in-out;
+
+	/* For all light neutral elements — ghost buttons, light background
+    use tint palatte it will tint the pallate properly if it's nut gray */
+	--darken-tint-extralight: var(--clr-theme-scale-ntrl-50) 5%;
+	--darken-tint-light: var(--clr-theme-scale-ntrl-50) 9%;
+	--darken-tint-mid: var(--clr-theme-scale-ntrl-50) 14%;
+	--darken-tint-dark: var(--clr-theme-scale-ntrl-50) 20%;
+	--darken-tint-extradark: var(--clr-theme-scale-ntrl-50) 35%;
+
+	/* For all color and dark eleemnts */
+	--darken-extralight: var(--clr-theme-scale-ntrl-0) 3%;
+	--darken-light: var(--clr-theme-scale-ntrl-0) 6%;
+	--darken-mid: var(--clr-theme-scale-ntrl-0) 9%;
+	--darken-dark: var(--clr-theme-scale-ntrl-0) 12%;
+	--darken-extradark: var(--clr-theme-scale-ntrl-0) 15%;
+
+	/* TODO: add focus color */
+	--focus-color: var(--clr-theme-scale-pop-50);
+	--resizer-color: var(--clr-theme-scale-pop-50);
+}
+
+:root.dark {
+	/* Additional correction here for dark mode, due tue
+    tint colors look less contrast  */
+	--darken-tint-extralight: var(--clr-theme-scale-ntrl-50) 7%;
+	--darken-tint-light: var(--clr-theme-scale-ntrl-50) 14%;
+	--darken-tint-mid: var(--clr-theme-scale-ntrl-50) 21%;
+	--darken-tint-dark: var(--clr-theme-scale-ntrl-50) 28%;
+	--darken-tint-extradark: var(--clr-theme-scale-ntrl-50) 35%;
+}
+
+/* BOILERPLATE CSS */
+
+body {
+	/* font-family: "Inter", sans-serif; */
+	height: 100vh;
+	width: 100vw;
+	overflow-y: hidden;
+	padding: 0;
+	color: var(--clr-theme-scale-ntrl-0);
+	background-color: var(--clr-theme-container-pale);
+
+	/* optimise font rendering */
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+a,
+button {
+	-webkit-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-app-region: no-drag;
+}
+
+/* scrollbar helpers */
+.hide-native-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+/**
+ * Prevents elements within drop-zones from firing mouse events, making
+ * it much easier to manage in/out/over/leave events since they fire less
+ * frequently.
+ */
+.drop-zone-hover * {
+	pointer-events: none;
+}
+
+/* FOCUS STATE */
+
+.focus-state {
+	&:focus-within {
+		outline: 1px solid transaparent;
+		animation: focus-animation var(--transition-fast) forwards;
+	}
+}
+
+@keyframes focus-animation {
+	0% {
+		outline-offset: 0;
+	}
+	100% {
+		outline-offset: 2px;
+		outline: 1px solid var(--focus-color);
+	}
+}
+
+/* DIALOG STYLES */
+
+dialog::backdrop {
+	background-color: rgba(214, 214, 214, 0.4);
+}
+
+.dark dialog::backdrop {
+	background-color: rgba(0, 0, 0, 0.35);
+}
+
+/* TRANSITION ANIMATION */
+
+.transition-fly {
+	animation: transition-fly 0.25s forwards ease-in-out;
+}
+
+@keyframes transition-fly {
+	0% {
+		transform: translateY(var(--size-6));
+		opacity: 0;
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}

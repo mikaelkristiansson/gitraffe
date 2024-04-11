@@ -1,0 +1,93 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "withGlobalTauri": true,
+    "devPath": "http://localhost:5173",
+    "distDir": "../build"
+  },
+  "package": {
+    "productName": "gitfox",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+			"fs": {
+				"readFile": true,
+        "exists": true
+			},
+			"dialog": {
+				"open": true
+			},
+			"os": {
+				"all": true
+			},
+			"protocol": {
+				"asset": true,
+				"assetScope": ["$APPCACHE/images/*"]
+			},
+			"process": {
+				"relaunch": true
+			},
+			"window": {
+				"startDragging": true,
+				"maximize": true,
+				"unmaximize": true
+			},
+			"path": {
+				"all": true
+			}
+		},
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.tauri.dev",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 720,
+        "resizable": false,
+        "title": "gitfox",
+        "width": 1024,
+        "hiddenTitle":true,
+        "titleBarStyle": "Overlay"
+      }
+    ]
+  }
+}
