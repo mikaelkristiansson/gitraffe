@@ -9,9 +9,12 @@
 	import TimeAgo from './TimeAgo.svelte';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import type { Repository } from '$lib/models/repository';
+	import Modal from './Modal.svelte';
+	import Button from './Button.svelte';
 
 	export let repository: Repository;
 	export let branch: Branch;
+	let untrackedModal: Modal;
 
 	$: href = `/${repository.id}/board/${branch.name}`;
 	$: selected = $page.url.href.endsWith(`${branch.name}`);
@@ -21,10 +24,15 @@
 	class="branch"
 	class:selected
 	on:mousedown={async () => {
-		activeBranch.setActive(branch);
-		await checkout(repository.path, branch.name);
-		workingBranch.setWorking(repository.path);
-		if (href) goto(href);
+		if ($workingBranch.workingDirectory.files.length === 0) {
+			activeBranch.setActive(branch);
+			await checkout(repository.path, branch.name);
+			workingBranch.setWorking(repository.path);
+			if (href) goto(href);
+		} else {
+			untrackedModal.show();
+			console.log('You have uncommitted changes');
+		}
 	}}
 >
 	<BranchIcon name={branch.name.includes('remote') ? 'remote-branch' : 'virtual-branch'} />
@@ -48,6 +56,29 @@
 		</div>
 	</div>
 </button>
+<Modal width="small" title="Switch Branch" bind:this={untrackedModal}>
+	<div>
+		You have changes on the branch that are not committed. Switching branches will discard these
+		changes.
+		<ul class="file-list">
+			{#each $workingBranch.workingDirectory.files as file}
+				<li><code>{file.path}</code></li>
+			{/each}
+		</ul>
+	</div>
+	<svelte:fragment slot="controls" let:close>
+		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
+		<Button
+			color="error"
+			on:click={() => {
+				// branchController.unapplyFiles(item.files);
+				untrackedModal.close();
+			}}
+		>
+			Confirm
+		</Button>
+	</svelte:fragment>
+</Modal>
 
 <style lang="postcss">
 	.branch {
@@ -91,5 +122,17 @@
 	.selected {
 		background-color: color-mix(in srgb, transparent, var(--darken-tint-light));
 		transition: none;
+	}
+
+	.file-list {
+		list-style: disc;
+		padding-left: var(--size-26);
+		padding-top: var(--size-6);
+		background-color: var(--bg-card);
+		border-radius: var(--radius-m);
+	}
+	.file-list li {
+		padding: var(--size-2);
+		padding-left: var(--size-1);
 	}
 </style>

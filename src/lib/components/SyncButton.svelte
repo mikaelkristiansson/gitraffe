@@ -39,6 +39,7 @@
 		try {
 			await fetch(repository.path);
 			await allBranches.fetch(repository);
+			lastSynced.set(new Date());
 			//TODO: set default branch
 			// await defaultBranch.setDefault(repository.path);
 		} finally {
