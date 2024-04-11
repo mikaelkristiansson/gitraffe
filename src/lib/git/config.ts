@@ -1,4 +1,4 @@
-import type { Project } from '$lib/projects';
+import type { Repository } from '$lib/models/repository';
 import { invoke } from '@tauri-apps/api/tauri';
 
 /**
@@ -10,7 +10,7 @@ import { invoke } from '@tauri-apps/api/tauri';
  *                  `git config` invocation.
  */
 export function getConfigValue(
-	repository: Project,
+	repository: Repository,
 	name: string,
 	onlyLocal: boolean = false
 ): Promise<string | null> {

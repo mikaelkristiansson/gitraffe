@@ -1,9 +1,9 @@
+import type { Repository } from '$lib/models/repository';
 import type { WorkingDirectoryFileChange } from '$lib/models/status';
-import type { Project } from '$lib/projects';
 import { invoke } from '@tauri-apps/api/tauri';
 
 export async function gitAddFiles(
-	repository: Project,
+	repository: Repository,
 	files: ReadonlyArray<WorkingDirectoryFileChange>
 ) {
 	const args = ['add'];

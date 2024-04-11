@@ -1,4 +1,4 @@
-import type { Project } from '$lib/projects';
+import type { Repository } from '$lib/models/repository';
 import { invoke } from '@tauri-apps/api/tauri';
 
 /**
@@ -18,7 +18,7 @@ import { invoke } from '@tauri-apps/api/tauri';
  *                     root from where to read the blob contents
  */
 export async function getBlobContents(
-	repository: Project,
+	repository: Repository,
 	commitish: string,
 	path: string
 ): Promise<string> {

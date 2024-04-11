@@ -13,7 +13,6 @@ import {
 	type SubmoduleStatus,
 	CommittedFileChange
 } from '$lib/models/status';
-import type { Project } from '$lib/projects';
 import { getCaptures } from '$lib/utils/regex';
 import { extname, join } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri';
@@ -23,6 +22,7 @@ import { DiffParser } from './diff-parser';
 import { readBinaryFile } from '@tauri-apps/api/fs';
 import { getBlobContents } from './show';
 import { getOldPathOrDefault } from './get-old-path';
+import type { Repository } from '$lib/models/repository';
 
 /**
  *  Defining the list of known extensions we can render inside the app
@@ -78,7 +78,7 @@ function getMediaType(extension: string) {
  * https://en.wikipedia.org/wiki/Data_URI_scheme
  */
 export async function getBlobImage(
-	repository: Project,
+	repository: Repository,
 	path: string,
 	commitish: string
 ): Promise<Image> {
@@ -93,7 +93,7 @@ export async function getBlobImage(
  * that all content in the file will be treated as additions.
  */
 export async function getWorkingDirectoryDiff(
-	repository: Project,
+	repository: Repository,
 	file: WorkingDirectoryFileChange,
 	hideWhitespaceInDiff: boolean = false
 ): Promise<IDiff> {
@@ -155,7 +155,7 @@ export async function getWorkingDirectoryDiff(
 
 async function buildSubmoduleDiff(
 	diff: string,
-	repository: Project,
+	repository: Repository,
 	file: FileChange,
 	status: SubmoduleStatus
 ): Promise<IDiff> {
@@ -208,7 +208,7 @@ async function buildSubmoduleDiff(
  * https://en.wikipedia.org/wiki/Data_URI_scheme
  */
 export async function getWorkingDirectoryImage(
-	repository: Project,
+	repository: Repository,
 	file: FileChange
 ): Promise<Image> {
 	const contents = await readBinaryFile(await join(repository.path, file.path));
@@ -227,7 +227,7 @@ function diffFromRawDiffOutput(output: string): IRawDiff {
 }
 
 async function getImageDiff(
-	repository: Project,
+	repository: Repository,
 	file: FileChange,
 	oldestCommitish: string
 ): Promise<IImageDiff> {
@@ -288,7 +288,7 @@ async function getImageDiff(
 }
 
 export async function convertDiff(
-	repository: Project,
+	repository: Repository,
 	file: FileChange,
 	diff: IRawDiff,
 	oldestCommitish: string,
@@ -319,7 +319,7 @@ export async function convertDiff(
 
 async function buildDiff(
 	buffer: string,
-	repository: Project,
+	repository: Repository,
 	file: FileChange,
 	oldestCommitish: string,
 	lineEndingsChange?: LineEndingsChange

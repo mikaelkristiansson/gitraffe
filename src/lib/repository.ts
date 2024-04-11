@@ -82,11 +82,9 @@ export async function addRepository() {
 	const title = path.split('/').pop() || path;
 	const unsub = repositories.subscribe(async (repos) => {
 		const repository = await addNewRepository(path, id, repos);
-		console.log('🚀 ~ addRepository ~ repository:', repository);
 		//TODO: show error message if repository is null
 		if (!repository) return;
 		repositories.add(repository);
-		// repositories.add({ id, title, path });
 		activeRepository.setActive(id);
 	});
 	unsub();
@@ -108,7 +106,6 @@ async function addNewRepository(
 		console.error('Could not determine repository type', e);
 		return { kind: 'missing' } as RepositoryType;
 	});
-	console.log('🚀 ~ repositoryType:', repositoryType);
 	//TODO: later on, we can add a check for unsafe repositories
 	//   if (repositoryType.kind === 'unsafe') {
 	//     // const repository = await this.repositoriesStore.addRepository(path, {
@@ -119,20 +116,17 @@ async function addNewRepository(
 	//     repository = newRepo;
 	//   }
 
-	if (repositoryType.kind === 'regular') {
+	if (repositoryType.kind === 'missing') {
+		//TODO: add a modal to ask if the user wants to create a new repository
+	} else if (repositoryType.kind === 'regular') {
 		const validatedPath = repositoryType.topLevelWorkingDirectory;
 		console.info(`adding repository at ${validatedPath} to store`);
-
-		// const repositories = this.repositories
-		// let existing = undefined;
-		// repositories.subscribe(async (repos) => {
 		const existing = await matchExistingRepository(repositories, validatedPath);
 		console.log('🚀 ~ repositories.subscribe ~ existing:', existing);
 		if (existing !== undefined) {
 			return existing;
 		}
 		const newRepo = new Repository(validatedPath, id, null, false);
-		console.log('🚀 ~ repositories.subscribe ~ newRepo:', newRepo);
 		return newRepo;
 		// });
 

@@ -19,10 +19,14 @@
 	}
 
 	async function addNewRepository() {
-		hide();
 		const repository = await addRepository();
-		if (!repository) return;
-		goto(`/${repository.id}/board`);
+		activeRepository.subscribe((repo) => {
+			if (repo?.id === repository?.id) {
+				if (repository) {
+					goto(`/${repository.id}/board`);
+				}
+			}
+		});
 		return repository;
 	}
 </script>
@@ -54,9 +58,10 @@
 				on:click={async () => {
 					loading = true;
 					try {
-						addNewRepository();
+						await addNewRepository();
 					} finally {
 						loading = false;
+						hide();
 					}
 				}}>Add new repository</ListItem
 			>

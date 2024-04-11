@@ -18,22 +18,16 @@
 	import * as toasts from '$lib/utils/toasts';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { setAutoHeight } from '$lib/utils/useAutoHeight';
-	// import { BranchController } from '$lib/vbranches/branchController';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
-	// import type { User } from '$lib/backend/cloud';
-	// import type { Ownership } from '$lib/vbranches/ownership';
-	// import type { Branch, LocalFile } from '$lib/vbranches/types';
 	import type { Writable } from 'svelte/store';
-	// import type { Branch, LocalFile } from '$lib/types';
 	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
-	import { activeProject } from '$lib/projects';
-	import { gitAddFiles } from '$lib/git/add';
 	import { allBranches, workingBranch } from '$lib/branch';
 	import type { Repository } from '$lib/models/repository';
+	import { activeRepository } from '$lib/repository';
 
 	// const aiService = getContextByClass(AIService);
 
@@ -44,11 +38,8 @@
 	export let repositoryId: Repository['id'];
 	export let branch: IStatusResult;
 	// export let user: User | undefined;
-	// export let selectedOwnership: Writable<Ownership>;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let expanded: Writable<boolean>;
-
-	// const branchController = getContextByClass(BranchController);
 
 	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
@@ -89,14 +80,11 @@
 		const message = concatMessage(title, description);
 		isCommitting = true;
 		try {
-			if ($activeProject) {
-				await gitAddFiles($activeProject, $selectedFiles);
-				await createCommit($activeProject, message.trim());
-				const wb = await workingBranch.setWorking($activeProject.path);
+			if ($activeRepository) {
+				await createCommit($activeRepository, message.trim(), $selectedFiles);
+				const wb = await workingBranch.setWorking($activeRepository.path);
 				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
 				if (updateBranch) {
-					// updateBranch.tip.sha = wb?.currentTip?.slice(0, 7) || updateBranch.sha;
-					// updateBranch.ahead++;
 					allBranches.updateBranch(updateBranch);
 				}
 			}

@@ -1,7 +1,9 @@
-use std::process::{Command, Output};
+use std::process::Command;
 
 use chrono::Utc;
 use serde::Serialize;
+use std::io::Write;
+use std::process::Stdio;
 use tauri::Error;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
@@ -191,11 +193,22 @@ pub async fn git_commit(path: String, message: String) -> Result<String, Error> 
 }
 
 #[tauri::command(async)]
-pub async fn git(path: String, args: Vec<String>) -> Result<String, Error> {
-    let fetch = Command::new("git")
+pub async fn git(path: String, args: Vec<String>, stdin: Option<String>) -> Result<String, Error> {
+    let mut child = Command::new("git")
         .args(&args)
         .current_dir(path)
-        .output()
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
         .unwrap();
-    Ok(String::from_utf8_lossy(&fetch.stdout).to_string())
+
+    if let Some(stdin) = stdin {
+        let child_stdin = child.stdin.as_mut().unwrap();
+        child_stdin.write_all(stdin.as_bytes()).unwrap();
+    }
+
+    let output = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+
+    Ok(stdout)
 }

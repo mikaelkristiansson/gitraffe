@@ -1,6 +1,7 @@
 import { DiffSelectionType } from '$lib/models/diff';
+import type { Repository } from '$lib/models/repository';
 import { AppFileStatusKind, type WorkingDirectoryFileChange } from '$lib/models/status';
-import type { Project } from '$lib/projects';
+import { invoke } from '@tauri-apps/api/tauri';
 import { applyPatchToIndex } from './apply';
 
 interface IUpdateIndexOptions {
@@ -61,7 +62,7 @@ interface IUpdateIndexOptions {
  * @param options See the IUpdateIndexOptions interface for more details.
  */
 async function updateIndex(
-	repository: Project,
+	repository: Repository,
 	paths: ReadonlyArray<string>,
 	options: IUpdateIndexOptions = {}
 ) {
@@ -92,6 +93,7 @@ async function updateIndex(
 	// await git(args, repository.path, 'updateIndex', {
 	//   stdin: paths.join('\0'),
 	// })
+	await invoke('git', { path: repository.path, args: args, stdin: paths.join('\0') });
 }
 
 /**
@@ -103,7 +105,7 @@ async function updateIndex(
  * reflects what the user has selected in the app.
  */
 export async function stageFiles(
-	repository: Project,
+	repository: Repository,
 	files: ReadonlyArray<WorkingDirectoryFileChange>
 ): Promise<void> {
 	const normal = [];

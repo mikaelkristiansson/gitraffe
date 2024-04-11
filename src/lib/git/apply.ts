@@ -1,12 +1,13 @@
 import { assertNever } from '$lib/fatal-error';
 import { DiffType } from '$lib/models/diff';
 import { AppFileStatusKind, WorkingDirectoryFileChange } from '$lib/models/status';
-import type { Project } from '$lib/projects';
 import { invoke } from '@tauri-apps/api/tauri';
 import { getWorkingDirectoryDiff } from './diff';
+import type { Repository } from '$lib/models/repository';
+import { formatPatch } from '$lib/utils/patch-formatter';
 
 export async function applyPatchToIndex(
-	repository: Project,
+	repository: Repository,
 	file: WorkingDirectoryFileChange
 ): Promise<void> {
 	// If the file was a rename we have to recreate that rename since we've
@@ -72,9 +73,9 @@ export async function applyPatchToIndex(
 		}
 	}
 
-	// const patch = await formatPatch(file, diff)
+	const patch = formatPatch(file, diff);
 	// await git(applyArgs, repository.path, 'applyPatchToIndex', { stdin: patch })
-	await invoke('git', { path: repository.path, args: applyArgs });
+	await invoke('git', { path: repository.path, args: applyArgs, stdin: patch });
 
 	return Promise.resolve();
 }
