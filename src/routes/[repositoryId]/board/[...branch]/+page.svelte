@@ -65,6 +65,7 @@
 	<FullviewLoading />
 {:else}
 	<div class="flex h-full w-full max-w-full flex-grow flex-col overflow-hidden">
+		<div class="board-drag-region" data-tauri-drag-region />
 		<div class="board-wrapper">
 			<div class="board p-3">
 				<div class="wrapper">
@@ -177,6 +178,15 @@
 		flex-direction: column;
 		flex-grow: 1;
 		height: 100%;
+	}
+	.board-drag-region {
+		z-index: 1;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: var(--size-20);
+		background: var(--target-branch-background);
 	}
 	.board {
 		display: flex;
