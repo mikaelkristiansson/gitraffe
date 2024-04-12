@@ -5,7 +5,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import TextBox from './TextBox.svelte';
 	import BranchesHeader from './BranchesHeader.svelte';
-	import { allBranches, defaultBranch, fetchingBranches } from '$lib/branch';
+	import { allBranches, fetchingBranches } from '$lib/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Spinner from '$lib/icons/Spinner.svelte';
 	import { updatingRepositories } from '$lib/repository';
@@ -16,23 +16,24 @@
 		type IBranchListItem
 	} from '$lib/utils/branch';
 	import { getRecentBranches } from '$lib/git/branch';
+	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
+	export let defaultBranch: Branch;
 	export const textFilter$ = '';
 
 	let contents: HTMLElement;
 	let viewport: HTMLDivElement;
 	const dispatch = createEventDispatcher<{ scrollbarDragging: boolean }>();
 
-	// $: branches = mergeRemoteAndLocalBranches($allBranches);
 	let groups$: IFilterListGroup<IBranchListItem>[] = [];
 
 	async function setBranches() {
-		const branches = await allBranches.fetch(repository);
+		const branches = await allBranches.fetch(repository, defaultBranch.upstream || 'HEAD');
 		const RecentBranchesLimit = 5;
 		const recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
 		const groups = groupBranches(
-			$defaultBranch,
+			defaultBranch,
 			mergeRemoteAndLocalBranches(branches),
 			recentBranches
 		);
@@ -41,7 +42,7 @@
 	}
 
 	$: ({ path } = repository);
-	$: path && setBranches();
+	$: path && defaultBranch && setBranches();
 
 	$: filteredBranches$ = mergeRemoteAndLocalBranches($allBranches);
 </script>

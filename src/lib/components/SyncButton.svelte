@@ -2,10 +2,11 @@
 	import Icon from './Icon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
 	import { tooltip } from '$lib/utils/tooltip';
-	import { allBranches, defaultBranch, lastSynced } from '$lib/branch';
-	import { fetch } from '$lib/git/cli';
+	import { allBranches, defaultBranch, lastSynced, workingBranch } from '$lib/branch';
+	import { fetchAll } from '$lib/git/cli';
 	import type { Repository } from '$lib/models/repository';
 	import type { Branch } from '$lib/models/branch';
+	import { error, success } from '$lib/utils/toasts';
 
 	export let repository: Repository;
 
@@ -16,32 +17,30 @@
 		defaultBranch$ = branch;
 	});
 
-	$: base = defaultBranch$;
+	// $: base = defaultBranch$;
 
 	// $: defaultBranch.subscribe((branch) => {
 	// 	$defaultBranch = branch;
 	// });
-
-	// const githubService = getContextByClass(GitHubService);
-	// const baseBranchService = getContextByClass(BaseBranchService);
-	// const baseBranch = baseBranchService.base;
-
-	// $: baseServiceBusy$ = baseBranchService.busy$;
 </script>
 
-<!-- class:sync-btn-busy={$baseServiceBusy$} -->
 <button
 	class="sync-btn"
+	disabled={busy$}
 	on:mousedown={async (e) => {
 		e.preventDefault();
 		e.stopPropagation();
 		busy$ = true;
 		try {
-			await fetch(repository.path);
-			await allBranches.fetch(repository);
+			await fetchAll(repository.path);
+			const dBranch = await defaultBranch.setDefault(repository);
+			await allBranches.fetch(repository, dBranch?.upstream || 'HEAD');
+			workingBranch.setWorking(repository.path);
 			lastSynced.set(new Date());
-			//TODO: set default branch
-			// await defaultBranch.setDefault(repository.path);
+			success('Fetched from upstream');
+		} catch (e) {
+			console.error(e);
+			error('Failed to fetch from upstream');
 		} finally {
 			busy$ = false;
 		}

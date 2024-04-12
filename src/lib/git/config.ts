@@ -1,5 +1,6 @@
 import type { Repository } from '$lib/models/repository';
 import { invoke } from '@tauri-apps/api/tauri';
+import type { GitResponse } from './type';
 
 /**
  * Look up a config value by name in the repository.
@@ -88,14 +89,14 @@ async function getConfigValueInPath(
 	//   successExitCodes: new Set([0, 1]),
 	//   env,
 	// })
-	const result: string = await invoke('git', { path: path, args: flags });
+	const { stdout }: GitResponse = await invoke('git', { path: path, args: flags });
 
 	// Git exits with 1 if the value isn't found. That's OK.
-	if (!result) {
+	if (!stdout) {
 		return null;
 	}
 
-	const pieces = result.split('\0');
+	const pieces = stdout.split('\0');
 	return pieces[0];
 }
 

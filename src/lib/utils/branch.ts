@@ -1,3 +1,4 @@
+import { getBranches } from '$lib/git/branch';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { getRemoteHEAD } from '$lib/git/remote';
 import { BranchType, type Branch } from '$lib/models/branch';
@@ -64,7 +65,6 @@ export function mergeRemoteAndLocalBranches(
  */
 export async function findDefaultBranch(
 	repository: Repository,
-	branches: ReadonlyArray<Branch>,
 	defaultRemoteName: string | undefined
 ) {
 	const remoteName = isForkedRepositoryContributingToParent(repository)
@@ -75,6 +75,9 @@ export async function findDefaultBranch(
 
 	const defaultBranchName = remoteHead ?? (await getDefaultBranch(repository));
 	const remoteRef = remoteHead ? `${remoteName}/${remoteHead}` : undefined;
+
+	const upstreamName = remoteRef || `origin/${defaultBranchName}`;
+	const branches = await getBranches(repository, upstreamName);
 
 	let localHit: Branch | undefined = undefined;
 	let localTrackingHit: Branch | undefined = undefined;

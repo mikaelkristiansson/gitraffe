@@ -11,6 +11,7 @@
 	import type { Repository } from '$lib/models/repository';
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
+	import { error } from '$lib/utils/toasts';
 
 	export let repository: Repository;
 	export let branch: Branch;
@@ -24,11 +25,15 @@
 	class="branch"
 	class:selected
 	on:mousedown={async () => {
-		if ($workingBranch.workingDirectory.files.length === 0) {
-			activeBranch.setActive(branch);
-			await checkout(repository.path, branch.name);
-			workingBranch.setWorking(repository.path);
-			if (href) goto(href);
+		if ($workingBranch?.workingDirectory.files.length === 0) {
+			try {
+				await checkout(repository.path, branch.name);
+				activeBranch.setActive(branch);
+				workingBranch.setWorking(repository.path);
+				if (href) goto(href);
+			} catch (e) {
+				error('Failed to switch branch');
+			}
 		} else {
 			untrackedModal.show();
 			console.log('You have uncommitted changes');
@@ -61,9 +66,11 @@
 		You have changes on the branch that are not committed. Switching branches will discard these
 		changes.
 		<ul class="file-list">
-			{#each $workingBranch.workingDirectory.files as file}
-				<li><code>{file.path}</code></li>
-			{/each}
+			{#if $workingBranch}
+				{#each $workingBranch.workingDirectory.files as file}
+					<li><code>{file.path}</code></li>
+				{/each}
+			{/if}
 		</ul>
 	</div>
 	<svelte:fragment slot="controls" let:close>

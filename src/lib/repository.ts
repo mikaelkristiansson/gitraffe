@@ -4,6 +4,7 @@ import { getStorageItem, setStorageItem } from './persisted';
 import { Repository } from './models/repository';
 import { getRepositoryType, type RepositoryType } from './git/repository';
 import { matchExistingRepository } from './utils/repository-matching';
+import { error } from './utils/toasts';
 
 export interface Project {
 	id: string;
@@ -83,7 +84,10 @@ export async function addRepository() {
 	const unsub = repositories.subscribe(async (repos) => {
 		const repository = await addNewRepository(path, id, repos);
 		//TODO: show error message if repository is null
-		if (!repository) return;
+		if (!repository) {
+			error(`${title} is not an existing git repository.`);
+			return;
+		}
 		repositories.add(repository);
 		activeRepository.setActive(id);
 	});
@@ -122,13 +126,11 @@ async function addNewRepository(
 		const validatedPath = repositoryType.topLevelWorkingDirectory;
 		console.info(`adding repository at ${validatedPath} to store`);
 		const existing = await matchExistingRepository(repositories, validatedPath);
-		console.log('🚀 ~ repositories.subscribe ~ existing:', existing);
 		if (existing !== undefined) {
 			return existing;
 		}
 		const newRepo = new Repository(validatedPath, id, null, false);
 		return newRepo;
-		// });
 
 		// We don't have to worry about repositoryWithRefreshedGitHubRepository
 		// and isUsingLFS if the repo already exists in the app.

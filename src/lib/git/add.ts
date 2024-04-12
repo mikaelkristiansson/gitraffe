@@ -8,6 +8,5 @@ export async function gitAddFiles(
 ) {
 	const args = ['add'];
 	files.forEach((f) => args.push(f.path));
-	console.log('🚀 ~ args:', args);
 	return await invoke('git', { path: repository.path, args });
 }

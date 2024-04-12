@@ -1,5 +1,6 @@
 import type { Repository } from '$lib/models/repository';
 import { invoke } from '@tauri-apps/api/tauri';
+import type { GitResponse } from './type';
 
 /**
  * Retrieve the binary contents of a blob from the repository at a given
@@ -38,9 +39,9 @@ export async function getBlobContents(
 	// }
 
 	// const blobContents = await git(args, repository.path, 'getBlobContents', opts)
-	const blobContent: string = await invoke('git', { path: repository.path, args });
+	const { stdout }: GitResponse = await invoke('git', { path: repository.path, args });
 
-	return blobContent;
+	return stdout;
 
 	// return Buffer.from(blobContents.stdout, 'binary')
 }

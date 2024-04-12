@@ -13,10 +13,11 @@
 	// import type { User } from '$lib/backend/cloud';
 	// import Button from './Button.svelte';
 	// import { goto } from '$app/navigation';
-	// import type { Project } from '$lib/projects';
 	import type { Repository } from '$lib/models/repository';
+	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
+	export let defaultBranch: Branch;
 	// export let user: User | undefined;
 
 	const minResizerWidth = 280;
@@ -89,7 +90,11 @@
 			</div>
 		</div>
 		{#if !isNavCollapsed}
-			<Branches {repository} on:scrollbarDragging={(e) => (isScrollbarDragging = e.detail)} />
+			<Branches
+				{repository}
+				{defaultBranch}
+				on:scrollbarDragging={(e) => (isScrollbarDragging = e.detail)}
+			/>
 		{/if}
 		<Footer repositoryId={repository.id} {isNavCollapsed} />
 	</div>

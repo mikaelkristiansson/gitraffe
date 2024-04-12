@@ -17,17 +17,19 @@
 
 	export let data: PageData;
 
-	let branch$: IStatusResult = $workingBranch;
+	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
 
 	workingBranch.subscribe((branch) => {
 		branch$ = branch;
-		selectedFiles.set(branch.workingDirectory.files);
+		if (branch?.workingDirectory) {
+			selectedFiles.set(branch.workingDirectory.files);
+		}
 	});
 
 	onMount(() => {
 		if ($activeRepository) {
-			const notMatching = $workingBranch.currentTip !== $activeBranch?.tip.sha;
+			const notMatching = $workingBranch?.currentTip !== $activeBranch?.tip.sha;
 			const shouldUpdate = !$workingBranch || notMatching;
 			if (shouldUpdate) {
 				workingBranch.setWorking($activeRepository.path);
@@ -35,15 +37,18 @@
 		}
 	});
 
-	const commitBoxOpen = persisted<boolean>(true, 'commitBoxExpanded');
+	const commitBoxOpen = persisted<boolean>(
+		true,
+		'commitBoxExpanded_' + $activeRepository?.id || '' + '_' + branch$?.currentTip || ''
+	);
 	let isUnapplied = false;
 
-	$: isLaneCollapsed = projectLaneCollapsed($activeRepository?.id || '', branch$.currentTip || '');
+	$: isLaneCollapsed = projectLaneCollapsed($activeRepository?.id || '');
 	$: if ($isLaneCollapsed) {
 		$selectedFiles = [];
 	}
 
-	$: if ($commitBoxOpen && branch$.workingDirectory.files?.length === 0) {
+	$: if ($commitBoxOpen && branch$?.workingDirectory.files?.length === 0) {
 		$commitBoxOpen = false;
 	}
 </script>

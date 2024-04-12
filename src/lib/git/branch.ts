@@ -3,10 +3,12 @@ import { CommitIdentity } from '$lib/models/commit-identity';
 import { invoke } from '@tauri-apps/api/tauri';
 import { createForEachRefParser } from './git-delimiter-parser';
 import type { Repository } from '$lib/models/repository';
+import type { GitResponse } from './type';
 
 /** Get all the branches. */
 export async function getBranches(
 	repository: Repository,
+	defaultBranchUpstreamName: string,
 	...prefixes: string[]
 ): Promise<Array<Branch>> {
 	const { formatArgs, parse } = createForEachRefParser({
@@ -16,7 +18,7 @@ export async function getBranches(
 		sha: '%(objectname)',
 		author: '%(author)',
 		symRef: '%(symref)',
-		aheadBehind: '%(ahead-behind:HEAD)'
+		aheadBehind: `%(ahead-behind:${defaultBranchUpstreamName})`
 	});
 
 	if (!prefixes || !prefixes.length) {
@@ -38,11 +40,14 @@ export async function getBranches(
 	// }
 
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
-	const result: string = await invoke('git', { path: repository.path, args });
+	const { stdout, stderr }: GitResponse = await invoke('git', { path: repository.path, args });
+	if (stderr) {
+		throw new Error(stderr);
+	}
 
 	const branches = [];
 
-	for (const ref of parse(result)) {
+	for (const ref of parse(stdout)) {
 		// excude symbolic refs from the branch list
 		if (ref.symRef.length > 0) {
 			continue;
@@ -95,12 +100,12 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	//   // error code 128 is returned if the branch is unborn
 	//   return []
 	// }
-	const result: string = await invoke('git', {
+	const { stdout }: GitResponse = await invoke('git', {
 		path: repository.path,
 		args: ['log', '-g', '--no-abbrev-commit', '--pretty=oneline', 'HEAD', '-n', '2500', '--']
 	});
 
-	const lines = result.split('\n');
+	const lines = stdout.split('\n');
 	const names = new Set<string>();
 	const excludedNames = new Set<string>();
 

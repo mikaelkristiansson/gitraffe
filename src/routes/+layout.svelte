@@ -3,6 +3,8 @@
 	import { initTheme } from '$lib/utils/theme';
 	import { setContext } from 'svelte';
 	import '../styles/main.postcss';
+	import { Toaster } from 'svelte-french-toast';
+	import ToastController from '$lib/notifications/ToastController.svelte';
 
 	const userSettings = loadUserSettings();
 	initTheme(userSettings);
@@ -12,6 +14,10 @@
 <div data-tauri-drag-region class="app-root">
 	<slot />
 </div>
+<Toaster />
+<ToastController />
+
+<!-- <AppUpdater /> -->
 
 <style lang="postcss">
 	.app-root {

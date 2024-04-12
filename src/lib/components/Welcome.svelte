@@ -1,6 +1,5 @@
 <script lang="ts">
 	import newProjectSvg from '$lib/assets/no-projects/new-project.svg?raw';
-	// import { addProject } from '$lib/projects';
 	import { addRepository } from '$lib/repository';
 	import WelcomeAction from './WelcomeAction.svelte';
 

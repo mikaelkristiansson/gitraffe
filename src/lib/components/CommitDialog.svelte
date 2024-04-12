@@ -82,13 +82,15 @@
 		try {
 			if ($activeRepository) {
 				await createCommit($activeRepository, message.trim(), $selectedFiles);
-				const wb = await workingBranch.setWorking($activeRepository.path);
+				await workingBranch.setWorking($activeRepository.path);
 				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
 				if (updateBranch) {
 					allBranches.updateBranch(updateBranch);
 				}
 			}
 			$commitMessage = '';
+		} catch (e) {
+			toasts.error('Failed to commit changes');
 		} finally {
 			isCommitting = false;
 		}

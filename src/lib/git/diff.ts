@@ -23,6 +23,7 @@ import { readBinaryFile } from '@tauri-apps/api/fs';
 import { getBlobContents } from './show';
 import { getOldPathOrDefault } from './get-old-path';
 import type { Repository } from '$lib/models/repository';
+import type { GitResponse } from './type';
 
 /**
  *  Defining the list of known extensions we can render inside the app
@@ -147,10 +148,10 @@ export async function getWorkingDirectoryDiff(
 	//   'getWorkingDirectoryDiff',
 	//   successExitCodes
 	// )
-	const output: string = await invoke('git', { path: repository.path, args });
+	const { stdout }: GitResponse = await invoke('git', { path: repository.path, args });
 	// const lineEndingsChange = parseLineEndingsWarning(error)
 
-	return buildDiff(output, repository, file, 'HEAD');
+	return buildDiff(stdout, repository, file, 'HEAD');
 }
 
 async function buildSubmoduleDiff(

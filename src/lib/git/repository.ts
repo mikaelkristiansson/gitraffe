@@ -1,6 +1,7 @@
 import { exists } from '@tauri-apps/api/fs';
 import { resolve } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri';
+import type { GitResponse } from './type';
 
 export type RepositoryType =
 	| { kind: 'bare' }
@@ -26,19 +27,19 @@ export async function getRepositoryType(path: string): Promise<RepositoryType> {
 		//     'getRepositoryType',
 		//     { successExitCodes: new Set([0, 128]) }
 		//   )
-		const result: string = await invoke('git', {
+		const { stdout }: GitResponse = await invoke('git', {
 			path,
 			args: ['rev-parse', '--is-bare-repository', '--show-cdup']
 		});
-		if (result) {
-			const [isBare, cdup] = result.split('\n', 2);
+		if (stdout) {
+			const [isBare, cdup] = stdout.split('\n', 2);
 
 			return isBare === 'true'
 				? { kind: 'bare' }
 				: { kind: 'regular', topLevelWorkingDirectory: await resolve(path, cdup) };
 		}
 
-		const unsafeMatch = /fatal: detected dubious ownership in repository at '(.+)'/.exec(result);
+		const unsafeMatch = /fatal: detected dubious ownership in repository at '(.+)'/.exec(stdout);
 		if (unsafeMatch) {
 			return { kind: 'unsafe', path: unsafeMatch[1] };
 		}

@@ -4,31 +4,53 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, updatingRepositories } from '$lib/repository';
+	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
 
 	let repository$: Repository | undefined | null = undefined;
-	activeRepository.subscribe((repo) => {
+	let base$ = $defaultBranch;
+	activeRepository.subscribe(async (repo) => {
 		if (repo) {
 			repository$ = repo;
 		}
 		if (!$defaultBranch && repo) {
-			defaultBranch.setDefault(repo, $allBranches);
+			const db = await defaultBranch.setDefault(repo);
+			if (db) {
+				base$ = db;
+			}
 		}
 	});
 	let unlisten = () => {};
 	let time = new Date().getTime();
+	let timeoutId: number;
 
-	async function update(newRepo: boolean = false) {
+	async function update(newRepo: boolean = false, isFocus: boolean = true) {
 		if (repository$) {
 			console.info('UPDATING');
+			if (isFocus) {
+				clearTimeout(timeoutId);
+				timeoutId = window.setTimeout(async () => {
+					const isInFocus = await appWindow.isFocused();
+					update(false, isInFocus);
+				}, 10000);
+			}
 			if (newRepo) {
 				updatingRepositories.set(true);
 			}
-			await allBranches.fetch(repository$);
-			await defaultBranch.setDefault(repository$, $allBranches);
-			workingBranch.setWorking(repository$.path);
-			updatingRepositories.set(false);
+			try {
+				const base = await defaultBranch.setDefault(repository$);
+				await allBranches.fetch(repository$, base?.upstream || 'HEAD');
+				const wb = await workingBranch.setWorking(repository$.path);
+				if (wb) {
+					goto(`/${repository$.id}/board/${wb.currentBranch}`);
+				}
+			} catch (e) {
+				console.error(e);
+				error('Failed to fetch branches');
+			} finally {
+				updatingRepositories.set(false);
+			}
 		}
 	}
 
@@ -38,8 +60,7 @@
 		unlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
 			if (focused) {
 				if (time + 10000 < new Date().getTime()) {
-					console.log('fetching branches');
-					update();
+					update(false, true);
 					time = new Date().getTime();
 				}
 			}
@@ -49,6 +70,7 @@
 	// you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
 	onDestroy(() => {
 		unlisten();
+		clearTimeout(timeoutId);
 	});
 	$: baseError = null;
 </script>
@@ -63,7 +85,7 @@
 {:else}
 	<div class="view-wrap" role="group" on:dragover|preventDefault>
 		<!-- user={$user$} -->
-		<Navigation repository={repository$} />
+		<Navigation repository={repository$} defaultBranch={base$} />
 		<slot />
 	</div>
 {/if}

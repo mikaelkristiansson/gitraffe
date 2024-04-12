@@ -1,8 +1,7 @@
 import toast, { type ToastOptions, type ToastPosition } from 'svelte-french-toast';
 
 const defaultOptions = {
-	position: 'bottom-center' as ToastPosition,
-	style: 'border-radius: 8px; background: black; color: #fff;'
+	position: 'bottom-right' as ToastPosition
 };
 
 export function error(msg: string, options: ToastOptions = {}) {
@@ -14,7 +13,7 @@ export function success(msg: string, options: ToastOptions = {}) {
 }
 
 export function promise(
-	promise: Promise<any>,
+	promise: Promise<unknown>,
 	opts: { loading: string; success: string; error: string } = {
 		loading: 'Loading...',
 		success: 'Success!',

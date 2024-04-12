@@ -6,12 +6,11 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import * as toasts from '$lib/utils/toasts';
-	import toast from 'svelte-french-toast';
 	import type { Persisted } from '$lib/persisted';
 	import { goto } from '$app/navigation';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
-	import { activeBranch, allBranches, defaultBranch } from '$lib/branch';
+	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/branch';
 	import type { IStatusResult } from '$lib/git/status';
 	import GitPull from '$lib/icons/GitPull.svelte';
 	import GitPush from '$lib/icons/GitPush.svelte';
@@ -96,8 +95,11 @@
 							disabled={!branch?.branchAheadBehind?.behind}
 							loading={isPulling}
 							on:click={async () => {
+								if (branch?.workingDirectory?.files && branch?.workingDirectory?.files.length > 0) {
+									toasts.error('Cannot pull while there are uncommitted changes');
+									return;
+								}
 								isPulling = true;
-								//TODO: add check if ahead, then show modal to merge
 								try {
 									if ($activeRepository && branch?.currentBranch) {
 										await pullOrigin($activeRepository.path, branch.currentBranch);
@@ -110,10 +112,10 @@
 											$activeBranch.ref,
 											update
 										);
-										const updatedAllBranches = allBranches.updateBranch(newBranch);
-										if (updatedAllBranches) {
-											await defaultBranch.setDefault($activeRepository, updatedAllBranches);
-										}
+										allBranches.updateBranch(newBranch);
+										await defaultBranch.setDefault($activeRepository);
+										await workingBranch.setWorking($activeRepository.path);
+										toasts.success('Pulled from origin');
 									}
 								} finally {
 									isPulling = false;
@@ -131,6 +133,10 @@
 							disabled={!branch?.branchAheadBehind?.ahead}
 							loading={isPushing}
 							on:click={async () => {
+								if (branch?.branchAheadBehind?.behind) {
+									toasts.error('Cannot push while branch is behind origin');
+									return;
+								}
 								isPushing = true;
 								try {
 									if ($activeRepository && branch?.currentBranch) {
@@ -144,11 +150,11 @@
 											$activeBranch.ref,
 											update
 										);
-										const updatedAllBranches = allBranches.updateBranch(newBranch);
-										if (updatedAllBranches) {
-											await defaultBranch.setDefault($activeRepository, updatedAllBranches);
-										}
+										workingBranch.setWorking($activeRepository.path);
+										await defaultBranch.setDefault($activeRepository);
+										allBranches.updateBranch(newBranch);
 									}
+									toasts.success('Pushed to origin');
 								} finally {
 									isPushing = false;
 								}

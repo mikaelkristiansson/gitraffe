@@ -4,6 +4,7 @@ import type { WorkingDirectoryFileChange } from '$lib/models/status';
 import { invoke } from '@tauri-apps/api/tauri';
 import { unstageAll } from './reset';
 import { stageFiles } from './update-index';
+import type { GitResponse } from './type';
 
 /**
  * @param repository repository to execute merge in
@@ -39,14 +40,14 @@ export async function createCommit(
 	//   }
 	// )
 	// const result: string = await invoke('git_commit', { path: repository.path, message });
-	const result: string = await invoke('git', {
+	// args: ['commit', '-m', `"${message}"`]
+	const { stdout }: GitResponse = await invoke('git', {
 		path: repository.path,
 		args: ['commit', ...args],
 		stdin: message
-		// args: ['commit', '-m', `"${message}"`]
 	});
-	console.log('🚀 ~ result:', result);
-	return parseCommitSHA(result);
+	console.log('🚀 ~ result:', stdout);
+	return parseCommitSHA(stdout);
 }
 
 /**

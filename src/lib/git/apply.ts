@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { getWorkingDirectoryDiff } from './diff';
 import type { Repository } from '$lib/models/repository';
 import { formatPatch } from '$lib/utils/patch-formatter';
+import type { GitResponse } from './type';
 
 export async function applyPatchToIndex(
 	repository: Repository,
@@ -35,12 +36,12 @@ export async function applyPatchToIndex(
 		//     repository.path,
 		//     'applyPatchToIndex'
 		//   )
-		const oldFile: string = await invoke('git', {
+		const { stdout }: GitResponse = await invoke('git', {
 			path: repository.path,
 			args: ['ls-tree', 'HEAD', '--', file.status.oldPath]
 		});
 
-		const [info] = oldFile.split('\t', 1);
+		const [info] = stdout.split('\t', 1);
 		const [mode, , oid] = info.split(' ', 3);
 
 		// Add the old file blob to the index under the new name
