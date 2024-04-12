@@ -5,11 +5,11 @@
 	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
 	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
-	import { computeFileStatus } from '$lib/utils/fileStatus';
+	// import { computeFileStatus } from '$lib/utils/fileStatus';
 	import * as toasts from '$lib/utils/toasts';
 	import { join } from '@tauri-apps/api/path';
 	import { open } from '@tauri-apps/api/shell';
-	import type { AnyFile } from '$lib/types';
+	// import type { AnyFile } from '$lib/types';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository | undefined;
@@ -18,11 +18,11 @@
 	let popupMenu: PopupMenu;
 
 	function containsBinaryFiles(item: any) {
-		return item.files.some((f: AnyFile) => f.binary);
+		// return item.files.some((f: AnyFile) => f.binary);
 	}
 
-	function isDeleted(item: any): boolean {
-		return item.files.some((f: AnyFile) => computeFileStatus(f) === 'D');
+	function isDeleted(item: any) {
+		// return item.files.some((f: AnyFile) => computeFileStatus(f) === 'D');
 	}
 
 	export function openByMouse(e: MouseEvent, item: any) {
@@ -34,7 +34,7 @@
 	<ContextMenu>
 		<ContextMenuSection>
 			{#if item.files !== undefined}
-				{#if containsBinaryFiles(item)}
+				<!-- {#if containsBinaryFiles(item)}
 					<ContextMenuItem label="Discard changes (Binary files not yet supported)" disabled />
 				{:else}
 					<ContextMenuItem
@@ -44,7 +44,7 @@
 							dismiss();
 						}}
 					/>
-				{/if}
+				{/if} -->
 				{#if item.files.length === 1}
 					<ContextMenuItem
 						label="Copy Path"
@@ -74,9 +74,9 @@
 						}}
 					/>
 				{/if}
+				<!-- disabled={isDeleted(item)} -->
 				<ContextMenuItem
 					label="Open in VSCode"
-					disabled={isDeleted(item)}
 					on:click={async () => {
 						try {
 							if (!repository) return;

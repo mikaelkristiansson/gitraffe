@@ -4,12 +4,12 @@
 	import Tag from './Tag.svelte';
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
 	import * as toasts from '$lib/utils/toasts';
 	import type { Persisted } from '$lib/persisted';
 	import { goto } from '$app/navigation';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
+	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/branch';
 	import type { IStatusResult } from '$lib/git/status';
 	import GitPull from '$lib/icons/GitPull.svelte';
@@ -17,24 +17,23 @@
 	import Badge from './Badge.svelte';
 	import { Branch } from '$lib/models/branch';
 	import { activeRepository } from '$lib/repository';
+	import type { Repository } from '$lib/models/repository';
+	import { getRemotes } from '$lib/git/remote';
+	import { findDefaultRemote } from '$lib/utils/find-default-remote';
+	import type { IRemote } from '$lib/models/remote';
+	import { loadLocalCommits } from '$lib/stores/commits';
 
 	export let isUnapplied = false;
 	export let branch: IStatusResult | undefined;
-	export let repositoryId: string;
+	export let repository: Repository;
 	export let isLaneCollapsed: Persisted<boolean>;
-
-	// const branchController = getContextByClass(BranchController);
 
 	let meatballButton: HTMLDivElement;
 	let visible = false;
-	let isApplying = false;
+	let isPublishing = false;
 	let isDeleting = false;
 	let isPulling = false;
 	let isPushing = false;
-
-	// function handleBranchNameChange() {
-	// 	branchController.updateBranchName(branch.id, branch.name);
-	// }
 
 	function collapseLane() {
 		$isLaneCollapsed = true;
@@ -42,6 +41,28 @@
 
 	function expandLane() {
 		$isLaneCollapsed = false;
+	}
+
+	async function publishBranch() {
+		isPublishing = true;
+		try {
+			const remotes = await getRemotes(repository);
+			const remote = findDefaultRemote(remotes);
+			const remoteName = branch?.currentUpstreamBranch || remote?.name;
+			if (remoteName && remote) {
+				const safeRemote: IRemote = { name: remoteName, url: remote.url };
+				if (branch?.currentBranch) {
+					await pushUpstream(repository, safeRemote, branch.currentBranch, null, null);
+				}
+			}
+			workingBranch.setWorking(repository);
+			toasts.success('Branch published');
+		} catch (e) {
+			toasts.error('Failed to publish branch');
+			console.error('Failed to publish branch', e);
+		} finally {
+			isPublishing = false;
+		}
 	}
 
 	// $: hasIntegratedCommits = branch.commits?.some((b) => b.isIntegrated);
@@ -114,7 +135,7 @@
 										);
 										allBranches.updateBranch(newBranch);
 										await defaultBranch.setDefault($activeRepository);
-										await workingBranch.setWorking($activeRepository.path);
+										await workingBranch.setWorking($activeRepository);
 										toasts.success('Pulled from origin');
 									}
 								} finally {
@@ -150,9 +171,10 @@
 											$activeBranch.ref,
 											update
 										);
-										workingBranch.setWorking($activeRepository.path);
+										workingBranch.setWorking($activeRepository);
 										await defaultBranch.setDefault($activeRepository);
 										allBranches.updateBranch(newBranch);
+										await loadLocalCommits($activeRepository, $activeBranch);
 									}
 									toasts.success('Pushed to origin');
 								} finally {
@@ -180,28 +202,38 @@
 				</div>
 			</div>
 			<div class="header__actions">
-				<Button
-					help="Deletes the local virtual branch (only)"
-					icon="bin-small"
-					color="neutral"
-					kind="outlined"
-					loading={isDeleting}
-					on:click={async () => {
-						isDeleting = true;
-						try {
-							// await branchController.deleteBranch(branch.id);
-							goto(`/${repositoryId}/board`);
-						} catch (e) {
-							const err = 'Failed to delete branch';
-							toasts.error(err);
-							console.error(err, e);
-						} finally {
-							isDeleting = false;
-						}
-					}}
-				>
-					Delete
-				</Button>
+				<div class="flex gap-2">
+					<Button
+						kind="outlined"
+						icon="merged-pr-small"
+						loading={isPublishing}
+						color={branch?.branchAheadBehind !== undefined ? 'neutral' : 'primary'}
+						on:click={publishBranch}
+						disabled={branch?.branchAheadBehind !== undefined}>Publish</Button
+					>
+					<Button
+						help="Deletes the local branch (only)"
+						icon="bin-small"
+						color="warn"
+						kind="outlined"
+						loading={isDeleting}
+						on:click={async () => {
+							isDeleting = true;
+							try {
+								// await branchController.deleteBranch(branch.id);
+								goto(`/${repository.id}/board`);
+							} catch (e) {
+								const err = 'Failed to delete branch';
+								toasts.error(err);
+								console.error(err, e);
+							} finally {
+								isDeleting = false;
+							}
+						}}
+					>
+						Delete
+					</Button>
+				</div>
 				<div class="header__buttons">
 					<Button
 						icon="fold-lane"

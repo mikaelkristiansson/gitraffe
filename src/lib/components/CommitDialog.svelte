@@ -28,6 +28,7 @@
 	import { allBranches, workingBranch } from '$lib/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/repository';
+	import { loadLocalCommits } from '$lib/stores/commits';
 
 	// const aiService = getContextByClass(AIService);
 
@@ -82,10 +83,11 @@
 		try {
 			if ($activeRepository) {
 				await createCommit($activeRepository, message.trim(), $selectedFiles);
-				await workingBranch.setWorking($activeRepository.path);
+				await workingBranch.setWorking($activeRepository);
 				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
 				if (updateBranch) {
 					allBranches.updateBranch(updateBranch);
+					await loadLocalCommits($activeRepository, updateBranch);
 				}
 			}
 			$commitMessage = '';

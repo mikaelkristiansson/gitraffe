@@ -4,6 +4,7 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, updatingRepositories } from '$lib/repository';
+	import { loadLocalCommits } from '$lib/stores/commits';
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
@@ -40,8 +41,10 @@
 			}
 			try {
 				const base = await defaultBranch.setDefault(repository$);
-				await allBranches.fetch(repository$, base?.upstream || 'HEAD');
-				const wb = await workingBranch.setWorking(repository$.path);
+				const allBranches$ = await allBranches.fetch(repository$, base?.upstream || 'HEAD');
+				const wb = await workingBranch.setWorking(repository$);
+				const currentBranch = allBranches$.find((b) => b.name === wb?.currentBranch);
+				await loadLocalCommits(repository$, currentBranch || null);
 				if (wb) {
 					goto(`/${repository$.id}/board/${wb.currentBranch}`);
 				}

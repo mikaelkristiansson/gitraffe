@@ -29,7 +29,7 @@
 			try {
 				await checkout(repository.path, branch.name);
 				activeBranch.setActive(branch);
-				workingBranch.setWorking(repository.path);
+				workingBranch.setWorking(repository);
 				if (href) goto(href);
 			} catch (e) {
 				error('Failed to switch branch');

@@ -2,6 +2,7 @@ import { fatalError } from '$lib/fatal-error';
 import type { IAheadBehind } from '$lib/models/branch';
 import { DiffSelection, DiffSelectionType } from '$lib/models/diff';
 import type { RebaseInternalState } from '$lib/models/rebase';
+import type { Repository } from '$lib/models/repository';
 import {
 	AppFileStatusKind,
 	type AppFileStatus,
@@ -13,6 +14,7 @@ import {
 	GitStatusEntry
 } from '$lib/models/status';
 import { isCherryPickHeadFound } from './cherry-pick';
+import { git } from './cli';
 import { getBinaryPaths } from './diff';
 import { getFilesWithConflictMarkers } from './diff-check';
 import { isMergeHeadSet, isSquashMsgSet } from './merge';
@@ -25,6 +27,14 @@ import {
 	type IStatusEntry,
 	mapStatus
 } from './status-parser';
+
+/**
+ * V8 has a limit on the size of string it can create (~256MB), and unless we want to
+ * trigger an unhandled exception we need to do the encoding conversion by hand.
+ *
+ * As we may be executing status often, we should keep this to a reasonable threshold.
+ */
+const MaxStatusBufferSize = 20e6; // 20MB in decimal
 
 interface IStatusHeadersData {
 	currentBranch?: string;
@@ -81,7 +91,32 @@ export interface IStatusResult {
 // inside `app/src/lib/status-parser.ts` for convenience
 const conflictStatusCodes = ['DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'];
 
-export async function getStatus(stdout: string, path: string): Promise<IStatusResult | null> {
+export async function getStatus(repository: Repository): Promise<IStatusResult | null> {
+	const args = [
+		'--no-optional-locks',
+		'status',
+		'--untracked-files=all',
+		'--branch',
+		'--porcelain=2',
+		'-z'
+	];
+
+	const { stdout, stderr } = await git(repository.path, args);
+
+	if (stderr) {
+		console.debug(
+			`'git status' returned 128 for '${repository.path}' and is likely missing its .git directory`
+		);
+		return null;
+	}
+
+	if (stdout.length > MaxStatusBufferSize) {
+		console.error(
+			`'git status' emitted ${stdout.length} bytes, which is beyond the supported threshold of ${MaxStatusBufferSize} bytes`
+		);
+		return null;
+	}
+	const { path } = repository;
 	const parsed = parsePorcelainStatus(stdout);
 
 	const headers = parsed.filter(isStatusHeader);

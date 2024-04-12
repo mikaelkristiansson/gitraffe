@@ -14,11 +14,19 @@
 	import type { PageData } from '../$types';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
 	import { activeRepository } from '$lib/repository';
+	import { commitStore } from '$lib/stores/commits';
+	import type { Commit } from '$lib/models/commit';
+	import CommitCard from '$lib/components/CommitCard.svelte';
 
 	export let data: PageData;
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
+	let latestLocalCommit: Commit | null = null;
+
+	commitStore.subscribe((store) => {
+		latestLocalCommit = store.localCommits[0];
+	});
 
 	workingBranch.subscribe((branch) => {
 		branch$ = branch;
@@ -32,7 +40,7 @@
 			const notMatching = $workingBranch?.currentTip !== $activeBranch?.tip.sha;
 			const shouldUpdate = !$workingBranch || notMatching;
 			if (shouldUpdate) {
-				workingBranch.setWorking($activeRepository.path);
+				workingBranch.setWorking($activeRepository);
 			}
 		}
 	});
@@ -53,11 +61,10 @@
 	}
 </script>
 
-{#if !branch$}
+{#if !branch$ || !$activeRepository}
 	<FullviewLoading />
 {:else}
 	<div class="flex h-full w-full max-w-full flex-grow flex-col overflow-hidden">
-		<div class="board-drag-region" data-tauri-drag-region />
 		<div class="board-wrapper">
 			<div class="board p-3">
 				<div class="wrapper">
@@ -66,7 +73,7 @@
 							branch={branch$}
 							{isUnapplied}
 							bind:isLaneCollapsed
-							repositoryId={data.repositoryId}
+							repository={$activeRepository}
 						/>
 
 						<!-- <PullRequestCard
@@ -151,6 +158,10 @@
 								{/if}
 							</div>
 						{/if}
+						{#if $activeRepository}
+							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
+						{/if}
+						<!-- branch={branch$}  -->
 					</div>
 				</div>
 			</div>
@@ -166,15 +177,6 @@
 		flex-direction: column;
 		flex-grow: 1;
 		height: 100%;
-	}
-	.board-drag-region {
-		z-index: 1;
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: var(--size-20);
-		background: var(--target-branch-background);
 	}
 	.board {
 		display: flex;

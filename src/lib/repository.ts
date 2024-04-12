@@ -79,7 +79,6 @@ export async function addRepository() {
 	const path = await promptForDirectory();
 	if (!path) return;
 	const id = Math.random().toString(36).substr(2, 9);
-	console.log('Adding project:', path);
 	const title = path.split('/').pop() || path;
 	const unsub = repositories.subscribe(async (repos) => {
 		const repository = await addNewRepository(path, id, repos);

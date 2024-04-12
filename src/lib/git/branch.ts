@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { createForEachRefParser } from './git-delimiter-parser';
 import type { Repository } from '$lib/models/repository';
 import type { GitResponse } from './type';
+import { git } from './cli';
 
 /** Get all the branches. */
 export async function getBranches(
@@ -132,4 +133,39 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	}
 
 	return [...names];
+}
+
+/**
+ * Delete the branch locally.
+ */
+export async function deleteLocalBranch(repository: Repository, branchName: string): Promise<true> {
+	await git(repository.path, ['branch', '-D', branchName]);
+	return true;
+}
+
+/**
+ * Create a new branch from the given start point.
+ *
+ * @param repository - The repository in which to create the new branch
+ * @param name       - The name of the new branch
+ * @param startPoint - A committish string that the new branch should be based
+ *                     on, or undefined if the branch should be created based
+ *                     off of the current state of HEAD
+ */
+export async function createBranch(
+	repository: Repository,
+	name: string,
+	startPoint: string | null,
+	noTrack?: boolean
+): Promise<void> {
+	const args = startPoint !== null ? ['branch', name, startPoint] : ['branch', name];
+
+	// if we're branching directly from a remote branch, we don't want to track it
+	// tracking it will make the rest of desktop think we want to push to that
+	// remote branch's upstream (which would likely be the upstream of the fork)
+	if (noTrack) {
+		args.push('--no-track');
+	}
+
+	await git(repository.path, args);
 }

@@ -83,16 +83,14 @@ function createActiveBranch() {
 }
 
 function createWorkingBranch() {
-	// const storedWorkingBranch =
-	// 	typeof localStorage !== 'undefined' ? localStorage?.workingBranch : null;
 	const { subscribe, set, update } = writable(null as IStatusResult | null);
 
 	return {
 		subscribe,
 		set,
-		setWorking: async (path: string) => {
+		setWorking: async (repository: Repository) => {
 			try {
-				const workingBranch = await getBranchStatus(path);
+				const workingBranch = await getBranchStatus(repository);
 				update((prev) => {
 					if (prev === null) {
 						return workingBranch;
@@ -102,7 +100,6 @@ function createWorkingBranch() {
 						...workingBranch
 					};
 				});
-				// localStorage.setItem('workingBranch', JSON.stringify(workingBranch));
 				return workingBranch;
 			} catch (error) {
 				console.error(error);

@@ -35,7 +35,7 @@
 			await fetchAll(repository.path);
 			const dBranch = await defaultBranch.setDefault(repository);
 			await allBranches.fetch(repository, dBranch?.upstream || 'HEAD');
-			workingBranch.setWorking(repository.path);
+			workingBranch.setWorking(repository);
 			lastSynced.set(new Date());
 			success('Fetched from upstream');
 		} catch (e) {
