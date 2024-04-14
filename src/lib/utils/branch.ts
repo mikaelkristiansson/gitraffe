@@ -234,3 +234,17 @@ export function groupBranches(
 
 	return groups;
 }
+
+export function getRemoteName(branch: Branch): string | null {
+	if (branch.type === BranchType.Local) {
+		return null;
+	}
+
+	const pieces = branch.ref.match(/^refs\/remotes\/(.*?)\/.*/);
+	if (!pieces || pieces.length !== 2) {
+		// This shouldn't happen, the remote ref should always be prefixed
+		// with refs/remotes
+		throw new Error(`Remote branch ref has unexpected format: ${branch.ref}`);
+	}
+	return pieces[1];
+}

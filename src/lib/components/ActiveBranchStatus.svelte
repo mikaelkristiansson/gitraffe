@@ -2,15 +2,16 @@
 	import Tag from '$lib/components/Tag.svelte';
 	import type { IStatusResult } from '$lib/git/status';
 	import { normalizeBranchName } from '$lib/utils/branch';
+	import PullRequestCard from './PullRequestCard.svelte';
 	// import { openExternalUrl } from '$lib/utils/url';
 
 	export let branch: IStatusResult | undefined;
 	export let isUnapplied = false;
-	export let hasIntegratedCommits = false;
+	// export let hasIntegratedCommits = false;
 	export let isLaneCollapsed: boolean = false;
 </script>
 
-{#if !isUnapplied && !isLaneCollapsed}
+<!-- {#if !isUnapplied && !isLaneCollapsed}
 	<Tag
 		shrinkable
 		disabled
@@ -21,14 +22,14 @@
 			? branch.currentBranch
 			: normalizeBranchName(branch?.currentBranch || '')}</Tag
 	>
-{/if}
-<Tag
+{/if} -->
+<!-- <Tag
 	color="dark"
 	icon="remote-branch-small"
 	help="At least some of your changes have been pushed"
 	verticalOrientation={isLaneCollapsed}
 	reversedDirection>Remote</Tag
->
+> -->
 <Tag
 	icon="open-link"
 	color="ghost"
@@ -45,4 +46,8 @@
 >
 	{isLaneCollapsed ? 'View branch' : `origin/${branch?.currentBranch}`}
 </Tag>
-<!-- {/if} -->
+<!-- repository={repository}
+						{branch}
+						{isUnapplied}
+						isLaneCollapsed={$isLaneCollapsed} -->
+<PullRequestCard {isLaneCollapsed} />

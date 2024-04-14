@@ -76,13 +76,6 @@
 							bind:isLaneCollapsed
 							repository={$activeRepository}
 						/>
-
-						<!-- <PullRequestCard
-						repositoryId={repository.id}
-						{branch}
-						{isUnapplied}
-						isLaneCollapsed={$isLaneCollapsed}
-					/> -->
 						{#if !$isLaneCollapsed}
 							<div>
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
@@ -115,54 +108,23 @@
 											{selectedFiles}
 										/>
 									</div>
-
-									<!-- {:else if branch?.commits?.length == 0}
-									<div class="new-branch card" data-dnd-ignore>
+								{:else}
+									<div class="no-changes card" data-dnd-ignore>
 										<div class="new-branch__content">
 											<div class="new-branch__image">
-												{@html laneNewSvg}
+												{@html noChangesSvg}
 											</div>
-											<h2 class="new-branch__title text-base-body-15 text-semibold">
-												This is a new branch.
+											<h2 class="new-branch__caption text-base-body-13">
+												No uncommitted changes<br />on this branch
 											</h2>
-											<p class="new-branch__caption text-base-body-13">
-												You can drag and drop files or parts of files here.
-											</p>
 										</div>
-									</div> -->
-								{:else}
-									<!-- TODO: add a check if commits exist -->
-									{#if false}
-										<div class="new-branch card" data-dnd-ignore>
-											<div class="new-branch__content">
-												<div class="new-branch__image">
-													{@html laneNewSvg}
-												</div>
-												<h2 class="new-branch__title text-base-body-15 text-semibold">
-													This is a new branch.
-												</h2>
-											</div>
-										</div>
-									{:else}
-										<!-- attention: these markers have custom css at the bottom of thise file -->
-										<div class="no-changes card" data-dnd-ignore>
-											<div class="new-branch__content">
-												<div class="new-branch__image">
-													{@html noChangesSvg}
-												</div>
-												<h2 class="new-branch__caption text-base-body-13">
-													No uncommitted changes<br />on this branch
-												</h2>
-											</div>
-										</div>
-									{/if}
+									</div>
 								{/if}
 							</div>
 						{/if}
 						{#if $activeRepository}
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
 						{/if}
-						<!-- branch={branch$}  -->
 					</div>
 				</div>
 			</div>

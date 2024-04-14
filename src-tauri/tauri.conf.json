@@ -3,7 +3,6 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "withGlobalTauri": true,
     "devPath": "http://localhost:5173",
     "distDir": "../build"
   },
@@ -37,7 +36,16 @@
 			},
 			"path": {
 				"all": true
-			}
+			},
+      "shell": {
+        "open": true
+      },
+      "http": {
+        "request": true,
+        "scope": [
+          "https://**"
+        ]
+      }
 		},
     "bundle": {
       "active": true,

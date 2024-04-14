@@ -66,7 +66,6 @@ export async function getBranches(
 
 		branches.push(new Branch(ref.shortName, upstream, tip, type, ref.fullName, aheadBehind));
 	}
-
 	return branches;
 }
 
