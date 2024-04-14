@@ -1,14 +1,12 @@
 import { writable } from 'svelte/store';
-import { getBranchStatus, getCurrentBranchName } from './git/cli';
-import type { IStatusResult } from './git/status';
-import { getBranches } from './git/branch';
-import type { Branch } from './models/branch';
-import { findDefaultBranch } from './utils/branch';
-import type { Repository } from './models/repository';
-// import {setStorageItem } from './persisted';
+import { getBranchStatus, getCurrentBranchName } from '../git/cli';
+import type { IStatusResult } from '../git/status';
+import { getBranches } from '../git/branch';
+import type { Branch } from '../models/branch';
+import { findDefaultBranch } from '../utils/branch';
+import type { Repository } from '../models/repository';
 
 function createBranches() {
-	// const storedBranches = typeof localStorage !== 'undefined' ? localStorage?.branches : null;
 	const { subscribe, set, update } = writable([] as Array<Branch>);
 
 	return {
@@ -19,8 +17,6 @@ function createBranches() {
 			try {
 				const branches = await getBranches(repository, defaultBranchUpstreamName);
 				allBranches.set(branches);
-				// localStorage.setItem('branches', JSON.stringify(branches));
-				// setStorageItem(`${repository.id}-branches`, branches);
 				const currentBranchName = await getCurrentBranchName(repository.path);
 				const currentBranch = branches.find(
 					(branch) => branch.name === currentBranchName
@@ -44,7 +40,6 @@ function createBranches() {
 					return b;
 				});
 				updatedBranches = newBranches;
-				// setStorageItem(`${repository.id}-branches`, newBranches);
 				return newBranches;
 			});
 			return updatedBranches;
@@ -52,14 +47,12 @@ function createBranches() {
 		add: (branch: Branch) => {
 			update((branches) => {
 				const newBranches = [...branches, branch];
-				// localStorage.setItem('branches', JSON.stringify(newBranches));
 				return newBranches;
 			});
 		},
 		remove: (name: string) => {
 			update((branches) => {
 				const newBranches = branches.filter((branch) => branch.name !== name);
-				// localStorage.setItem('branches', JSON.stringify(newBranches));
 				return newBranches;
 			});
 		}
@@ -67,8 +60,6 @@ function createBranches() {
 }
 
 function createActiveBranch() {
-	// const storedActiveBranch =
-	// 	typeof localStorage !== 'undefined' ? localStorage?.activeBranch : undefined;
 	const { subscribe, set, update } = writable(undefined as Branch | undefined);
 
 	return {
@@ -76,7 +67,6 @@ function createActiveBranch() {
 		set,
 		setActive: (branch: Branch) => {
 			update(() => branch);
-			// setStorageItem(`${repository.id}-activeBranch`, branch);
 			return branch;
 		}
 	};
@@ -110,8 +100,6 @@ function createWorkingBranch() {
 }
 
 function createDefautBranch() {
-	// const storedDefaultBranch =
-	// 	typeof localStorage !== 'undefined' ? localStorage?.defaultBranch : null;
 	const { subscribe, set, update } = writable(undefined as Branch | undefined);
 
 	return {
@@ -123,7 +111,6 @@ function createDefautBranch() {
 				return;
 			}
 			update(() => branch);
-			// localStorage.setItem('defaultBranch', JSON.stringify(branch));
 			return branch;
 		}
 	};

@@ -25,9 +25,9 @@
 	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
-	import { allBranches, workingBranch } from '$lib/branch';
+	import { allBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
-	import { activeRepository } from '$lib/repository';
+	import { activeRepository } from '$lib/stores/repository';
 	import { loadLocalCommits } from '$lib/stores/commits';
 
 	// const aiService = getContextByClass(AIService);

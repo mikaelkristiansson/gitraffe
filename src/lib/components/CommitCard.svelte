@@ -6,7 +6,7 @@
 	import AuthorIcon from './AuthorIcon.svelte';
 	import { undoCommit } from '$lib/git/commit';
 	import { loadLocalCommits } from '$lib/stores/commits';
-	import { activeBranch, workingBranch } from '$lib/branch';
+	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { error, success } from '$lib/utils/toasts';
 
 	export let repository: Repository;

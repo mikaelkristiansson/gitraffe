@@ -17,7 +17,6 @@
 	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
-	export let defaultBranch: Branch;
 	// export let user: User | undefined;
 
 	const minResizerWidth = 280;
@@ -90,11 +89,7 @@
 			</div>
 		</div>
 		{#if !isNavCollapsed}
-			<Branches
-				{repository}
-				{defaultBranch}
-				on:scrollbarDragging={(e) => (isScrollbarDragging = e.detail)}
-			/>
+			<Branches {repository} on:scrollbarDragging={(e) => (isScrollbarDragging = e.detail)} />
 		{/if}
 		<Footer repositoryId={repository.id} {isNavCollapsed} />
 	</div>

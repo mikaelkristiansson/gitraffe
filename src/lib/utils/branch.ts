@@ -14,9 +14,7 @@ export function normalizeBranchName(value: string) {
  * remote branches, i.e. remote branches that we already have a local
  * branch tracking.
  */
-export function mergeRemoteAndLocalBranches(
-	branches: ReadonlyArray<Branch>
-): ReadonlyArray<Branch> {
+export function mergeRemoteAndLocalBranches(branches: Array<Branch>): Array<Branch> {
 	const localBranches = new Array<Branch>();
 	const remoteBranches = new Array<Branch>();
 
@@ -201,6 +199,9 @@ export function groupBranches(
 
 		for (const branch of recentBranchesWithoutDefault) {
 			const recentBranch = allBranches.find((b) => b.name === branch) as Branch;
+			if (!recentBranch) {
+				continue;
+			}
 			recentBranches.push({
 				text: [recentBranch.name],
 				id: recentBranch.name,

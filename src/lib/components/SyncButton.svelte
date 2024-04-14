@@ -2,7 +2,7 @@
 	import Icon from './Icon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
 	import { tooltip } from '$lib/utils/tooltip';
-	import { allBranches, defaultBranch, lastSynced, workingBranch } from '$lib/branch';
+	import { allBranches, defaultBranch, lastSynced, workingBranch } from '$lib/stores/branch';
 	import { fetchAll } from '$lib/git/cli';
 	import type { Repository } from '$lib/models/repository';
 	import type { Branch } from '$lib/models/branch';

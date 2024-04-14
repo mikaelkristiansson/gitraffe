@@ -10,13 +10,13 @@
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
-	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/branch';
+	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import type { IStatusResult } from '$lib/git/status';
 	import GitPull from '$lib/icons/GitPull.svelte';
 	import GitPush from '$lib/icons/GitPush.svelte';
 	import Badge from './Badge.svelte';
 	import { Branch } from '$lib/models/branch';
-	import { activeRepository } from '$lib/repository';
+	import { activeRepository } from '$lib/stores/repository';
 	import type { Repository } from '$lib/models/repository';
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
@@ -64,8 +64,6 @@
 			isPublishing = false;
 		}
 	}
-
-	// $: hasIntegratedCommits = branch.commits?.some((b) => b.isIntegrated);
 </script>
 
 {#if $isLaneCollapsed}
@@ -92,11 +90,12 @@
 			</h3>
 
 			<div class="collapsed-lane__info__details">
-				<!-- {hasIntegratedCommits} -->
-				<ActiveBranchStatus {branch} {isUnapplied} isLaneCollapsed={$isLaneCollapsed} />
-				<!-- {#if branch.selectedForChanges}
-					<Tag color="pop" filled icon="target" verticalOrientation>Default branch</Tag>
-				{/if} -->
+				<ActiveBranchStatus
+					{repository}
+					{branch}
+					{isUnapplied}
+					isLaneCollapsed={$isLaneCollapsed}
+				/>
 			</div>
 		</div>
 	</div>
@@ -188,8 +187,12 @@
 					</div>
 				</div>
 				<div class="header__remote-branch">
-					<!-- {hasIntegratedCommits} -->
-					<ActiveBranchStatus {branch} {isUnapplied} isLaneCollapsed={$isLaneCollapsed} />
+					<ActiveBranchStatus
+						{repository}
+						{branch}
+						{isUnapplied}
+						isLaneCollapsed={$isLaneCollapsed}
+					/>
 					{#if branch?.doConflictedFilesExist}
 						<Tag
 							icon="locked-small"

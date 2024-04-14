@@ -19,6 +19,7 @@
 	export let icon: keyof typeof iconsJson | undefined = undefined;
 	export let reversedDirection = false;
 	export let color: TagColor = 'light';
+	export let size: 'small' | 'medium' | 'large' = 'small';
 	export let border = false;
 	export let filled = false;
 	export let disabled = false;
@@ -44,6 +45,8 @@
 	class:iconLeft={reversedDirection}
 	class:verticalOrientation
 	class:not-button={!clickable}
+	class:medium={size == 'medium'}
+	class:large={size == 'large'}
 	on:click
 	on:mousedown
 	on:contextmenu
@@ -71,6 +74,14 @@
 		padding: var(--size-2) var(--size-4);
 		border-radius: var(--radius-m);
 		transition: background-color var(--transition-fast);
+	}
+	.tag.medium {
+		height: var(--size-control-m);
+		padding: var(--size-4) var(--size-6);
+	}
+	.tag.large {
+		height: var(--size-control-l);
+		padding: var(--size-6) var(--size-8);
 	}
 	.icon {
 		flex-shrink: 0;

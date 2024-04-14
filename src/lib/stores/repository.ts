@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store';
 import { open } from '@tauri-apps/api/dialog';
-import { getStorageItem, setStorageItem } from './persisted';
-import { Repository } from './models/repository';
-import { getRepositoryType, type RepositoryType } from './git/repository';
-import { matchExistingRepository } from './utils/repository-matching';
-import { error } from './utils/toasts';
+import { getStorageItem, setStorageItem } from '../persisted';
+import { Repository } from '../models/repository';
+import { getRepositoryType, type RepositoryType } from '../git/repository';
+import { matchExistingRepository } from '../utils/repository-matching';
+import { error } from '../utils/toasts';
 
 export interface Project {
 	id: string;

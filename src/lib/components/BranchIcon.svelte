@@ -1,9 +1,9 @@
 <script lang="ts">
-	export let name: 'remote-branch' | 'virtual-branch' | 'pr' | 'pr-draft' | 'pr-closed' | undefined;
+	export let name: 'remote-branch' | 'local-branch' | 'pr' | 'pr-draft' | 'pr-closed' | undefined;
 
 	function getIconColor(name: string | undefined) {
 		if (name === 'remote-branch') return 'neutral';
-		if (name === 'virtual-branch') return 'virtual';
+		if (name === 'local-branch') return 'local';
 		if (name === 'pr') return 'success';
 		if (name === 'pr-draft') return 'purple';
 		if (name === 'pr-closed') return 'neutral';
@@ -13,7 +13,7 @@
 </script>
 
 <div class="branch-icon {getIconColor(name)}">
-	{#if name == 'virtual-branch'}
+	{#if name == 'local-branch'}
 		<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<path d="M5.75 8V4H4.25V8H5.75Z" />
 			<path
@@ -69,7 +69,7 @@
 		}
 	}
 
-	.virtual {
+	.local {
 		background-color: var(--clr-theme-scale-ntrl-60);
 	}
 
@@ -83,5 +83,8 @@
 
 	.purple {
 		background-color: var(--clr-theme-scale-purple-50);
+	}
+	.pop {
+		background-color: var(--clr-theme-scale-pop-60);
 	}
 </style>

@@ -4,7 +4,7 @@
 	// import KeysForm from '$lib/components/KeysForm.svelte';
 	import RemoveProjectButton from '$lib/components/RemoveProjectButton.svelte';
 	import SectionCard from '$lib/components/SectionCard.svelte';
-	import { activeRepository, repositories } from '$lib/repository';
+	import { activeRepository, repositories } from '$lib/stores/repository';
 	//   import { UserService } from "$lib/stores/user";
 	//   import { getContextByClass } from "$lib/utils/context";
 	import * as toasts from '$lib/utils/toasts';

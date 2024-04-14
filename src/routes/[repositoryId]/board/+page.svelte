@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { activeBranch } from '$lib/branch';
+	import { activeBranch } from '$lib/stores/branch';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

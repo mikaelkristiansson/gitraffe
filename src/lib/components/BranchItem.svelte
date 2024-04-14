@@ -3,9 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import AheadBehind from './AheadBehind.svelte';
-	import { activeBranch, workingBranch } from '$lib/branch';
+	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { checkout } from '$lib/git/cli';
-	import type { Branch } from '$lib/models/branch';
+	import { type Branch } from '$lib/models/branch';
 	import TimeAgo from './TimeAgo.svelte';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import type { Repository } from '$lib/models/repository';
@@ -40,7 +40,7 @@
 		}
 	}}
 >
-	<BranchIcon name={branch.name.includes('remote') ? 'remote-branch' : 'virtual-branch'} />
+	<BranchIcon name={branch.upstream ? 'remote-branch' : 'local-branch'} />
 	<div class="branch__info flex flex-col gap-2">
 		<div class="branch__details">
 			<p class="text-base-13 branch__name">

@@ -3,12 +3,11 @@
 	import BranchItem from './BranchItem.svelte';
 	import ScrollableContainer from './ScrollableContainer.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import TextBox from './TextBox.svelte';
 	import BranchesHeader from './BranchesHeader.svelte';
-	import { allBranches, fetchingBranches } from '$lib/branch';
+	import { allBranches, defaultBranch, fetchingBranches } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Spinner from '$lib/icons/Spinner.svelte';
-	import { updatingRepositories } from '$lib/repository';
+	import { updatingRepositories } from '$lib/stores/repository';
 	import {
 		groupBranches,
 		mergeRemoteAndLocalBranches,
@@ -16,63 +15,48 @@
 		type IBranchListItem
 	} from '$lib/utils/branch';
 	import { getRecentBranches } from '$lib/git/branch';
-	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
-	export let defaultBranch: Branch;
 	export const textFilter$ = '';
 
-	let contents: HTMLElement;
 	let viewport: HTMLDivElement;
 	const dispatch = createEventDispatcher<{ scrollbarDragging: boolean }>();
 
 	let groups$: IFilterListGroup<IBranchListItem>[] = [];
+	let recentBranches: string[] = [];
+	const RecentBranchesLimit = 5;
 
 	async function setBranches() {
-		const branches = await allBranches.fetch(repository, defaultBranch.upstream || 'HEAD');
-		const RecentBranchesLimit = 5;
-		const recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
-		const groups = groupBranches(
-			defaultBranch,
-			mergeRemoteAndLocalBranches(branches),
-			recentBranches
-		);
-		groups$ = groups;
+		await allBranches.fetch(repository, $defaultBranch.upstream || 'HEAD');
+		recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
+		setGroups();
 		return;
 	}
 
-	$: ({ path } = repository);
-	$: path && defaultBranch && setBranches();
+	function setGroups() {
+		const groups = groupBranches(
+			$defaultBranch,
+			mergeRemoteAndLocalBranches($allBranches),
+			recentBranches
+		);
+		groups$ = groups;
+	}
 
-	$: filteredBranches$ = mergeRemoteAndLocalBranches($allBranches);
+	$: ({ path } = repository);
+	$: path && $defaultBranch && setBranches();
 </script>
 
 <div class="branch-list">
-	<BranchesHeader count={filteredBranches$?.length ?? 0} filtersActive={true}>
-		<!-- <FilterPopupMenu
-      slot="context-menu"
-      let:visible
-      {visible}
-      {includePrs}
-      {includeRemote}
-      {includeStashed}
-      {hideBots}
-      {hideInactive}
-      showPrCheckbox={githubService.isEnabled}
-      on:action
-    /> -->
-	</BranchesHeader>
-	{#if $allBranches && $allBranches.length > 0}
+	<BranchesHeader count={groups$.flatMap((group) => [...group.items])?.length ?? 0} />
+	{#if groups$ && groups$.length > 0}
 		<ScrollableContainer
 			bind:viewport
 			showBorderWhenScrolled
 			on:dragging={(e) => dispatch('scrollbarDragging', e.detail)}
-			fillViewport={filteredBranches$?.length == 0}
+			fillViewport={groups$?.length == 0}
 		>
 			<div class="scroll-container">
-				<!-- on:input={(e) => textFilter$.next(e.detail)} -->
-				<TextBox icon="search" placeholder="Search" />
-				<div bind:this={contents} class="content">
+				<div class="content">
 					{#if $fetchingBranches && $updatingRepositories}
 						<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 					{:else}
@@ -101,14 +85,6 @@
 </div>
 
 <style lang="postcss">
-	/* .resize-guard {
-		display: flex;
-		flex-direction: column;
-		flex-grow: 1;
-		justify-content: flex-end;
-		position: relative;
-		overflow-y: hidden;
-	} */
 	.scroll-container {
 		display: flex;
 		flex-direction: column;
@@ -132,7 +108,6 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		/* align-items: center; */
 		gap: var(--size-2);
 	}
 

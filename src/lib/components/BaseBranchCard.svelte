@@ -3,7 +3,7 @@
 	import Badge from './Badge.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { tooltip } from '$lib/utils/tooltip';
-	import { defaultBranch } from '$lib/branch';
+	import { defaultBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import type { Branch } from '$lib/models/branch';
 

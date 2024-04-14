@@ -1,19 +1,7 @@
 <script lang="ts">
-	import { clickOutside } from '$lib/utils/clickOutside';
 	import Badge from '$lib/components/Badge.svelte';
-	import Button from '$lib/components/Button.svelte';
 
 	export let count: number | undefined;
-	export let filtersActive = false;
-
-	let visible = false;
-	let filterButton: HTMLDivElement;
-
-	function onFilterClick(e: Event) {
-		visible = !visible;
-		e.preventDefault();
-		e.stopPropagation();
-	}
 </script>
 
 <div class="header">
@@ -23,22 +11,6 @@
 		{#if count !== undefined}
 			<Badge {count} />
 		{/if}
-	</div>
-	<div class="header__filter-btn" bind:this={filterButton}>
-		<Button
-			kind="outlined"
-			color="neutral"
-			icon={filtersActive ? 'filter-applied-small' : 'filter-small'}
-			on:mousedown={onFilterClick}
-		>
-			Filter
-		</Button>
-		<div
-			class="filter-popup-menu"
-			use:clickOutside={{ trigger: filterButton, handler: () => (visible = false) }}
-		>
-			<slot name="context-menu" {visible} />
-		</div>
 	</div>
 </div>
 
@@ -54,16 +26,6 @@
 		border-bottom: 1px solid transparent;
 		transition: border-bottom var(--transition-fast);
 		position: relative;
-	}
-	.header__filter-btn {
-		position: relative;
-	}
-	.filter-popup-menu {
-		position: absolute;
-		top: calc(var(--size-control-m) + var(--size-4));
-		right: 0;
-		z-index: 10;
-		min-width: 10rem;
 	}
 	.branches-title {
 		display: flex;

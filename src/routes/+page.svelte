@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Welcome from '$lib/components/Welcome.svelte';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
-	import { activeRepository } from '$lib/repository';
+	import { activeRepository } from '$lib/stores/repository';
 
 	let redirect = $activeRepository?.id || null;
 

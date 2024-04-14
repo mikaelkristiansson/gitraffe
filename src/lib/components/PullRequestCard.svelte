@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { activeBranch } from '$lib/branch';
-	import { getRemoteURL } from '$lib/git/remote';
-	import { activeRepository } from '$lib/repository';
+	import { activeBranch } from '$lib/stores/branch';
+	import { activeRepository } from '$lib/stores/repository';
 	import { open } from '@tauri-apps/api/shell';
-
-	import Button from './Button.svelte';
 	import { error } from '$lib/utils/toasts';
+	import Tag from './Tag.svelte';
+	import { setRepositoryURL } from '$lib/utils/remote';
+	import type { Repository } from '$lib/models/repository';
 
-	// export let branch: Branch;
 	export let isLaneCollapsed: boolean = false;
+	export let repository: Repository;
 
 	function setURLEnding(url: string) {
 		switch (url) {
@@ -21,25 +21,23 @@
 		}
 	}
 
-	function setURL() {
-		if ($activeRepository) {
-			return getRemoteURL($activeRepository, 'origin').then((url) => {
-				if (url) {
-					const regex = /(git@[\w.]+):(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/;
-					const match = String(url.trim()).match(regex)?.slice(1);
-					const [gitURL, repo] = match as string[];
-					const extractUrl = gitURL.replace('git@', 'https://');
-					const link = `${extractUrl}/${repo}/${setURLEnding(gitURL.replace('git@', '').replace(/\..*/, ''))}${$activeBranch?.name}`;
-					return link;
-				}
-				return null;
-			});
+	async function setURL() {
+		const baseUrl = await setRepositoryURL(repository);
+		if (baseUrl) {
+			return `${baseUrl.link}/${setURLEnding(baseUrl.gitURL.replace('git@', '').replace(/\..*/, ''))}${$activeBranch?.name}`;
 		}
+		return null;
 	}
 </script>
 
 {#if $activeBranch?.upstream}
-	<Button
+	<Tag
+		clickable
+		color="success"
+		icon="pr-small"
+		border
+		filled
+		verticalOrientation={isLaneCollapsed}
 		on:click={async () => {
 			const url = await setURL();
 			if (url) {
@@ -47,6 +45,6 @@
 			} else {
 				error('Failed to create pull request');
 			}
-		}}>Create Pull Request</Button
+		}}>Open Pull Request</Tag
 	>
 {/if}

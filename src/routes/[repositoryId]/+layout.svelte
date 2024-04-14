@@ -1,25 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { allBranches, defaultBranch, workingBranch } from '$lib/branch';
+	import { allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { Repository } from '$lib/models/repository';
-	import { activeRepository, updatingRepositories } from '$lib/repository';
+	import { activeRepository, updatingRepositories } from '$lib/stores/repository';
 	import { loadLocalCommits } from '$lib/stores/commits';
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
 
 	let repository$: Repository | undefined | null = undefined;
-	let base$ = $defaultBranch;
 	activeRepository.subscribe(async (repo) => {
 		if (repo) {
 			repository$ = repo;
 		}
 		if (!$defaultBranch && repo) {
-			const db = await defaultBranch.setDefault(repo);
-			if (db) {
-				base$ = db;
-			}
+			await defaultBranch.setDefault(repo);
 		}
 	});
 	let unlisten = () => {};
@@ -88,7 +84,7 @@
 {:else}
 	<div class="view-wrap" role="group" on:dragover|preventDefault>
 		<!-- user={$user$} -->
-		<Navigation repository={repository$} defaultBranch={base$} />
+		<Navigation repository={repository$} />
 		<slot />
 	</div>
 {/if}

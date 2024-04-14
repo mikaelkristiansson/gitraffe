@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { activeBranch, workingBranch } from '$lib/branch';
+	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
 	import laneNewSvg from '$lib/assets/empty-state/lane-new.svg?raw';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
@@ -13,7 +13,7 @@
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
 	import type { PageData } from '../$types';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
-	import { activeRepository } from '$lib/repository';
+	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore } from '$lib/stores/commits';
 	import type { Commit } from '$lib/models/commit';
 	import CommitCard from '$lib/components/CommitCard.svelte';
@@ -100,7 +100,6 @@
 											allowMultiple={true}
 											readonly={false}
 										/>
-										<!-- {user} -->
 										<CommitDialog
 											repositoryId={$activeRepository.id}
 											branch={branch$}
@@ -167,21 +166,15 @@
 		--target-branch-background: var(--clr-theme-container-pale);
 		background-color: var(--target-branch-background);
 	}
-	/* .resizer-wrapper {
-		position: relative;
-		display: flex;
-		height: 100%;
-	} */
 	.branch-card {
-		/* height: 100%; */
 		position: relative;
 		user-select: none;
 		display: flex;
 		flex-direction: column;
 		gap: var(--size-10);
-		/* min-width: 300px; */
-		/* overflow-x: hidden;
-		overflow-y: scroll; */
+		max-width: 300px;
+		overflow-x: hidden;
+		overflow-y: scroll;
 	}
 
 	.divider-line {
