@@ -1,8 +1,6 @@
-use std::process::Command;
-
-use chrono::Utc;
 use serde::Serialize;
 use std::io::Write;
+use std::process::Command;
 use std::process::Stdio;
 use tauri::Error;
 
