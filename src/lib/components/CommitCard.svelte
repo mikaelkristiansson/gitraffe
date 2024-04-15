@@ -46,7 +46,7 @@
 						>
 					{/if}
 				</div>
-				<span class="commit__body text-base-body-12">
+				<span class="commit__body text-base-body-12 max-h-20 overflow-x-scroll">
 					{commit.body}
 				</span>
 			</div>
