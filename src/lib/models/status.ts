@@ -315,6 +315,8 @@ export class CommittedFileChange extends FileChange {
 	}
 }
 
+export type ChangedFile = WorkingDirectoryFileChange | CommittedFileChange;
+
 /** the state of the working directory for a repository */
 export class WorkingDirectoryStatus {
 	/** Create a new status with the given files. */

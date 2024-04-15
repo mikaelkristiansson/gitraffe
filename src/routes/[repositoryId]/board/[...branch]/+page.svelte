@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
+	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
 	import laneNewSvg from '$lib/assets/empty-state/lane-new.svg?raw';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
@@ -11,18 +11,28 @@
 	import type { IStatusResult } from '$lib/git/status';
 	import { onMount } from 'svelte';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
-	import type { PageData } from '../$types';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore } from '$lib/stores/commits';
 	import type { Commit } from '$lib/models/commit';
 	import CommitCard from '$lib/components/CommitCard.svelte';
-
-	export let data: PageData;
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import FileCard from '$lib/components/FileCard.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
+	const defaultFileWidthRem = persisted<number | undefined>(
+		24,
+		'defaulFileWidth' + $activeRepository?.id
+	);
 	let latestLocalCommit: Commit | null = null;
+	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
+
+	function setSelected(file: WorkingDirectoryFileChange) {
+		selected = file;
+		return file;
+	}
 
 	commitStore.subscribe((store) => {
 		latestLocalCommit = store.localCommits[0];
@@ -99,6 +109,8 @@
 											showCheckboxes={$commitBoxOpen}
 											allowMultiple={true}
 											readonly={false}
+											{selected}
+											{setSelected}
 										/>
 										<CommitDialog
 											repositoryId={$activeRepository.id}
@@ -125,6 +137,24 @@
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
 						{/if}
 					</div>
+					{#if selected}
+						<div
+							class="file-preview resize-viewport"
+							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
+							style:width={`${$isLaneCollapsed ? '41' : $defaultFileWidthRem}rem`}
+						>
+							<FileCard
+								conflicted={selected.status.kind == 'Conflicted'}
+								file={selected}
+								repository={$activeRepository}
+								readonly={Boolean(selected)}
+								selectable={$commitBoxOpen && !isUnapplied}
+								on:close={() => {
+									selected = undefined;
+								}}
+							/>
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -165,6 +195,7 @@
 		position: relative;
 		--target-branch-background: var(--clr-theme-container-pale);
 		background-color: var(--target-branch-background);
+		gap: var(--size-12);
 	}
 	.branch-card {
 		position: relative;
@@ -266,5 +297,16 @@
 		padding: var(--size-12);
 		height: 100%;
 		border-right: 1px solid var(--clr-theme-container-outline-light);
+	}
+
+	.file-preview {
+		display: flex;
+		position: relative;
+		height: 100%;
+
+		overflow: hidden;
+		align-items: self-start;
+
+		/* padding: var(--size-12) var(--size-12) var(--size-12) 0; */
 	}
 </style>

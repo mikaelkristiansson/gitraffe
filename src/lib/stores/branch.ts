@@ -78,9 +78,12 @@ function createWorkingBranch() {
 	return {
 		subscribe,
 		set,
-		setWorking: async (repository: Repository) => {
+		setWorking: async (repository: Repository, prevWorkingBranch?: IStatusResult | null) => {
 			try {
 				const workingBranch = await getBranchStatus(repository);
+				if (JSON.stringify(prevWorkingBranch) === JSON.stringify(workingBranch)) {
+					return prevWorkingBranch;
+				}
 				update((prev) => {
 					if (prev === null) {
 						return workingBranch;

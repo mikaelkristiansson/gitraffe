@@ -38,7 +38,7 @@
 			try {
 				const base = await defaultBranch.setDefault(repository$);
 				const allBranches$ = await allBranches.fetch(repository$, base?.upstream || 'HEAD');
-				const wb = await workingBranch.setWorking(repository$);
+				const wb = await workingBranch.setWorking(repository$, $workingBranch);
 				const currentBranch = allBranches$.find((b) => b.name === wb?.currentBranch);
 				await loadLocalCommits(repository$, currentBranch || null);
 				if (wb) {

@@ -61,14 +61,16 @@
 		</div>
 	</div>
 </button>
-<Modal width="small" title="Switch Branch" bind:this={untrackedModal}>
+<Modal width="default" title="Switch Branch" bind:this={untrackedModal}>
 	<div>
 		You have changes on the branch that are not committed. Switching branches will discard these
 		changes.
 		<ul class="file-list">
 			{#if $workingBranch}
 				{#each $workingBranch.workingDirectory.files as file}
-					<li><code>{file.path}</code></li>
+					<li>
+						<pre class="whitespace-pre-wrap break-words">{file.path}</pre>
+					</li>
 				{/each}
 			{/if}
 		</ul>

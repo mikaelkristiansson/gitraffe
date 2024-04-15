@@ -14,6 +14,10 @@
 	export let isUnapplied: boolean;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let showCheckboxes = false;
+	export let selected: WorkingDirectoryFileChange | undefined;
+	export let setSelected: (
+		file: WorkingDirectoryFileChange
+	) => WorkingDirectoryFileChange | undefined;
 
 	export let allowMultiple: boolean;
 	export let readonly: boolean;
@@ -26,7 +30,7 @@
 		<BranchFilesHeader {files} {showCheckboxes} bind:selectedListMode {selectedFiles} />
 	</div>
 	{#if files.length > 0}
-		<div class="files-padding">
+		<div class="files-padding max-h-[20rem] overflow-x-scroll">
 			{#if selectedListMode == 'list'}
 				<BranchFilesList
 					{allowMultiple}
@@ -37,6 +41,8 @@
 					{showCheckboxes}
 					{isUnapplied}
 					{repository}
+					{selected}
+					{setSelected}
 				/>
 			{:else}
 				<FileTree

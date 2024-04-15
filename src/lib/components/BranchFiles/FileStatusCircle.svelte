@@ -6,7 +6,8 @@
 
 <div
 	class="status"
-	class:added={status == 'New' || status == 'Untracked'}
+	class:added={status == 'New'}
+	class:untracked={status == 'Untracked'}
 	class:modified={status == 'Modified'}
 	class:deleted={status == 'Deleted'}
 ></div>
@@ -20,12 +21,18 @@
 		flex-shrink: 0;
 	}
 	.added {
-		background: rgba(101, 199, 154, 0.5);
+		/* background: rgba(101, 199, 154, 0.5); */
+		background: color-mix(in srgb, var(--clr-core-succ-50), transparent 50%);
+	}
+	.untracked {
+		background: color-mix(in srgb, var(--clr-core-purple-50), transparent 50%);
 	}
 	.modified {
-		background: rgba(255, 184, 46, 0.5);
+		/* background: rgba(255, 184, 46, 0.5); */
+		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 50%);
 	}
 	.deleted {
-		background: rgba(255, 61, 78, 0.5);
+		/* background: rgba(255, 61, 78, 0.5); */
+		background: color-mix(in srgb, var(--clr-core-err-50), transparent 50%);
 	}
 </style>

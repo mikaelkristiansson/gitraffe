@@ -75,7 +75,7 @@
 		gap: var(--size-4);
 
 		height: var(--size-control-m);
-		background-color: var(--clr-theme-container-pale);
+		background-color: var(--clr-theme-container-light);
 		padding: var(--size-4) var(--size-8);
 
 		border-top-width: 1px;
@@ -95,7 +95,7 @@
 		}
 
 		&[aria-selected='true'] {
-			background-color: var(--clr-theme-container-light);
+			background-color: var(--clr-theme-container-pale);
 			padding: var(--size-4) var(--size-8);
 			border-right-width: 1px;
 			border-left-width: 1px;

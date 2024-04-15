@@ -14,7 +14,6 @@
 	export let isUnapplied: boolean;
 	export let selected: boolean;
 	export let showCheckbox: boolean = false;
-	// export let selectedOwnership: Writable<Ownership>;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let readonly = false;
 
@@ -23,12 +22,7 @@
 
 	$: if (file) {
 		const fileId = file.id;
-		checked = $selectedFiles.some((f) => f.id == fileId); //file.hunks.every((hunk) => $selectedOwnership.containsHunk(fileId, hunk.id));
-		// const selectedCount = $selectedFiles.length;
-		// file.hunks.filter((hunk) =>
-		// 	$selectedOwnership.containsHunk(fileId, hunk.id)
-		// ).length;
-		// indeterminate = selectedCount > 0 && file.hunks.length - selectedCount > 0;
+		checked = $selectedFiles.some((f) => f.id == fileId);
 	}
 
 	function updateContextMenu() {
@@ -38,8 +32,6 @@
 			props: { repository }
 		});
 	}
-
-	// $: if ($selectedFiles) updateFocus(draggableElt, file, selectedFiles);
 
 	$: popupMenu = updateContextMenu();
 
@@ -64,13 +56,6 @@
 				});
 			}}
 		/>
-		<!-- on:change={(e) => {
-				selectedOwnership.update((ownership) => {
-					if (e.detail) file.hunks.forEach((h) => ownership.addHunk(file.id, h.id));
-					if (!e.detail) file.hunks.forEach((h) => ownership.removeHunk(file.id, h.id));
-					return ownership;
-				});
-			}} -->
 	{/if}
 	<div
 		class="file-list-item"
@@ -79,6 +64,7 @@
 		on:keydown
 		role="button"
 		tabindex="0"
+		class:selected
 		on:contextmenu|preventDefault={(e) =>
 			popupMenu.openByMouse(e, {
 				files: $selectedFiles.includes(file) ? $selectedFiles : [file]
@@ -169,7 +155,7 @@
 		overflow: hidden;
 		opacity: 0.3;
 	}
-	.selected-draggable {
+	.selected {
 		background-color: var(--clr-theme-scale-pop-80);
 
 		&:hover {

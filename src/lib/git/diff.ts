@@ -70,6 +70,49 @@ function getMediaType(extension: string) {
 }
 
 /**
+ * Render the difference between a file in the given commit and its parent
+ *
+ * @param commitish A commit SHA or some other identifier that ultimately dereferences
+ *                  to a commit.
+ */
+export async function getCommitDiff(
+	repository: Repository,
+	file: FileChange,
+	commitish: string,
+	hideWhitespaceInDiff: boolean = false
+): Promise<IDiff> {
+	const args = [
+		'log',
+		commitish,
+		...(hideWhitespaceInDiff ? ['-w'] : []),
+		'-m',
+		'-1',
+		'--first-parent',
+		'--patch-with-raw',
+		'-z',
+		'--no-color',
+		'--',
+		file.path
+	];
+
+	if (
+		file.status.kind === AppFileStatusKind.Renamed ||
+		file.status.kind === AppFileStatusKind.Copied
+	) {
+		args.push(file.status.oldPath);
+	}
+
+	// const { output } = await spawnAndComplete(
+	//   args,
+	//   repository.path,
+	//   'getCommitDiff'
+	// )
+	const { stdout }: GitResponse = await invoke('git', { path: repository.path, args });
+
+	return buildDiff(stdout, repository, file, commitish);
+}
+
+/**
  * Retrieve the binary contents of a blob from the object database
  *
  * Returns an image object containing the base64 encoded string,
