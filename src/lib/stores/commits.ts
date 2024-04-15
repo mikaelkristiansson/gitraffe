@@ -53,10 +53,21 @@ export async function loadLocalCommits(
 	}
 
 	const localCommitSHAs = localCommits.map((c) => c.sha);
-	commitStore.set({
-		localCommits,
-		localCommitSHAs,
-		lastFetched: new Date().toISOString()
+	commitStore.subscribe((store) => {
+		if (store.localCommitSHAs.length === localCommitSHAs.length) {
+			const hasNewCommits = localCommitSHAs.some(
+				(sha, index) => store.localCommitSHAs[index] !== sha
+			);
+			if (!hasNewCommits) {
+				return;
+			}
+		}
+
+		commitStore.set({
+			localCommits: localCommits as ReadonlyArray<Commit>,
+			localCommitSHAs,
+			lastFetched: new Date().toISOString()
+		});
 	});
 }
 

@@ -8,6 +8,7 @@
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
+	import { hasUpdates } from '$lib/utils/object';
 
 	let repository$: Repository | undefined | null = undefined;
 	activeRepository.subscribe(async (repo) => {
@@ -36,13 +37,18 @@
 				updatingRepositories.set(true);
 			}
 			try {
-				const base = await defaultBranch.setDefault(repository$);
+				const base = newRepo ? await defaultBranch.setDefault(repository$) : $defaultBranch;
 				const allBranches$ = await allBranches.fetch(repository$, base?.upstream || 'HEAD');
-				const wb = await workingBranch.setWorking(repository$, $workingBranch);
-				const currentBranch = allBranches$.find((b) => b.name === wb?.currentBranch);
+				let activeBranch = await workingBranch.setWorking(repository$, $workingBranch);
+				let updatePath = true;
+				if (hasUpdates(activeBranch, $workingBranch)) {
+					activeBranch = $workingBranch;
+					updatePath = false;
+				}
+				const currentBranch = allBranches$.find((b) => b.name === activeBranch?.currentBranch);
 				await loadLocalCommits(repository$, currentBranch || null);
-				if (wb) {
-					goto(`/${repository$.id}/board/${wb.currentBranch}`);
+				if (updatePath) {
+					goto(`/${repository$.id}/board/${activeBranch?.currentBranch}`);
 				}
 			} catch (e) {
 				console.error(e);

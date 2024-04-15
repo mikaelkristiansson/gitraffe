@@ -138,10 +138,10 @@
 						{/if}
 					</div>
 					{#if selected}
+						<!-- style:width={`${$isLaneCollapsed ? '41' : $defaultFileWidthRem}rem`} -->
 						<div
 							class="file-preview resize-viewport"
 							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
-							style:width={`${$isLaneCollapsed ? '41' : $defaultFileWidthRem}rem`}
 						>
 							<FileCard
 								conflicted={selected.status.kind == 'Conflicted'}
@@ -189,6 +189,7 @@
 	.wrapper {
 		display: flex;
 		height: 100%;
+		width: 100%;
 		align-items: self-start;
 		flex-shrink: 0;
 		user-select: none; /* here because of user-select draggable interference in board */

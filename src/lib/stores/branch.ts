@@ -5,6 +5,7 @@ import { getBranches } from '../git/branch';
 import type { Branch } from '../models/branch';
 import { findDefaultBranch } from '../utils/branch';
 import type { Repository } from '../models/repository';
+import { hasUpdates } from '$lib/utils/object';
 
 function createBranches() {
 	const { subscribe, set, update } = writable([] as Array<Branch>);
@@ -81,7 +82,7 @@ function createWorkingBranch() {
 		setWorking: async (repository: Repository, prevWorkingBranch?: IStatusResult | null) => {
 			try {
 				const workingBranch = await getBranchStatus(repository);
-				if (JSON.stringify(prevWorkingBranch) === JSON.stringify(workingBranch)) {
+				if (hasUpdates(prevWorkingBranch, workingBranch)) {
 					return prevWorkingBranch;
 				}
 				update((prev) => {
