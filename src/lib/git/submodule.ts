@@ -3,16 +3,12 @@ import { exists } from '@tauri-apps/api/fs';
 import { join } from '@tauri-apps/api/path';
 import { git } from './cli';
 import { SubmoduleEntry } from '$lib/models/submodule';
-import { invoke } from '@tauri-apps/api/tauri';
 
 export async function listSubmodules(
 	repository: Repository
 ): Promise<ReadonlyArray<SubmoduleEntry>> {
 	const gitmodulePath = await join(repository.path, '.gitmodules');
 	const gitPath = await join(repository.path, '.git', 'modules');
-	// This is needed to expand the scope of the tauri API
-	await invoke('expand_scope', { folderPath: gitmodulePath });
-	await invoke('expand_scope', { folderPath: gitPath });
 	const [submodulesFile, submodulesDir] = await Promise.all([
 		exists(gitmodulePath),
 		exists(gitPath)

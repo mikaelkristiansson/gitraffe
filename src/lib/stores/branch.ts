@@ -12,10 +12,17 @@ function createBranches() {
 	return {
 		subscribe,
 		set,
-		fetch: async (repository: Repository, defaultBranchUpstreamName: string = 'HEAD') => {
+		fetch: async (
+			repository: Repository,
+			params: { defaultBranchUpstreamName: string; prevBranches?: Branch[] }
+		) => {
+			const { defaultBranchUpstreamName = 'HEAD', prevBranches } = params;
 			fetchingBranches.set(true);
 			try {
 				const branches = await getBranches(repository, defaultBranchUpstreamName);
+				if (prevBranches && JSON.stringify(branches) === JSON.stringify(prevBranches)) {
+					return prevBranches;
+				}
 				allBranches.set(branches);
 				const currentBranchName = await getCurrentBranchName(repository.path);
 				const currentBranch = branches.find(

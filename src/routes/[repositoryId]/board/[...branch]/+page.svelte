@@ -41,6 +41,8 @@
 		}
 	});
 
+	console.info('[ROUTE] branch');
+
 	onMount(() => {
 		if ($activeRepository) {
 			const notMatching = $workingBranch?.currentTip !== $activeBranch?.tip.sha;

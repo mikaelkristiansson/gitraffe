@@ -15,21 +15,29 @@
 		type IBranchListItem
 	} from '$lib/utils/branch';
 	import { getRecentBranches } from '$lib/git/branch';
+	import TextBox from './TextBox.svelte';
 
 	export let repository: Repository;
-	export const textFilter$ = '';
 
 	let viewport: HTMLDivElement;
 	const dispatch = createEventDispatcher<{ scrollbarDragging: boolean }>();
 
 	let groups$: IFilterListGroup<IBranchListItem>[] = [];
+	let filteredGroups$: IFilterListGroup<IBranchListItem>[] = [];
+	let filterValue = '';
+	let isSearching = false;
 	let recentBranches: string[] = [];
 	const RecentBranchesLimit = 5;
 
 	async function setBranches() {
-		await allBranches.fetch(repository, $defaultBranch.upstream || 'HEAD');
+		await allBranches.fetch(repository, {
+			defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD',
+			prevBranches: $allBranches
+		});
 		recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
 		setGroups();
+		filterValue = '';
+		isSearching = false;
 		return;
 	}
 
@@ -40,14 +48,34 @@
 			recentBranches
 		);
 		groups$ = groups;
+		filteredGroups$ = groups;
+	}
+
+	function filterBranches(value: string) {
+		if (value === '') {
+			filteredGroups$ = groups$;
+			isSearching = false;
+			return;
+		}
+		filterValue = value;
+		isSearching = true;
+		const updated = groups$.map((group) => {
+			const items = group.items.filter((item) =>
+				item.branch.name.toLowerCase().includes(value.toLowerCase())
+			);
+			return { ...group, items };
+		});
+		filteredGroups$ = updated;
 	}
 
 	$: ({ path } = repository);
 	$: path && $defaultBranch && setBranches();
+	$: countFiltered = filteredGroups$.flatMap((group) => [...group.items])?.length;
+	$: countAll = groups$.flatMap((group) => [...group.items])?.length;
 </script>
 
 <div class="branch-list">
-	<BranchesHeader count={groups$.flatMap((group) => [...group.items])?.length ?? 0} />
+	<BranchesHeader count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0} />
 	{#if groups$ && groups$.length > 0}
 		<ScrollableContainer
 			bind:viewport
@@ -56,17 +84,25 @@
 			fillViewport={groups$?.length == 0}
 		>
 			<div class="scroll-container">
+				<TextBox
+					value={filterValue}
+					icon="search"
+					placeholder="Search"
+					on:input={(e) => filterBranches(e.detail)}
+				/>
 				<div class="content">
 					{#if $fetchingBranches && $updatingRepositories}
 						<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 					{:else}
-						{#each groups$ as group}
-							<div class="group__header">
-								<span class="capitalize text-base-12 text-semibold">{group.identifier}</span>
-							</div>
-							{#each group.items as item}
-								<BranchItem {repository} branch={item.branch} />
-							{/each}
+						{#each filteredGroups$ as group}
+							{#if group.items.length > 0}
+								<div class="group__header">
+									<span class="capitalize text-base-12 text-semibold">{group.identifier}</span>
+								</div>
+								{#each group.items as item}
+									<BranchItem {repository} branch={item.branch} />
+								{/each}
+							{/if}
 						{/each}
 					{/if}
 				</div>

@@ -8,7 +8,7 @@
 
 	const userSettings = getContext(SETTINGS_CONTEXT) as SettingsStore;
 
-	let currentSection: 'profile' | 'git-stuff' | 'telemetry' | 'integrations' | 'ai' = 'profile';
+	let currentSection: 'profile';
 </script>
 
 <section class="profile-page">

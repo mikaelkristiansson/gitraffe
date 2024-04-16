@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-
+	console.info('[ROUTE] board');
 	$: if (!data.repositoryId) {
 		goto(`/`, { replaceState: true });
 	}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Badge from '$lib/components/Badge.svelte';
 
-	export let count: number | undefined;
+	export let count: number | string | undefined;
 </script>
 
 <div class="header">

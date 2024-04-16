@@ -7,7 +7,9 @@
 		| 'light'
 		| 'dark'
 		| 'pop'
-		| 'purple';
+		| 'purple'
+		| 'neutral';
+	export type ComponentStyleKind = 'solid' | 'soft';
 </script>
 
 <script lang="ts">
@@ -24,13 +26,17 @@
 	export let filled = false;
 	export let disabled = false;
 	export let clickable = false;
+	export let loading = false;
 	export let shrinkable = false;
 	export let verticalOrientation = false;
+	// Style props
+	export let kind: ComponentStyleKind = 'soft';
 </script>
 
 <div
-	class="tag text-base-11 text-semibold"
+	class={`tag text-base-11 text-semibold ${kind}`}
 	class:ghost={color == 'ghost'}
+	class:neutral={color == 'neutral'}
 	class:light={color == 'light'}
 	class:dark={color == 'dark'}
 	class:success={color == 'success'}
@@ -57,7 +63,9 @@
 	<span class="label" class:verticalLabel={verticalOrientation}>
 		<slot />
 	</span>
-	{#if icon}
+	{#if loading}
+		<Icon name="spinner" />
+	{:else if icon}
 		<div class="icon" class:verticalIcon={verticalOrientation}>
 			<Icon name={icon} spinnerRadius={3.5} />
 		</div>
@@ -104,6 +112,15 @@
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-ntrl-60);
+		}
+	}
+	.neutral {
+		color: var(--clr-theme-scale-ntrl-30);
+		&:not(.not-button):hover {
+			background: color-mix(in srgb, var(--clr-core-ntrl-40), transparent 90%);
+		}
+		&.tag-border {
+			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-ntrl-50);
 		}
 	}
 

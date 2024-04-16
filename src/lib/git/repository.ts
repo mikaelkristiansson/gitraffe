@@ -1,6 +1,5 @@
 import { exists } from '@tauri-apps/api/fs';
 import { resolve } from '@tauri-apps/api/path';
-import { invoke } from '@tauri-apps/api/tauri';
 import type { GitResponse } from './type';
 import { git } from './cli';
 
@@ -17,7 +16,6 @@ export type RepositoryType =
  * found.
  */
 export async function getRepositoryType(path: string): Promise<RepositoryType> {
-	await invoke('expand_scope', { folderPath: path });
 	if (!(await exists(path))) {
 		return { kind: 'missing' };
 	}

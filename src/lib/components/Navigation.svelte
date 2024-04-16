@@ -11,16 +11,14 @@
 	// import { onMount } from 'svelte';
 	// import { getContext } from 'svelte';
 	// import type { User } from '$lib/backend/cloud';
-	// import Button from './Button.svelte';
 	// import { goto } from '$app/navigation';
 	import type { Repository } from '$lib/models/repository';
-	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
 	// export let user: User | undefined;
 
-	const minResizerWidth = 280;
-	const minResizerRatio = 150;
+	// const minResizerWidth = 280;
+	// const minResizerRatio = 150;
 	// const platformName = platform();
 	// const userSettings = getContext<SettingsStore>(SETTINGS_CONTEXT);
 	const defaultTrayWidthRem = undefined;
@@ -91,7 +89,7 @@
 		{#if !isNavCollapsed}
 			<Branches {repository} on:scrollbarDragging={(e) => (isScrollbarDragging = e.detail)} />
 		{/if}
-		<Footer repositoryId={repository.id} {isNavCollapsed} />
+		<Footer {repository} {isNavCollapsed} />
 	</div>
 </aside>
 

@@ -5,7 +5,7 @@
 	import { activeRepository } from '$lib/stores/repository';
 
 	let redirect = $activeRepository?.id || null;
-
+	console.info('[ROUTE] index');
 	$: $activeRepository && goto(`/${$activeRepository.id}/`);
 </script>
 

@@ -1,32 +1,25 @@
 <script lang="ts">
-	import Icon from './Icon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
-	import { tooltip } from '$lib/utils/tooltip';
 	import { allBranches, defaultBranch, lastSynced, workingBranch } from '$lib/stores/branch';
 	import { fetchAll } from '$lib/git/cli';
 	import type { Repository } from '$lib/models/repository';
-	import type { Branch } from '$lib/models/branch';
 	import { error, success } from '$lib/utils/toasts';
+	import Tag from './Tag.svelte';
 
 	export let repository: Repository;
 
 	let busy$ = false;
-	let defaultBranch$: Branch | undefined = undefined;
-
-	defaultBranch.subscribe((branch) => {
-		defaultBranch$ = branch;
-	});
-
-	// $: base = defaultBranch$;
-
-	// $: defaultBranch.subscribe((branch) => {
-	// 	$defaultBranch = branch;
-	// });
 </script>
 
-<button
-	class="sync-btn"
-	disabled={busy$}
+<Tag
+	clickable
+	reversedDirection
+	color="ghost"
+	kind="solid"
+	border
+	icon="update-small"
+	help="Last fetch from upstream"
+	loading={busy$}
 	on:mousedown={async (e) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -34,7 +27,10 @@
 		try {
 			await fetchAll(repository.path);
 			const dBranch = await defaultBranch.setDefault(repository);
-			await allBranches.fetch(repository, dBranch?.upstream || 'HEAD');
+			await allBranches.fetch(repository, {
+				defaultBranchUpstreamName: dBranch?.upstream || 'HEAD',
+				prevBranches: $allBranches
+			});
 			workingBranch.setWorking(repository);
 			lastSynced.set(new Date());
 			success('Fetched from upstream');
@@ -44,25 +40,14 @@
 		} finally {
 			busy$ = false;
 		}
-		// if (cloudEnabled) syncToCloud(repositoryId); // don't wait for this
-		// await baseBranchService.fetchFromTarget();
-		// if (githubService.isEnabled) {
-		// 	await githubService.reload();
-		// }
 	}}
 >
-	<div class="sync-btn__icon">
-		<Icon name="update-small" />
-	</div>
-
-	<span class="text-base-11 text-semibold sync-btn__label" use:tooltip={'Last fetch from upstream'}>
-		{#if busy$}
-			<div class="sync-btn__busy-label">busy…</div>
-		{:else if $lastSynced}
-			<TimeAgo date={$lastSynced} />
-		{/if}
-	</span>
-</button>
+	{#if busy$}
+		<div class="sync-btn__busy-label">busy…</div>
+	{:else if $lastSynced}
+		<TimeAgo date={$lastSynced} />
+	{/if}
+</Tag>
 
 <style lang="postcss">
 	.sync-btn {

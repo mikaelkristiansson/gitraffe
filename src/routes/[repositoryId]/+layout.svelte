@@ -9,7 +9,7 @@
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
 
-	let repository$: Repository | undefined | null = undefined;
+	let repository$: Repository | null = null;
 	activeRepository.subscribe(async (repo) => {
 		if (repo) {
 			repository$ = repo;
@@ -37,7 +37,10 @@
 			}
 			try {
 				const base = newRepo ? await defaultBranch.setDefault(repository$) : $defaultBranch;
-				const allBranches$ = await allBranches.fetch(repository$, base?.upstream || 'HEAD');
+				const allBranches$ = await allBranches.fetch(repository$, {
+					defaultBranchUpstreamName: base?.upstream || 'HEAD',
+					prevBranches: $allBranches
+				});
 				let activeBranch = await workingBranch.setWorking(repository$, $workingBranch);
 				let updatePath = JSON.stringify(activeBranch) !== JSON.stringify($workingBranch);
 

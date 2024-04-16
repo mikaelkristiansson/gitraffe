@@ -5,6 +5,8 @@ import { Repository } from '../models/repository';
 import { getRepositoryType, type RepositoryType } from '../git/repository';
 import { matchExistingRepository } from '../utils/repository-matching';
 import { error } from '../utils/toasts';
+import { invoke } from '@tauri-apps/api/tauri';
+import { emit } from '@tauri-apps/api/event';
 
 export interface Project {
 	id: string;
@@ -38,25 +40,25 @@ function createRepositories() {
 
 function createActiveRepository() {
 	const storedActiveRepository = getStorageItem('activeRepository') || (null as Repository | null);
-	const { subscribe, set, update } = writable(storedActiveRepository as Repository | null);
+	const { subscribe, set } = writable(storedActiveRepository as Repository | null);
 
 	return {
 		subscribe,
 		set,
 		removeActive: () => {
-			update(() => null);
+			set(null);
 			localStorage.removeItem('activeRepository');
 		},
 		setActive: (id: string) => {
-			let newRepository: Repository | null = null;
+			let newRepository: Repository = getStorageItem('activeRepository') as Repository;
 			const unsub = repositories.subscribe((repos) =>
 				repos.find((repo) => repo.id === id && (newRepository = repo))
 			);
 			if (!newRepository) return;
-			update(() => {
-				return newRepository;
-			});
+			set(newRepository);
 			unsub();
+			// // This is needed to expand the scope of the repository in the main process
+			invoke('expand_scope', { folderPath: newRepository.path });
 			setStorageItem('activeRepository', newRepository);
 		}
 	};
@@ -158,6 +160,7 @@ async function addNewRepository(
 
 	if (invalidPaths.length > 0) {
 		//   this.emitError(new Error(this.getInvalidRepoPathsMessage(invalidPaths)))
+		emit('error', new Error(getInvalidRepoPathsMessage(invalidPaths)));
 	}
 
 	// if (lfsRepositories.length > 0) {
@@ -168,4 +171,21 @@ async function addNewRepository(
 	// }
 
 	return null;
+}
+
+const MaxInvalidFoldersToDisplay = 3;
+
+function getInvalidRepoPathsMessage(invalidPaths: ReadonlyArray<string>): string {
+	if (invalidPaths.length === 1) {
+		return `${invalidPaths} isn't a Git repository.`;
+	}
+
+	return `The following paths aren't Git repositories:\n\n${invalidPaths
+		.slice(0, MaxInvalidFoldersToDisplay)
+		.map((path) => `- ${path}`)
+		.join('\n')}${
+		invalidPaths.length > MaxInvalidFoldersToDisplay
+			? `\n\n(and ${invalidPaths.length - MaxInvalidFoldersToDisplay} more)`
+			: ''
+	}`;
 }

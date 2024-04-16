@@ -3,11 +3,9 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { goto } from '$app/navigation';
 
-	export let currentSection: 'profile' | 'git-stuff' | 'telemetry' | 'integrations' | 'ai' =
-		'profile';
-	export let showIntegrations = false;
+	export let currentSection: 'profile';
 
-	function onMenuClick(section: 'profile' | 'git-stuff' | 'telemetry' | 'integrations' | 'ai') {
+	function onMenuClick(section: 'profile') {
 		currentSection = section;
 	}
 </script>
@@ -41,48 +39,6 @@
 					>
 						<Icon name="profile" />
 						<span class="text-base-14 text-semibold">Profile</span>
-					</button>
-				</li>
-				<li>
-					<button
-						class="profile-sidebar__menu-item"
-						class:item_selected={currentSection === 'git-stuff'}
-						on:mousedown={() => onMenuClick('git-stuff')}
-					>
-						<Icon name="git" />
-						<span class="text-base-14 text-semibold">Git Stuff</span>
-					</button>
-				</li>
-				<li>
-					<button
-						class="profile-sidebar__menu-item"
-						class:item_selected={currentSection === 'telemetry'}
-						on:mousedown={() => onMenuClick('telemetry')}
-					>
-						<Icon name="stat" />
-						<span class="text-base-14 text-semibold">Telemetry</span>
-					</button>
-				</li>
-				{#if showIntegrations}
-					<li>
-						<button
-							class="profile-sidebar__menu-item"
-							class:item_selected={currentSection === 'integrations'}
-							on:mousedown={() => onMenuClick('integrations')}
-						>
-							<Icon name="integrations" />
-							<span class="text-base-14 text-semibold">Integrations</span>
-						</button>
-					</li>
-				{/if}
-				<li>
-					<button
-						class="profile-sidebar__menu-item"
-						class:item_selected={currentSection === 'ai'}
-						on:mousedown={() => onMenuClick('ai')}
-					>
-						<Icon name="search" />
-						<span class="text-base-14 text-semibold">AI Options</span>
 					</button>
 				</li>
 			</ul>
