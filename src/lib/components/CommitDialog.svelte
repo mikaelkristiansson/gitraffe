@@ -28,7 +28,7 @@
 	import { allBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/stores/repository';
-	import { loadLocalCommits } from '$lib/stores/commits';
+	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 
 	// const aiService = getContextByClass(AIService);
 
@@ -41,6 +41,9 @@
 	// export let user: User | undefined;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let expanded: Writable<boolean>;
+	export let setSelected: (
+		file: WorkingDirectoryFileChange | undefined
+	) => WorkingDirectoryFileChange | undefined;
 
 	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
@@ -87,8 +90,11 @@
 				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
 				if (updateBranch) {
 					allBranches.updateBranch(updateBranch);
-					await loadLocalCommits($activeRepository, updateBranch);
+					const commits = await loadLocalCommits($activeRepository, updateBranch);
+					commitStore.set(commits);
 				}
+				setSelected(undefined);
+				toasts.success('Changes committed');
 			}
 			$commitMessage = '';
 		} catch (e) {

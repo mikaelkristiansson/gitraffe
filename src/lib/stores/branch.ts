@@ -5,7 +5,6 @@ import { getBranches } from '../git/branch';
 import type { Branch } from '../models/branch';
 import { findDefaultBranch } from '../utils/branch';
 import type { Repository } from '../models/repository';
-import { hasUpdates } from '$lib/utils/object';
 
 function createBranches() {
 	const { subscribe, set, update } = writable([] as Array<Branch>);
@@ -61,20 +60,20 @@ function createBranches() {
 }
 
 function createActiveBranch() {
-	const { subscribe, set, update } = writable(undefined as Branch | undefined);
+	const { subscribe, set } = writable(undefined as Branch | undefined);
 
 	return {
 		subscribe,
 		set,
 		setActive: (branch: Branch) => {
-			update(() => branch);
+			set(branch);
 			return branch;
 		}
 	};
 }
 
 function createWorkingBranch() {
-	const { subscribe, set, update } = writable(null as IStatusResult | null);
+	const { subscribe, set } = writable(null as IStatusResult | null);
 
 	return {
 		subscribe,
@@ -82,18 +81,10 @@ function createWorkingBranch() {
 		setWorking: async (repository: Repository, prevWorkingBranch?: IStatusResult | null) => {
 			try {
 				const workingBranch = await getBranchStatus(repository);
-				if (hasUpdates(prevWorkingBranch, workingBranch)) {
+				if (JSON.stringify(workingBranch) === JSON.stringify(prevWorkingBranch)) {
 					return prevWorkingBranch;
 				}
-				update((prev) => {
-					if (prev === null) {
-						return workingBranch;
-					}
-					return {
-						...prev,
-						...workingBranch
-					};
-				});
+				set(workingBranch);
 				return workingBranch;
 			} catch (error) {
 				console.error(error);
@@ -104,7 +95,7 @@ function createWorkingBranch() {
 }
 
 function createDefautBranch() {
-	const { subscribe, set, update } = writable(undefined as Branch | undefined);
+	const { subscribe, set } = writable(undefined as Branch | undefined);
 
 	return {
 		subscribe,
@@ -114,7 +105,7 @@ function createDefautBranch() {
 			if (!branch) {
 				return;
 			}
-			update(() => branch);
+			set(branch);
 			return branch;
 		}
 	};

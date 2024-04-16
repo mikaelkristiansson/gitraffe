@@ -4,11 +4,10 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, updatingRepositories } from '$lib/stores/repository';
-	import { loadLocalCommits } from '$lib/stores/commits';
+	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
-	import { hasUpdates } from '$lib/utils/object';
 
 	let repository$: Repository | undefined | null = undefined;
 	activeRepository.subscribe(async (repo) => {
@@ -40,13 +39,25 @@
 				const base = newRepo ? await defaultBranch.setDefault(repository$) : $defaultBranch;
 				const allBranches$ = await allBranches.fetch(repository$, base?.upstream || 'HEAD');
 				let activeBranch = await workingBranch.setWorking(repository$, $workingBranch);
-				let updatePath = true;
-				if (hasUpdates(activeBranch, $workingBranch)) {
-					activeBranch = $workingBranch;
-					updatePath = false;
-				}
+				let updatePath = JSON.stringify(activeBranch) !== JSON.stringify($workingBranch);
+
 				const currentBranch = allBranches$.find((b) => b.name === activeBranch?.currentBranch);
-				await loadLocalCommits(repository$, currentBranch || null);
+
+				const commits = await loadLocalCommits(repository$, currentBranch || null);
+				const commitsSorted = commits.localCommitSHAs.slice().sort();
+				if (
+					!(
+						$commitStore.localCommitSHAs.length === commits.localCommitSHAs.length &&
+						$commitStore.localCommitSHAs
+							.slice()
+							.sort()
+							.every(function (value, index) {
+								return value === commitsSorted[index];
+							})
+					)
+				) {
+					commitStore.set(commits);
+				}
 				if (updatePath) {
 					goto(`/${repository$.id}/board/${activeBranch?.currentBranch}`);
 				}

@@ -10,6 +10,12 @@ export interface CommitStore {
 	lastFetched: string;
 }
 
+const defaultCommitStore: CommitStore = {
+	localCommitSHAs: [],
+	localCommits: [],
+	lastFetched: ''
+};
+
 /**
  * Convert two refs into the Git range syntax representing the set of commits
  * that are reachable from `to` but excluding those that are reachable from
@@ -32,9 +38,9 @@ const CommitBatchSize = 100;
 export async function loadLocalCommits(
 	repository: Repository,
 	branch: Branch | null
-): Promise<void> {
+): Promise<CommitStore> {
 	if (branch === null) {
-		return;
+		return { ...defaultCommitStore, lastFetched: new Date().toISOString() };
 	}
 
 	let localCommits: ReadonlyArray<Commit> | undefined;
@@ -49,34 +55,37 @@ export async function loadLocalCommits(
 	}
 
 	if (!localCommits) {
-		return;
+		return { ...defaultCommitStore, lastFetched: new Date().toISOString() };
 	}
 
 	const localCommitSHAs = localCommits.map((c) => c.sha);
-	commitStore.subscribe((store) => {
-		if (store.localCommitSHAs.length === localCommitSHAs.length) {
-			const hasNewCommits = localCommitSHAs.some(
-				(sha, index) => store.localCommitSHAs[index] !== sha
-			);
-			if (!hasNewCommits) {
-				return;
-			}
-		}
+	const update = {
+		localCommits: localCommits as ReadonlyArray<Commit>,
+		localCommitSHAs,
+		lastFetched: new Date().toISOString()
+	};
+	return update;
 
-		commitStore.set({
-			localCommits: localCommits as ReadonlyArray<Commit>,
-			localCommitSHAs,
-			lastFetched: new Date().toISOString()
-		});
-	});
+	// commitStore.subscribe((store) => {
+	// 	if (store.lastFetched === '') {
+	// 		commitStore.set(update);
+	// 		return;
+	// 	}
+	// 	if (store.localCommitSHAs.length === localCommitSHAs.length) {
+	// 		const hasNewCommits = localCommitSHAs.some(
+	// 			(sha, index) => store.localCommitSHAs[index] !== sha
+	// 		);
+	// 		if (!hasNewCommits) {
+	// 			return;
+	// 		}
+	// 	}
+
+	// 	commitStore.set(update);
+	// });
 }
 
 function setCommitsStore() {
-	const { subscribe, set, update } = writable<CommitStore>({
-		localCommitSHAs: [],
-		localCommits: [],
-		lastFetched: ''
-	});
+	const { subscribe, set, update } = writable<CommitStore>(defaultCommitStore);
 
 	return {
 		subscribe,

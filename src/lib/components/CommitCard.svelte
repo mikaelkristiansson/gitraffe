@@ -5,7 +5,7 @@
 	import type { Commit } from '$lib/models/commit';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import { undoCommit } from '$lib/git/commit';
-	import { loadLocalCommits } from '$lib/stores/commits';
+	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { error, success } from '$lib/utils/toasts';
 
@@ -35,8 +35,9 @@
 									try {
 										const message = await undoCommit(commit, repository);
 										await workingBranch.setWorking(repository);
-										await loadLocalCommits(repository, $activeBranch);
-										success('Commit undone');
+										const commits = await loadLocalCommits(repository, $activeBranch);
+										commitStore.set(commits);
+										success(`Commit ${message?.summary} undone`);
 									} catch (e) {
 										console.error('Failed to undo commit', e);
 										error('Failed to undo commit');

@@ -29,7 +29,7 @@
 	let latestLocalCommit: Commit | null = null;
 	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
 
-	function setSelected(file: WorkingDirectoryFileChange) {
+	function setSelected(file: WorkingDirectoryFileChange | undefined) {
 		selected = file;
 		return file;
 	}
@@ -116,6 +116,7 @@
 											repositoryId={$activeRepository.id}
 											branch={branch$}
 											expanded={commitBoxOpen}
+											{setSelected}
 											{selectedFiles}
 										/>
 									</div>

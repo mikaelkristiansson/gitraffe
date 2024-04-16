@@ -1,15 +1,14 @@
 // import type { WorkingDirectoryFileChange } from '$lib/models/status';
 import type { Repository } from '$lib/models/repository';
 import { AppFileStatusKind, type WorkingDirectoryFileChange } from '$lib/models/status';
-import { invoke } from '@tauri-apps/api/tauri';
 import { GitResetMode, reset, unstageAll } from './reset';
 import { stageFiles } from './update-index';
-import type { GitResponse } from './type';
 import type { Commit } from '$lib/models/commit';
 import { getStatus } from './status';
 import { checkoutPaths } from './checkout';
 import { deleteRef } from './update-ref';
 import { unstageAllFiles } from './rm';
+import { git } from './cli';
 
 /**
  * @param repository repository to execute merge in
@@ -26,9 +25,17 @@ export async function createCommit(
 	// Clear the staging area, our diffs reflect the difference between the
 	// working directory and the last commit (if any) so our commits should
 	// do the same thing.
-	await unstageAll(repository);
+	try {
+		await unstageAll(repository);
+	} catch (e) {
+		console.error('unstage: ', e);
+	}
 
-	await stageFiles(repository, files);
+	try {
+		await stageFiles(repository, files);
+	} catch (e) {
+		console.error('stageFiles: ', e);
+	}
 
 	const args = ['-F', '-'];
 
@@ -44,14 +51,13 @@ export async function createCommit(
 	//     stdin: message,
 	//   }
 	// )
-	// const result: string = await invoke('git_commit', { path: repository.path, message });
-	// args: ['commit', '-m', `"${message}"`]
-	const { stdout }: GitResponse = await invoke('git', {
-		path: repository.path,
-		args: ['commit', ...args],
-		stdin: message
-	});
-	return parseCommitSHA(stdout);
+	try {
+		const { stdout } = await git(repository.path, ['commit', ...args], message);
+		return parseCommitSHA(stdout);
+	} catch (e) {
+		console.error('createCommit: ', e);
+		throw e;
+	}
 }
 
 /**
