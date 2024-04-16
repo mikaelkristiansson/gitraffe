@@ -1,5 +1,5 @@
 import { getCaptures } from '$lib/utils/regex';
-import { invoke } from '@tauri-apps/api/tauri';
+import { git } from './cli';
 
 /**
  * Returns a list of files with conflict markers present
@@ -19,8 +19,8 @@ export async function getFilesWithConflictMarkers(path: string): Promise<Map<str
 
 	// // result parsing
 	// const outputStr = output.toString('utf8')
-	const outputStr: string = await invoke('git_diff', { path });
-	const captures = getCaptures(outputStr, fileNameCaptureRe);
+	const { stdout } = await git(path, ['diff', '--check']);
+	const captures = getCaptures(stdout, fileNameCaptureRe);
 	if (captures.length === 0) {
 		return new Map<string, number>();
 	}

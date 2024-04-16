@@ -6,70 +6,10 @@ use tauri::Error;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct BaseBranch {
-    pub branch_name: String,
-    pub remote_url: String,
-    pub behind: usize,
-    pub ahead: usize,
-    pub last_fetched: String,
-}
-
-#[derive(Debug, Serialize, PartialEq, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct GitResponse {
     pub stdout: String,
     pub stderr: String,
     pub status: i32,
-}
-
-#[tauri::command(async)]
-pub async fn git_push(path: String) -> Result<String, Error> {
-    let push = Command::new("git")
-        .args(["push"])
-        .current_dir(path)
-        .output()
-        .unwrap();
-    Ok(String::from_utf8_lossy(&push.stdout).to_string())
-}
-
-#[tauri::command(async)]
-pub async fn git_diff(path: String) -> Result<String, Error> {
-    let fetch = Command::new("git")
-        .args(["diff", "--check"])
-        .current_dir(path)
-        .output()
-        .unwrap();
-    Ok(String::from_utf8_lossy(&fetch.stdout).to_string())
-}
-
-#[tauri::command(async)]
-pub async fn git_diff_ref(path: String, reference: String) -> Result<String, Error> {
-    let fetch = Command::new("git")
-        .args(["diff", "--numstat", "-z", &reference])
-        .current_dir(path)
-        .output()
-        .unwrap();
-    Ok(String::from_utf8_lossy(&fetch.stdout).to_string())
-}
-
-#[tauri::command(async)]
-pub async fn git_reset_all(path: String) -> Result<String, Error> {
-    let fetch = Command::new("git")
-        .args(["reset", "--", "."])
-        .current_dir(path)
-        .output()
-        .unwrap();
-    Ok(String::from_utf8_lossy(&fetch.stdout).to_string())
-}
-
-#[tauri::command(async)]
-pub async fn git_commit(path: String, message: String) -> Result<String, Error> {
-    let fetch = Command::new("git")
-        .args(["commit", "-F", "-", "-m", &message])
-        .current_dir(path)
-        .output()
-        .unwrap();
-    Ok(String::from_utf8_lossy(&fetch.stdout).to_string())
 }
 
 #[tauri::command(async)]

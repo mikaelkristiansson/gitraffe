@@ -1,6 +1,5 @@
 import { assertNever } from '$lib/fatal-error';
 import type { Repository } from '$lib/models/repository';
-import { invoke } from '@tauri-apps/api/tauri';
 import { git } from './cli';
 
 /** The reset modes which are supported. */
@@ -51,6 +50,6 @@ export async function reset(
 
 /** Unstage all paths. */
 export async function unstageAll(repository: Repository): Promise<true> {
-	await invoke('git_reset_all', { path: repository.path });
+	await git(repository.path, ['reset', '--', '.']);
 	return true;
 }

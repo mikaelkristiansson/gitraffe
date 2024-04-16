@@ -24,6 +24,7 @@ import { getBlobContents } from './show';
 import { getOldPathOrDefault } from './get-old-path';
 import type { Repository } from '$lib/models/repository';
 import type { GitResponse } from './type';
+import { git } from './cli';
 
 /**
  *  Defining the list of known extensions we can render inside the app
@@ -415,8 +416,8 @@ export async function getBinaryPaths(
 	//   projectPath,
 	//   'getBinaryPaths'
 	// )
-	const output: string = await invoke('git_diff_ref', { path: projectPath, reference: ref });
-	const captures = getCaptures(output, binaryListRegex);
+	const { stdout } = await git(projectPath, ['diff', '--numstat', '-z', ref]);
+	const captures = getCaptures(stdout, binaryListRegex);
 	if (captures.length === 0) {
 		return [];
 	}

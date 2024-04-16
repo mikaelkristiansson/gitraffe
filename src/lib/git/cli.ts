@@ -36,7 +36,12 @@ export async function pullOrigin(path: string, branchName: Branch['name']): Prom
 }
 
 export async function push(path: string): Promise<string> {
-	return await invoke('git_push', { path });
+	const args = ['push'];
+	const { stderr, stdout } = await git(path, args);
+	if (stderr) {
+		throw new Error(stderr);
+	}
+	return stdout;
 }
 
 export async function getBranchStatus(repository: Repository): Promise<IStatusResult | null> {
