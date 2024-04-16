@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 
 export type ContextMenuType = 'checklist' | 'select' | 'normal';
 
@@ -8,7 +8,7 @@ export interface ContextMenuItem {
 }
 export interface ContextMenuContext {
 	type: ContextMenuType;
-	selection$: ContextMenuItem | undefined;
+	selection$: Writable<ContextMenuItem | undefined>;
 }
 
 export const contextMenu = writable<ContextMenuContext | undefined>(undefined);

@@ -2,6 +2,8 @@
 	import Overlay from './Overlay.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import type iconsJson from '$lib/icons/icons.json';
+	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { IStatusResult } from '$lib/git/status';
 
 	export function show(newItem?: any) {
 		item = newItem;
@@ -18,6 +20,14 @@
 	export let hoverText: string | undefined = undefined;
 
 	let item: any;
+	// | {
+	// 		files?: WorkingDirectoryFileChange[];
+	// 		setSelected?: (
+	// 			file: WorkingDirectoryFileChange | undefined
+	// 		) => WorkingDirectoryFileChange | undefined;
+	//   }
+	// | IStatusResult
+	// | undefined;
 	let modal: Overlay;
 </script>
 

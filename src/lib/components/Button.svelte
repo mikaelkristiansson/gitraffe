@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-	export type ButtonColor = 'primary' | 'neutral' | 'error' | 'warn';
+	export type ButtonColor = 'primary' | 'neutral' | 'error' | 'warn' | 'pop' | 'purple' | 'success';
 </script>
 
 <script lang="ts">
@@ -43,11 +43,15 @@
 	class:error-outline={color == 'error' && kind == 'outlined'}
 	class:primary-outline={color == 'primary' && kind == 'outlined'}
 	class:warn-outline={color == 'warn' && kind == 'outlined'}
+	class:purple-outline={color == 'purple' && kind == 'outlined'}
+	class:success-outline={color == 'success' && kind == 'outlined'}
+	class:neutral-outline={color == 'neutral' && kind == 'outlined'}
 	class:error-filled={color == 'error' && kind == 'filled'}
 	class:primary-filled={color == 'primary' && kind == 'filled'}
 	class:warn-filled={color == 'warn' && kind == 'filled'}
 	class:neutral-filled={color == 'neutral' && kind == 'filled'}
-	class:neutral-outline={color == 'neutral' && kind == 'outlined'}
+	class:purple-filled={color == 'purple' && kind == 'filled'}
+	class:success-filled={color == 'success' && kind == 'filled'}
 	class:pointer-events-none={loading}
 	class:icon-left={iconAlign == 'left'}
 	class:wide
@@ -186,6 +190,41 @@
 		&:focus {
 			color: color-mix(in srgb, var(--clr-theme-err-outline), var(--darken-mid));
 			border: 1px solid color-mix(in srgb, var(--clr-theme-err-outline), var(--darken-mid));
+		}
+	}
+	.purple-filled {
+		color: var(--clr-theme-purple-on-element);
+		background: var(--clr-theme-purple-element);
+		&:hover,
+		&:focus {
+			background: color-mix(in srgb, var(--clr-theme-purple-element), var(--darken-mid));
+		}
+	}
+	.purple-outline {
+		color: var(--clr-theme-purple-outline);
+		border: 1px solid var(--clr-theme-purple-outline);
+		&:hover,
+		&:focus {
+			color: color-mix(in srgb, var(--clr-theme-purple-outline), var(--darken-mid));
+			border: 1px solid color-mix(in srgb, var(--clr-theme-purple-outline), var(--darken-mid));
+		}
+	}
+
+	.success-filled {
+		color: var(--clr-theme-succ-on-element);
+		background: var(--clr-theme-succ-element);
+		&:hover,
+		&:focus {
+			background: color-mix(in srgb, var(--clr-theme-succ-element), var(--darken-mid));
+		}
+	}
+	.success-outline {
+		color: var(--clr-theme-succ-outline);
+		border: 1px solid var(--clr-theme-succ-outline);
+		&:hover,
+		&:focus {
+			color: color-mix(in srgb, var(--clr-theme-succ-outline), var(--darken-mid));
+			border: 1px solid color-mix(in srgb, var(--clr-theme-succ-outline), var(--darken-mid));
 		}
 	}
 

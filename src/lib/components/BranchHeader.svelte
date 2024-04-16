@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ActiveBranchStatus from './ActiveBranchStatus.svelte';
-	// import BranchLanePopupMenu from './BranchLanePopupMenu.svelte';
+	import BranchLanePopupMenu from './BranchLanePopupMenu.svelte';
 	import Tag from './Tag.svelte';
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Button from '$lib/components/Button.svelte';
@@ -21,7 +21,8 @@
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
 	import type { IRemote } from '$lib/models/remote';
-	import { loadLocalCommits } from '$lib/stores/commits';
+	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
+	import PullRequestCard from './PullRequestCard.svelte';
 
 	export let isUnapplied = false;
 	export let branch: IStatusResult | undefined;
@@ -107,7 +108,7 @@
 					<div class="header__label text-base-13 text-bold">
 						{branch?.currentBranch}
 					</div>
-					<div class="flex mr-2" use:tooltip={{ text: 'pull origin', delay: 300 }}>
+					<div class="flex mr-2" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
 						<Button
 							kind="outlined"
 							color="neutral"
@@ -214,29 +215,8 @@
 						on:click={publishBranch}
 						disabled={branch?.branchAheadBehind !== undefined}>Publish</Button
 					>
-					<Button
-						help="Deletes the local branch (only)"
-						icon="bin-small"
-						color="warn"
-						kind="outlined"
-						loading={isDeleting}
-						on:click={async () => {
-							isDeleting = true;
-							try {
-								// await branchController.deleteBranch(branch.id);
-								goto(`/${repository.id}/board`);
-							} catch (e) {
-								const err = 'Failed to delete branch';
-								toasts.error(err);
-								console.error(err, e);
-							} finally {
-								isDeleting = false;
-							}
-						}}
-					>
-						Delete
-					</Button>
 				</div>
+				<PullRequestCard {repository} />
 				<div class="header__buttons">
 					<Button
 						icon="fold-lane"
@@ -260,7 +240,14 @@
 							handler: () => (visible = false)
 						}}
 					>
-						<!-- <BranchLanePopupMenu {branch} {repositoryId} {isUnapplied} bind:visible on:action /> -->
+						{#if branch && $commitStore.localCommits}
+							<BranchLanePopupMenu
+								{branch}
+								commits={$commitStore.localCommits}
+								bind:visible
+								on:action
+							/>
+						{/if}
 					</div>
 				</div>
 			</div>

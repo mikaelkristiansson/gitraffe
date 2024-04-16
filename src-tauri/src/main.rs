@@ -5,7 +5,10 @@ pub(crate) mod commands;
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![commands::git])
+        .invoke_handler(tauri::generate_handler![
+            commands::git,
+            commands::expand_scope
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

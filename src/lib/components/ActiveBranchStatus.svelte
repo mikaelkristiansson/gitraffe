@@ -61,5 +61,7 @@
 	>
 		{isLaneCollapsed ? 'View branch' : `origin/${branch?.currentBranch}`}
 	</Tag>
-	<PullRequestCard {repository} {isLaneCollapsed} />
+	{#if isLaneCollapsed}
+		<PullRequestCard type="tag" {repository} {isLaneCollapsed} />
+	{/if}
 {/if}

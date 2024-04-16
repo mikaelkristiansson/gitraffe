@@ -31,6 +31,7 @@
 		{repository}
 		showCheckbox={showCheckboxes}
 		selected={selected === file}
+		{setSelected}
 		on:click={() => setSelected(file)}
 	/>
 {/each}

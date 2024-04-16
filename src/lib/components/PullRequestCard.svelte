@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { activeBranch } from '$lib/stores/branch';
-	import { activeRepository } from '$lib/stores/repository';
+	import { activeBranch, defaultBranch } from '$lib/stores/branch';
 	import { open } from '@tauri-apps/api/shell';
 	import { error } from '$lib/utils/toasts';
 	import Tag from './Tag.svelte';
 	import { setRepositoryURL } from '$lib/utils/remote';
 	import type { Repository } from '$lib/models/repository';
+	import Button from './Button.svelte';
 
 	export let isLaneCollapsed: boolean = false;
+	export let type: 'tag' | 'button' = 'button';
 	export let repository: Repository;
 
 	function setURLEnding(url: string) {
@@ -30,21 +31,36 @@
 	}
 </script>
 
-{#if $activeBranch?.upstream}
-	<Tag
-		clickable
-		color="success"
-		icon="pr-small"
-		border
-		filled
-		verticalOrientation={isLaneCollapsed}
-		on:click={async () => {
-			const url = await setURL();
-			if (url) {
-				await open(url);
-			} else {
-				error('Failed to create pull request');
-			}
-		}}>Open Pull Request</Tag
-	>
+{#if $activeBranch?.upstream && $activeBranch.ref !== $defaultBranch.ref}
+	{#if type === 'tag'}
+		<Tag
+			clickable
+			color="success"
+			icon="pr-small"
+			border
+			filled
+			verticalOrientation={isLaneCollapsed}
+			on:click={async () => {
+				const url = await setURL();
+				if (url) {
+					await open(url);
+				} else {
+					error('Failed to create pull request');
+				}
+			}}>Open Pull Request</Tag
+		>
+	{:else}
+		<Button
+			icon="pr-small"
+			color="success"
+			on:click={async () => {
+				const url = await setURL();
+				if (url) {
+					await open(url);
+				} else {
+					error('Failed to create pull request');
+				}
+			}}>Open Pull Request</Button
+		>
+	{/if}
 {/if}

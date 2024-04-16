@@ -13,7 +13,7 @@
 	const context = getContext<ContextMenuContext>('ContextMenu');
 	const selection$ = context.selection$;
 
-	// $: if (selected && id) selection$.next({ id, label });
+	$: if (selected && id) selection$.set({ id, label });
 </script>
 
 <button
@@ -25,7 +25,7 @@
 	on:click
 	on:click={(e) => {
 		e.stopPropagation();
-		// if (id && !disabled) selection$.next({ id, label });
+		if (id && !disabled) selection$.set({ id, label });
 	}}
 >
 	{#if icon}

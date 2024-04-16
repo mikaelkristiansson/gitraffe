@@ -15,6 +15,9 @@
 	export let selected: boolean;
 	export let showCheckbox: boolean = false;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
+	export let setSelected: (
+		file: WorkingDirectoryFileChange
+	) => WorkingDirectoryFileChange | undefined;
 	export let readonly = false;
 
 	let checked = false;
@@ -67,7 +70,8 @@
 		class:selected
 		on:contextmenu|preventDefault={(e) =>
 			popupMenu.openByMouse(e, {
-				files: $selectedFiles.includes(file) ? $selectedFiles : [file]
+				files: [file],
+				setSelected
 			})}
 	>
 		<div class="info-wrap">

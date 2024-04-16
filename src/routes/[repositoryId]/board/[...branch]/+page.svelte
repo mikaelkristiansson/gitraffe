@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
-	import laneNewSvg from '$lib/assets/empty-state/lane-new.svg?raw';
+	// import laneNewSvg from '$lib/assets/empty-state/lane-new.svg?raw';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
@@ -22,10 +22,6 @@
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
-	const defaultFileWidthRem = persisted<number | undefined>(
-		24,
-		'defaulFileWidth' + $activeRepository?.id
-	);
 	let latestLocalCommit: Commit | null = null;
 	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
 
@@ -134,12 +130,11 @@
 								{/if}
 							</div>
 						{/if}
-						{#if $activeRepository}
+						{#if $activeRepository && !$isLaneCollapsed}
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
 						{/if}
 					</div>
 					{#if selected}
-						<!-- style:width={`${$isLaneCollapsed ? '41' : $defaultFileWidthRem}rem`} -->
 						<div
 							class="file-preview resize-viewport"
 							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
