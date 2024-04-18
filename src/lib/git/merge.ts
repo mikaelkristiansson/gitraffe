@@ -1,6 +1,8 @@
 import type { Repository } from '$lib/models/repository';
 import { join } from '@tauri-apps/api/path';
 import { git } from './cli';
+import { exists } from '@tauri-apps/api/fs';
+import { invoke } from '@tauri-apps/api/tauri';
 
 export enum MergeResult {
 	/** The merge completed successfully */
@@ -84,7 +86,9 @@ export async function abortMerge(repository: Repository): Promise<void> {
 export async function isMergeHeadSet(projectPath: string): Promise<boolean> {
 	try {
 		const path = await join(projectPath, '.git', 'MERGE_HEAD');
-		return Boolean(path);
+		await invoke('expand_scope', { folderPath: path });
+		const pathExists = await exists(path);
+		return pathExists;
 	} catch (e) {
 		return false;
 	}
@@ -101,7 +105,9 @@ export async function isMergeHeadSet(projectPath: string): Promise<boolean> {
 export async function isSquashMsgSet(projectPath: string): Promise<boolean> {
 	try {
 		const path = await join(projectPath, '.git', 'SQUASH_MSG');
-		return Boolean(path);
+		await invoke('expand_scope', { folderPath: path });
+		const pathExists = await exists(path);
+		return pathExists;
 	} catch (e) {
 		return false;
 	}

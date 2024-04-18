@@ -1,7 +1,6 @@
 <script lang="ts">
 	import BranchIcon from './BranchIcon.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import AheadBehind from './AheadBehind.svelte';
 	import { defaultBranch, workingBranch } from '$lib/stores/branch';
 	import { checkout } from '$lib/git/cli';
@@ -18,6 +17,7 @@
 
 	export let repository: Repository;
 	export let branch: Branch;
+	export let selected = false;
 	let untrackedModal: Modal;
 
 	function updateContextMenu() {
@@ -37,7 +37,6 @@
 	});
 
 	$: href = `/${repository.id}/board/${branch.name}`;
-	$: selected = $page.url.href.endsWith(`${branch.name}`);
 </script>
 
 <button

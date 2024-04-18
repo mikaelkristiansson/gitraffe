@@ -37,7 +37,6 @@
 			clickable
 			color="success"
 			icon="pr-small"
-			border
 			filled
 			verticalOrientation={isLaneCollapsed}
 			on:click={async () => {

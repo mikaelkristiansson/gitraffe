@@ -4,7 +4,7 @@
 	import ScrollableContainer from './ScrollableContainer.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import BranchesHeader from './BranchesHeader.svelte';
-	import { allBranches, defaultBranch, fetchingBranches } from '$lib/stores/branch';
+	import { allBranches, defaultBranch, fetchingBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Spinner from '$lib/icons/Spinner.svelte';
 	import { updatingRepositories } from '$lib/stores/repository';
@@ -112,7 +112,11 @@
 									<span class="capitalize text-base-12 text-semibold">{group.identifier}</span>
 								</div>
 								{#each group.items as item}
-									<BranchItem {repository} branch={item.branch} />
+									<BranchItem
+										{repository}
+										selected={$workingBranch?.currentTip === item.branch.tip.sha}
+										branch={item.branch}
+									/>
 								{/each}
 							{/if}
 						{/each}
