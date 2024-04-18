@@ -114,7 +114,7 @@
 								{#each group.items as item}
 									<BranchItem
 										{repository}
-										selected={$workingBranch?.currentTip === item.branch.tip.sha}
+										selected={$workingBranch?.currentBranch === item.branch.name}
 										branch={item.branch}
 									/>
 								{/each}
