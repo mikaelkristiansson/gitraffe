@@ -28,6 +28,7 @@
 		{branchId}
 		{isUnapplied}
 		{selectedFiles}
+		{files}
 		{repository}
 		showCheckbox={showCheckboxes}
 		selected={selected === file}

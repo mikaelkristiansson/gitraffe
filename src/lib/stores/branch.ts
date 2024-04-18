@@ -20,7 +20,11 @@ function createBranches() {
 			fetchingBranches.set(true);
 			try {
 				const branches = await getBranches(repository, defaultBranchUpstreamName);
-				if (prevBranches && JSON.stringify(branches) === JSON.stringify(prevBranches)) {
+				if (
+					prevBranches &&
+					branches.length === prevBranches.length &&
+					JSON.stringify(branches) === JSON.stringify(prevBranches)
+				) {
 					return prevBranches;
 				}
 				allBranches.set(branches);

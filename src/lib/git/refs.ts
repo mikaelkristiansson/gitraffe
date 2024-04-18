@@ -1,6 +1,5 @@
 import type { Repository } from '$lib/models/repository';
-import { invoke } from '@tauri-apps/api/tauri';
-import type { GitResponse } from './type';
+import { git } from './cli';
 
 /**
  * Read a symbolic ref from the repository.
@@ -28,10 +27,7 @@ export async function getSymbolicRef(repository: Repository, ref: string): Promi
 	//     successExitCodes: new Set([0, 1, 128]),
 	//   }
 	// )
-	const { stdout }: GitResponse = await invoke('git', {
-		path: repository.path,
-		args: ['symbolic-ref', '-q', ref]
-	});
+	const { stdout } = await git(repository.path, ['symbolic-ref', '-q', ref]);
 
 	if (!stdout) {
 		return null;

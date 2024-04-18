@@ -2,7 +2,7 @@
 	import noBranchesSvg from '$lib/assets/empty-state/no-branches.svg?raw';
 	import BranchItem from './BranchItem.svelte';
 	import ScrollableContainer from './ScrollableContainer.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onDestroy } from 'svelte';
 	import BranchesHeader from './BranchesHeader.svelte';
 	import { allBranches, defaultBranch, fetchingBranches } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
@@ -16,6 +16,7 @@
 	} from '$lib/utils/branch';
 	import { getRecentBranches } from '$lib/git/branch';
 	import TextBox from './TextBox.svelte';
+	import type { Branch } from '$lib/models/branch';
 
 	export let repository: Repository;
 
@@ -29,22 +30,26 @@
 	let recentBranches: string[] = [];
 	const RecentBranchesLimit = 5;
 
+	const unsubscribeAllBranches = allBranches.subscribe((branches) => {
+		setGroups(branches);
+	});
+
 	async function setBranches() {
-		await allBranches.fetch(repository, {
+		const branches = await allBranches.fetch(repository, {
 			defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD',
 			prevBranches: $allBranches
 		});
 		recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
-		setGroups();
+		setGroups(branches);
 		filterValue = '';
 		isSearching = false;
 		return;
 	}
 
-	function setGroups() {
+	function setGroups(branches: Branch[]) {
 		const groups = groupBranches(
 			$defaultBranch,
-			mergeRemoteAndLocalBranches($allBranches),
+			mergeRemoteAndLocalBranches(branches),
 			recentBranches
 		);
 		groups$ = groups;
@@ -72,10 +77,17 @@
 	$: path && $defaultBranch && setBranches();
 	$: countFiltered = filteredGroups$.flatMap((group) => [...group.items])?.length;
 	$: countAll = groups$.flatMap((group) => [...group.items])?.length;
+
+	onDestroy(() => {
+		unsubscribeAllBranches();
+	});
 </script>
 
 <div class="branch-list">
-	<BranchesHeader count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0} />
+	<BranchesHeader
+		{repository}
+		count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0}
+	/>
 	{#if groups$ && groups$.length > 0}
 		<ScrollableContainer
 			bind:viewport

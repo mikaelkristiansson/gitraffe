@@ -59,6 +59,9 @@
 
 <style lang="postcss">
 	.branch-icon {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		flex-shrink: 0;
 		width: 16px;
 		height: 16px;

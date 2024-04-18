@@ -2,7 +2,6 @@
 	import BranchFilesHeader from './BranchFilesHeader.svelte';
 	import BranchFilesList from './BranchFilesList.svelte';
 	import FileTree from './FileTree.svelte';
-	// import { filesToFileTree } from '$lib/vbranches/filetree';
 	import type { Writable } from 'svelte/store';
 	import { filesToFileTree } from './filetree';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
@@ -30,7 +29,7 @@
 		<BranchFilesHeader {files} {showCheckboxes} bind:selectedListMode {selectedFiles} />
 	</div>
 	{#if files.length > 0}
-		<div class="files-padding max-h-[20rem] overflow-x-scroll">
+		<div class="files-padding max-h-[12rem] overflow-x-scroll">
 			{#if selectedListMode == 'list'}
 				<BranchFilesList
 					{allowMultiple}
@@ -56,6 +55,8 @@
 					{isUnapplied}
 					{files}
 					{repository}
+					{selected}
+					{setSelected}
 				/>
 			{/if}
 		</div>

@@ -2,34 +2,18 @@
 	import Tag from '$lib/components/Tag.svelte';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Repository } from '$lib/models/repository';
-	import { normalizeBranchName } from '$lib/utils/branch';
 	import { setRepositoryURL } from '$lib/utils/remote';
 	import { openExternalUrl } from '$lib/utils/url';
 	import PullRequestCard from './PullRequestCard.svelte';
-	// import { openExternalUrl } from '$lib/utils/url';
 
-	export let branch: IStatusResult | undefined;
+	export let branch: IStatusResult;
 	export let repository: Repository;
-	export let isUnapplied = false;
-	// export let hasIntegratedCommits = false;
 	export let isLaneCollapsed: boolean = false;
 </script>
 
-<!-- {#if !isUnapplied && !isLaneCollapsed}
+{#if !branch.currentUpstreamBranch || branch.branchAheadBehind === undefined}
 	<Tag
-		shrinkable
-		disabled
-		help="Branch name that will be used when pushing. You can change it from the lane menu."
-		verticalOrientation={isLaneCollapsed}
-	>
-		origin/{branch?.currentBranch
-			? branch.currentBranch
-			: normalizeBranchName(branch?.currentBranch || '')}</Tag
-	>
-{/if} -->
-{#if !branch?.currentUpstreamBranch}
-	<Tag
-		icon="virtual-branch-small"
+		icon="local"
 		color="light"
 		help="These changes are in your working directory."
 		reversedDirection
@@ -38,7 +22,7 @@
 {:else}
 	<Tag
 		color="pop"
-		icon="remote-branch-small"
+		icon="remote"
 		help="At least some of your changes have been pushed"
 		verticalOrientation={isLaneCollapsed}
 		reversedDirection>Remote</Tag
@@ -59,7 +43,7 @@
 			e.stopPropagation();
 		}}
 	>
-		{isLaneCollapsed ? 'View branch' : `origin/${branch?.currentBranch}`}
+		{isLaneCollapsed ? 'View branch' : `origin/${branch.currentBranch}`}
 	</Tag>
 	{#if isLaneCollapsed}
 		<PullRequestCard type="tag" {repository} {isLaneCollapsed} />

@@ -6,6 +6,8 @@
 	import type { Repository } from '$lib/models/repository';
 	import { type IDiff } from '$lib/models/diff';
 	import { getWorkingDirectoryDiff } from '$lib/git/diff';
+	import Button from './Button.svelte';
+	import { workingBranch } from '$lib/stores/branch';
 
 	export let file: WorkingDirectoryFileChange;
 	export let conflicted: boolean;
@@ -25,19 +27,6 @@
 
 <div id={`file-${file.id}`} class="file-card card">
 	<FileCardHeader {file} on:close />
-	{#if conflicted}
-		<div class="mb-2 bg-red-500 px-2 py-0 font-bold text-white">
-			<button
-				class="font-bold text-white"
-				on:click={() => {
-					// branchController.markResolved(file.path)
-				}}
-			>
-				Mark resolved
-			</button>
-		</div>
-	{/if}
-
 	<ScrollableContainer wide>
 		{#if diff}
 			<FileDiff filePath={file.path} {readonly} {diff} {selectable} />

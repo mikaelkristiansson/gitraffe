@@ -65,23 +65,6 @@ export async function loadLocalCommits(
 		lastFetched: new Date().toISOString()
 	};
 	return update;
-
-	// commitStore.subscribe((store) => {
-	// 	if (store.lastFetched === '') {
-	// 		commitStore.set(update);
-	// 		return;
-	// 	}
-	// 	if (store.localCommitSHAs.length === localCommitSHAs.length) {
-	// 		const hasNewCommits = localCommitSHAs.some(
-	// 			(sha, index) => store.localCommitSHAs[index] !== sha
-	// 		);
-	// 		if (!hasNewCommits) {
-	// 			return;
-	// 		}
-	// 	}
-
-	// 	commitStore.set(update);
-	// });
 }
 
 function setCommitsStore() {

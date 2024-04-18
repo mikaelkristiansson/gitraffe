@@ -13,6 +13,7 @@
 	export let file: WorkingDirectoryFileChange;
 	export let isUnapplied: boolean;
 	export let selected: boolean;
+	export let files: WorkingDirectoryFileChange[];
 	export let showCheckbox: boolean = false;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let setSelected: (
@@ -52,10 +53,10 @@
 			{checked}
 			{indeterminate}
 			on:change={(e) => {
-				selectedFiles.update((files) => {
-					if (e.detail) files.push(file);
-					if (!e.detail) files = files.filter((f) => f.id != file.id);
-					return files;
+				selectedFiles.update((selectedF) => {
+					if (e.detail) selectedF.push(file);
+					if (!e.detail) selectedF = selectedF.filter((f) => f.id != file.id);
+					return selectedF;
 				});
 			}}
 		/>
@@ -70,7 +71,8 @@
 		class:selected
 		on:contextmenu|preventDefault={(e) =>
 			popupMenu.openByMouse(e, {
-				files: [file],
+				file,
+				files,
 				setSelected
 			})}
 	>

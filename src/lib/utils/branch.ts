@@ -1,5 +1,6 @@
 import { getBranches } from '$lib/git/branch';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
+import { MergeResult, merge } from '$lib/git/merge';
 import { getRemoteHEAD } from '$lib/git/remote';
 import { BranchType, type Branch } from '$lib/models/branch';
 import { UpstreamRemoteName } from '$lib/models/remote';
@@ -248,4 +249,18 @@ export function getRemoteName(branch: Branch): string | null {
 		throw new Error(`Remote branch ref has unexpected format: ${branch.ref}`);
 	}
 	return pieces[1];
+}
+
+export async function mergeBranch(
+	repository: Repository,
+	sourceBranch: Branch,
+	isSquash: boolean = false
+) {
+	const mergeResult = await merge(repository, sourceBranch.name, isSquash);
+	if (mergeResult === MergeResult.Success) {
+		console.log('Merge successful');
+	} else if (mergeResult === MergeResult.AlreadyUpToDate) {
+		console.log('Already up to date');
+	}
+	return mergeResult;
 }

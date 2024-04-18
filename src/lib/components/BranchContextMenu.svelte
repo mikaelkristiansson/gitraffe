@@ -1,0 +1,122 @@
+<script lang="ts">
+	import PopupMenu from '$lib/components/PopupMenu.svelte';
+	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
+	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
+	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
+	import * as toasts from '$lib/utils/toasts';
+	import type { Repository } from '$lib/models/repository';
+	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
+	import Modal from './Modal.svelte';
+	import Button from './Button.svelte';
+	import Icon from './Icon.svelte';
+	import { deleteLocalBranch } from '$lib/git/branch';
+	import { checkout } from '$lib/git/cli';
+	import { mergeBranch } from '$lib/utils/branch';
+	import { MergeResult } from '$lib/git/merge';
+
+	export let repository: Repository | undefined;
+
+	let confirmationModal: Modal;
+	let popupMenu: PopupMenu;
+
+	export function openByMouse(e: MouseEvent, item: any) {
+		popupMenu.openByMouse(e, item);
+	}
+</script>
+
+<PopupMenu bind:this={popupMenu} let:item let:dismiss>
+	<ContextMenu>
+		<ContextMenuSection>
+			<ContextMenuItem
+				icon="idea"
+				label="Rename branch"
+				on:click={async () => {
+					dismiss();
+				}}
+			/>
+			<ContextMenuItem
+				icon="rebase-small"
+				label={'Update from ' + $defaultBranch.nameWithoutRemote}
+				on:click={async () => {
+					dismiss();
+					if (repository) {
+						const mergeStatus = await mergeBranch(repository, $defaultBranch);
+						if (mergeStatus === MergeResult.Success) {
+							toasts.success('Branch updated');
+						} else {
+							toasts.error('Failed to update branch');
+						}
+					}
+				}}
+			/>
+			<ContextMenuItem
+				icon="removed-branch-small"
+				label="Delete branch"
+				on:click={async () => {
+					if (
+						item.branch?.name === $workingBranch?.currentBranch &&
+						$workingBranch?.workingDirectory.files.length !== 0
+					) {
+						item.untrackedModal?.show(item);
+					} else {
+						confirmationModal.show(item);
+					}
+					dismiss();
+				}}
+			/>
+		</ContextMenuSection>
+	</ContextMenu>
+</PopupMenu>
+
+<Modal width="small" title="Delete Branch" bind:this={confirmationModal} let:item>
+	{#if item}
+		<div class="flex items-center gap-4">
+			<Icon name="warning" size={30} opacity={0.8} color="warn" />
+			<div>
+				Delete branch <span class="tag">{item.branch.name}</span> ? <br />
+				This action cannot be undone
+			</div>
+		</div>
+	{/if}
+	<svelte:fragment slot="controls" let:close let:item>
+		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
+		<Button
+			color="error"
+			on:click={async () => {
+				if (repository && item) {
+					try {
+						await deleteLocalBranch(repository, item.branch.name);
+						confirmationModal.close();
+						toasts.success(`Deleting branch ${item.branch.name}`);
+						await allBranches.fetch(repository, {
+							defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
+						});
+						if (item.branch.name === $workingBranch?.currentBranch) {
+							await checkout(repository.path, $defaultBranch.name);
+							activeBranch.setActive($defaultBranch);
+							await workingBranch.setWorking(repository);
+						}
+					} catch (e) {
+						console.error('Failed to delete branch', e);
+						toasts.error('Failed to delete branch');
+					}
+					console.log('delete branch', item.branch.name);
+				}
+			}}
+		>
+			Confirm
+		</Button>
+	</svelte:fragment>
+</Modal>
+
+<style lang="postcss">
+	.tag {
+		height: var(--size-control-s);
+		padding: var(--size-2) var(--size-4);
+		border-radius: var(--radius-m);
+		transition: background-color var(--transition-fast);
+		color: var(--clr-theme-scale-warn-20);
+		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%);
+		box-shadow: inset 0 0 0 1px var(--clr-theme-scale-warn-60);
+	}
+</style>

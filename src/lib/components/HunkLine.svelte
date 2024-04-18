@@ -32,10 +32,9 @@
 		return tokens;
 	}
 
-	$: bgColor =
-		selectable && false
-			? 'bg-blue-400 border-blue-500 text-white dark:border-blue-700 dark:bg-blue-800'
-			: 'bg-light-50 border-light-300 dark:bg-dark-700 dark:border-dark-400';
+	$: bgColor = selectable
+		? 'bg-blue-400 border-blue-500 text-white dark:border-blue-700 dark:bg-blue-800'
+		: 'bg-light-50 border-light-300 dark:bg-dark-700 dark:border-dark-400';
 </script>
 
 <div class="code-line text-sm" role="group" on:contextmenu|preventDefault>

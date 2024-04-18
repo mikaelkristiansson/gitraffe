@@ -1,8 +1,8 @@
 <script lang="ts">
+	import '../styles/main.postcss';
 	import { SETTINGS_CONTEXT, loadUserSettings } from '$lib/settings/userSettings';
 	import { initTheme } from '$lib/utils/theme';
 	import { setContext } from 'svelte';
-	import '../styles/main.postcss';
 	import { Toaster } from 'svelte-french-toast';
 	import ToastController from '$lib/notifications/ToastController.svelte';
 

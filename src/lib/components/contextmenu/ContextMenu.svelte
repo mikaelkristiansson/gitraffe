@@ -12,6 +12,7 @@
 	const dispatch = createEventDispatcher<{ select: ContextMenuItem | undefined }>();
 
 	const subscription = selection$.subscribe((item) => dispatch('select', item));
+
 	onDestroy(() => {
 		subscription();
 	});

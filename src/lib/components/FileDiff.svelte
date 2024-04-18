@@ -2,6 +2,7 @@
 	import Button from './Button.svelte';
 	import HunkViewer from './HunkViewer.svelte';
 	import { type DiffHunk, DiffType, type IDiff, DiffLineType } from '$lib/models/diff';
+	import InfoMessage from './InfoMessage.svelte';
 
 	export let filePath: string;
 	export let diff: IDiff;
@@ -49,6 +50,9 @@
 			>
 		</div>
 	{:else}
+		{#if diff.kind === DiffType.Text && diff.hunks.length === 0}
+			<InfoMessage title="No changes">No changes in this file</InfoMessage>
+		{/if}
 		{#each hunks as section}
 			{@const { added, removed } = computeAddedRemovedByHunk(section)}
 			<div class="hunk-wrapper">

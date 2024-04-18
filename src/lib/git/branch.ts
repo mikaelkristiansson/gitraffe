@@ -1,9 +1,7 @@
 import { Branch, BranchType, type IBranchTip } from '$lib/models/branch';
 import { CommitIdentity } from '$lib/models/commit-identity';
-import { invoke } from '@tauri-apps/api/tauri';
 import { createForEachRefParser } from './git-delimiter-parser';
 import type { Repository } from '$lib/models/repository';
-import type { GitResponse } from './type';
 import { git } from './cli';
 
 /** Get all the branches. */
@@ -41,7 +39,7 @@ export async function getBranches(
 	// }
 
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
-	const { stdout, stderr }: GitResponse = await invoke('git', { path: repository.path, args });
+	const { stdout, stderr } = await git(repository.path, args);
 	if (stderr) {
 		throw new Error(stderr);
 	}
@@ -100,10 +98,16 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	//   // error code 128 is returned if the branch is unborn
 	//   return []
 	// }
-	const { stdout }: GitResponse = await invoke('git', {
-		path: repository.path,
-		args: ['log', '-g', '--no-abbrev-commit', '--pretty=oneline', 'HEAD', '-n', '2500', '--']
-	});
+	const { stdout } = await git(repository.path, [
+		'log',
+		'-g',
+		'--no-abbrev-commit',
+		'--pretty=oneline',
+		'HEAD',
+		'-n',
+		'2500',
+		'--'
+	]);
 
 	const lines = stdout.split('\n');
 	const names = new Set<string>();

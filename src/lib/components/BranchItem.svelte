@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import AheadBehind from './AheadBehind.svelte';
-	import { activeBranch, workingBranch } from '$lib/stores/branch';
+	import { defaultBranch, workingBranch } from '$lib/stores/branch';
 	import { checkout } from '$lib/git/cli';
 	import { type Branch } from '$lib/models/branch';
 	import TimeAgo from './TimeAgo.svelte';
@@ -12,10 +12,29 @@
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
 	import { error } from '$lib/utils/toasts';
+	import BranchContextMenu from './BranchContextMenu.svelte';
+	import { onDestroy } from 'svelte';
+	import { updateCurrentBranch } from '$lib/store-updater';
 
 	export let repository: Repository;
 	export let branch: Branch;
 	let untrackedModal: Modal;
+
+	function updateContextMenu() {
+		if (popupMenu) popupMenu.$destroy();
+		return new BranchContextMenu({
+			target: document.body,
+			props: { repository }
+		});
+	}
+
+	$: popupMenu = updateContextMenu();
+
+	onDestroy(() => {
+		if (popupMenu) {
+			popupMenu.$destroy();
+		}
+	});
 
 	$: href = `/${repository.id}/board/${branch.name}`;
 	$: selected = $page.url.href.endsWith(`${branch.name}`);
@@ -24,12 +43,17 @@
 <button
 	class="branch"
 	class:selected
-	on:mousedown={async () => {
+	on:contextmenu|preventDefault={(e) =>
+		branch.ref !== $defaultBranch.ref &&
+		popupMenu.openByMouse(e, {
+			branch,
+			untrackedModal
+		})}
+	on:click={async () => {
 		if ($workingBranch?.workingDirectory.files.length === 0) {
 			try {
 				await checkout(repository.path, branch.name);
-				activeBranch.setActive(branch);
-				workingBranch.setWorking(repository);
+				updateCurrentBranch(repository, branch);
 				if (href) goto(href);
 			} catch (e) {
 				error('Failed to switch branch');
@@ -61,10 +85,10 @@
 		</div>
 	</div>
 </button>
-<Modal width="default" title="Switch Branch" bind:this={untrackedModal}>
+<Modal width="default" title="Manage Branch" bind:this={untrackedModal} let:item>
 	<div>
-		You have changes on the branch that are not committed. Switching branches will discard these
-		changes.
+		You have changes on the branch that are not committed. {item?.branch ? 'Deleting' : 'Switching'}
+		branches will discard these changes.
 		<ul class="file-list">
 			{#if $workingBranch}
 				{#each $workingBranch.workingDirectory.files as file}

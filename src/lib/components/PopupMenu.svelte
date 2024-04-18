@@ -1,16 +1,20 @@
 <script lang="ts">
+	import type { Branch } from '$lib/models/branch';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
 	import { clickOutside } from '$lib/utils/clickOutside';
+	import Modal from './Modal.svelte';
 
 	let pos = { x: 0, y: 0 };
 	let menu = { h: 0, w: 0 };
 	let browser = { h: 0, w: 0 };
 	let showMenu = false;
 	let item: {
-		files: WorkingDirectoryFileChange[];
-		setSelected: (
+		file?: WorkingDirectoryFileChange;
+		setSelected?: (
 			file: WorkingDirectoryFileChange | undefined
 		) => WorkingDirectoryFileChange | undefined;
+		branch?: Branch;
+		untrackedModal?: Modal;
 	};
 
 	function onDismiss() {

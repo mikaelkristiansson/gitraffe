@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { activeBranch } from '$lib/stores/branch';
+	import { onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -9,8 +10,12 @@
 		goto(`/`, { replaceState: true });
 	}
 
-	activeBranch.subscribe((branch) => {
+	const unsubscribeActiveBranch = activeBranch.subscribe((branch) => {
 		if (!branch) return;
 		goto(`/${data.repositoryId}/board/${branch.name}`, { replaceState: true });
+	});
+
+	onDestroy(() => {
+		unsubscribeActiveBranch();
 	});
 </script>

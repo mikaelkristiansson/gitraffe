@@ -20,13 +20,14 @@
 
 	async function addNewRepository() {
 		const repository = await addRepository();
-		activeRepository.subscribe((repo) => {
+		const unsubscribeActiveRepository = activeRepository.subscribe((repo) => {
 			if (repo?.id === repository?.id) {
 				if (repository) {
 					goto(`/${repository.id}/board`);
 				}
 			}
 		});
+		unsubscribeActiveRepository();
 		return repository;
 	}
 </script>

@@ -1,29 +1,28 @@
 <script lang="ts">
 	import FileStatusCircle from './FileStatusCircle.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import {
+		isConflictedFileStatus,
+		isConflictWithMarkers,
+		type WorkingDirectoryFileChange
+	} from '$lib/models/status';
 	import { tooltip } from '$lib/utils/tooltip';
 
 	export let file: WorkingDirectoryFileChange;
-	$: isLocked = false; //file.hunks.some((h) => h.locked);
 </script>
 
 <div class="file-status" use:tooltip={{ delay: 400, text: file.status.kind }}>
-	<div class="file-status__icons">
-		{#if isLocked}
-			<div class="locked">
-				<Icon name="locked-small" color="warn" />
-			</div>
+	{#if isConflictedFileStatus(file.status)}
+		{#if isConflictWithMarkers(file.status) && file.status.conflictMarkerCount > 0}
+			<Icon name="warning-small" color="error" />
+		{:else}
+			<Icon name="success-small" color="success" />
 		{/if}
-		{#if file.status.kind === 'Conflicted'}
-			<div class="conflicted">
-				<Icon name="warning-small" color="error" />
-			</div>
-		{/if}
-	</div>
-	<div class="status">
-		<FileStatusCircle status={file.status.kind} />
-	</div>
+	{:else}
+		<div class="file-status__circle">
+			<FileStatusCircle status={file.status.kind} />
+		</div>
+	{/if}
 </div>
 
 <style lang="postcss">
@@ -32,7 +31,7 @@
 		align-items: center;
 		gap: var(--size-4);
 	}
-	.file-status__icons {
-		display: flex;
+	.file-status__circle {
+		margin-right: var(--size-4);
 	}
 </style>

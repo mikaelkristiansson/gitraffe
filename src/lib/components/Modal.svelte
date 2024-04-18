@@ -20,14 +20,6 @@
 	export let hoverText: string | undefined = undefined;
 
 	let item: any;
-	// | {
-	// 		files?: WorkingDirectoryFileChange[];
-	// 		setSelected?: (
-	// 			file: WorkingDirectoryFileChange | undefined
-	// 		) => WorkingDirectoryFileChange | undefined;
-	//   }
-	// | IStatusResult
-	// | undefined;
 	let modal: Overlay;
 </script>
 

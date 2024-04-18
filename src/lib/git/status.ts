@@ -11,7 +11,8 @@ import {
 	UnmergedEntrySummary,
 	type UnmergedEntry,
 	type ConflictedFileStatus,
-	GitStatusEntry
+	GitStatusEntry,
+	WorkingDirectoryStatus
 } from '$lib/models/status';
 import { isCherryPickHeadFound } from './cherry-pick';
 import { git } from './cli';
@@ -344,70 +345,6 @@ function buildStatusMap(
 
 	files.set(entry.path, new WorkingDirectoryFileChange(entry.path, appStatus, selection));
 	return files;
-}
-
-/** the state of the working directory for a repository */
-export class WorkingDirectoryStatus {
-	/** Create a new status with the given files. */
-	public static fromFiles(files: WorkingDirectoryFileChange[]): WorkingDirectoryStatus {
-		return new WorkingDirectoryStatus(files, getIncludeAllState(files));
-	}
-
-	private readonly fileIxById = new Map<string, number>();
-	/**
-	 * @param files The list of changes in the repository's working directory.
-	 * @param includeAll Update the include checkbox state of the form.
-	 *                   NOTE: we need to track this separately to the file list selection
-	 *                         and perform two-way binding manually when this changes.
-	 */
-	private constructor(
-		public readonly files: WorkingDirectoryFileChange[],
-		public readonly includeAll: boolean | null = true
-	) {
-		files.forEach((f, ix) => this.fileIxById.set(f.id, ix));
-	}
-
-	/**
-	 * Update the include state of all files in the working directory
-	 */
-	public withIncludeAllFiles(includeAll: boolean): WorkingDirectoryStatus {
-		const newFiles = this.files.map((f) => f.withIncludeAll(includeAll));
-		return new WorkingDirectoryStatus(newFiles, includeAll);
-	}
-
-	/** Find the file with the given ID. */
-	public findFileWithID(id: string): WorkingDirectoryFileChange | null {
-		const ix = this.fileIxById.get(id);
-		return ix !== undefined ? this.files[ix] || null : null;
-	}
-
-	/** Find the index of the file with the given ID. Returns -1 if not found */
-	public findFileIndexByID(id: string): number {
-		const ix = this.fileIxById.get(id);
-		return ix !== undefined ? ix : -1;
-	}
-}
-
-function getIncludeAllState(files: ReadonlyArray<WorkingDirectoryFileChange>): boolean | null {
-	if (!files.length) {
-		return true;
-	}
-
-	const allSelected = files.every(
-		(f) => f.selection.getSelectionType && f.selection.getSelectionType() === DiffSelectionType.All
-	);
-	const noneSelected = files.every(
-		(f) => f.selection.getSelectionType && f.selection.getSelectionType() === DiffSelectionType.None
-	);
-
-	let includeAll: boolean | null = null;
-	if (allSelected) {
-		includeAll = true;
-	} else if (noneSelected) {
-		includeAll = false;
-	}
-
-	return includeAll;
 }
 
 async function getMergeConflictDetails(projectPath: string) {

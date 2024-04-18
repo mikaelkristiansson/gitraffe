@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
-	// import laneNewSvg from '$lib/assets/empty-state/lane-new.svg?raw';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
@@ -9,7 +8,7 @@
 	import BranchFiles from '$lib/components/BranchFiles/BranchFiles.svelte';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
 	import type { IStatusResult } from '$lib/git/status';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
 	import { activeRepository } from '$lib/stores/repository';
@@ -19,6 +18,7 @@
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import FileCard from '$lib/components/FileCard.svelte';
+	import InfoMessage from '$lib/components/InfoMessage.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
@@ -30,11 +30,11 @@
 		return file;
 	}
 
-	commitStore.subscribe((store) => {
+	const unsubscribeCommitStore = commitStore.subscribe((store) => {
 		latestLocalCommit = store.localCommits[0];
 	});
 
-	workingBranch.subscribe((branch) => {
+	const unsubscribeWorkingBranch = workingBranch.subscribe((branch) => {
 		branch$ = branch;
 		if (branch?.workingDirectory) {
 			selectedFiles.set(branch.workingDirectory.files);
@@ -51,6 +51,11 @@
 				workingBranch.setWorking($activeRepository);
 			}
 		}
+	});
+
+	onDestroy(() => {
+		unsubscribeCommitStore();
+		unsubscribeWorkingBranch();
 	});
 
 	const commitBoxOpen = persisted<boolean>(
@@ -88,16 +93,6 @@
 							<div>
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
 									<div class="card">
-										{#if branch$.doConflictedFilesExist}
-											<div class="mb-2 bg-red-500 p-2 font-bold text-white">
-												{#if branch$.workingDirectory.files?.some((f) => f.status.kind == 'Conflicted')}
-													This virtual branch conflicts with upstream changes. Please resolve all
-													conflicts and commit before you can continue.
-												{:else}
-													Please commit your resolved conflicts to continue.
-												{/if}
-											</div>
-										{/if}
 										<BranchFiles
 											branchId={branch$.currentTip || branch$.currentBranch || 'branch'}
 											files={branch$.workingDirectory.files}
@@ -110,6 +105,20 @@
 											{selected}
 											{setSelected}
 										/>
+										{#if branch$.doConflictedFilesExist}
+											<div class="card-notifications">
+												<InfoMessage noRadius filled outlined={false} style="error">
+													<svelte:fragment slot="title">
+														{#if branch$.workingDirectory.files?.some((f) => f.status.kind == 'Conflicted')}
+															This virtual branch conflicts with upstream changes. Please resolve
+															all conflicts and commit before you can continue.
+														{:else}
+															Please commit your resolved conflicts to continue.
+														{/if}
+													</svelte:fragment>
+												</InfoMessage>
+											</div>
+										{/if}
 										<CommitDialog
 											repositoryId={$activeRepository.id}
 											branch={branch$}
@@ -134,6 +143,18 @@
 						{/if}
 						{#if $activeRepository && !$isLaneCollapsed}
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
+							<!-- TODO: add all commits -->
+							<!-- <div class="max-h-[8rem] overflow-x-scroll commit-wrapper">
+								<div class="flex flex-col gap-2 overflow-hidden">
+									{#each $commitStore.localCommits as commit}
+										<CommitCard
+											{commit}
+											isUnapplied={latestLocalCommit?.sha !== commit.sha}
+											repository={$activeRepository}
+										/>
+									{/each}
+								</div>
+							</div> -->
 						{/if}
 					</div>
 					{#if selected}
@@ -145,7 +166,7 @@
 								conflicted={selected.status.kind == 'Conflicted'}
 								file={selected}
 								repository={$activeRepository}
-								readonly={Boolean(selected)}
+								readonly={selected.status.kind !== 'Conflicted'}
 								selectable={$commitBoxOpen && !isUnapplied}
 								on:close={() => {
 									selected = undefined;
@@ -213,6 +234,12 @@
 		top: 0;
 		right: 0;
 		height: 100%;
+	}
+
+	.card-notifications {
+		display: flex;
+		flex-direction: column;
+		padding: 0 var(--size-12) var(--size-12) var(--size-12);
 	}
 
 	.branch-card__dropzone-wrapper {
@@ -305,7 +332,7 @@
 
 		overflow: hidden;
 		align-items: self-start;
-
+		min-width: 20rem;
 		/* padding: var(--size-12) var(--size-12) var(--size-12) 0; */
 	}
 </style>

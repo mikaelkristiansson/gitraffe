@@ -103,6 +103,7 @@
 		top: 50%;
 		color: var(--clr-theme-scale-ntrl-50);
 		transform: translateY(-50%);
+		display: flex;
 	}
 
 	/* Modifiers */

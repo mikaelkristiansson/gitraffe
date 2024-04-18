@@ -6,14 +6,19 @@
 	import { defaultBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import type { Branch } from '$lib/models/branch';
+	import { onDestroy } from 'svelte';
 
 	export let repository: Repository;
 	export let isNavCollapsed: boolean;
 
 	let base: Branch | undefined = $defaultBranch;
 
-	defaultBranch.subscribe((branch) => {
+	const unsubscribeDefaultBranch = defaultBranch.subscribe((branch) => {
 		base = branch;
+	});
+
+	onDestroy(() => {
+		unsubscribeDefaultBranch();
 	});
 </script>
 

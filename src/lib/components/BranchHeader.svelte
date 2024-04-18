@@ -6,33 +6,30 @@
 	import Button from '$lib/components/Button.svelte';
 	import * as toasts from '$lib/utils/toasts';
 	import type { Persisted } from '$lib/persisted';
-	import { goto } from '$app/navigation';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import type { IStatusResult } from '$lib/git/status';
-	import GitPull from '$lib/icons/GitPull.svelte';
-	import GitPush from '$lib/icons/GitPush.svelte';
 	import Badge from './Badge.svelte';
 	import { Branch } from '$lib/models/branch';
-	import { activeRepository } from '$lib/stores/repository';
 	import type { Repository } from '$lib/models/repository';
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
 	import type { IRemote } from '$lib/models/remote';
-	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
+	import { commitStore } from '$lib/stores/commits';
 	import PullRequestCard from './PullRequestCard.svelte';
+	import Icon from './Icon.svelte';
+	import { updateCurrentBranch } from '$lib/store-updater';
 
 	export let isUnapplied = false;
-	export let branch: IStatusResult | undefined;
+	export let branch: IStatusResult;
 	export let repository: Repository;
 	export let isLaneCollapsed: Persisted<boolean>;
 
 	let meatballButton: HTMLDivElement;
 	let visible = false;
 	let isPublishing = false;
-	let isDeleting = false;
 	let isPulling = false;
 	let isPushing = false;
 
@@ -49,10 +46,10 @@
 		try {
 			const remotes = await getRemotes(repository);
 			const remote = findDefaultRemote(remotes);
-			const remoteName = branch?.currentUpstreamBranch || remote?.name;
+			const remoteName = branch.currentUpstreamBranch || remote?.name;
 			if (remoteName && remote) {
 				const safeRemote: IRemote = { name: remoteName, url: remote.url };
-				if (branch?.currentBranch) {
+				if (branch.currentBranch) {
 					await pushUpstream(repository, safeRemote, branch.currentBranch, null, null);
 				}
 			}
@@ -87,16 +84,11 @@
 
 		<div class="collapsed-lane__info">
 			<h3 class="collapsed-lane__label text-base-13 text-bold">
-				{branch?.currentBranch}
+				{branch.currentBranch}
 			</h3>
 
 			<div class="collapsed-lane__info__details">
-				<ActiveBranchStatus
-					{repository}
-					{branch}
-					{isUnapplied}
-					isLaneCollapsed={$isLaneCollapsed}
-				/>
+				<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
 			</div>
 		</div>
 	</div>
@@ -106,24 +98,24 @@
 			<div class="header__info">
 				<div class="flex">
 					<div class="header__label text-base-13 text-bold">
-						{branch?.currentBranch}
+						{branch.currentBranch}
 					</div>
 					<div class="flex mr-2" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
 						<Button
 							kind="outlined"
 							color="neutral"
 							class="items-center"
-							disabled={!branch?.branchAheadBehind?.behind}
+							disabled={!branch.branchAheadBehind?.behind}
 							loading={isPulling}
 							on:click={async () => {
-								if (branch?.workingDirectory?.files && branch?.workingDirectory?.files.length > 0) {
+								if (branch.workingDirectory?.files && branch.workingDirectory?.files.length > 0) {
 									toasts.error('Cannot pull while there are uncommitted changes');
 									return;
 								}
 								isPulling = true;
 								try {
-									if ($activeRepository && branch?.currentBranch) {
-										await pullOrigin($activeRepository.path, branch.currentBranch);
+									if (branch.currentBranch) {
+										await pullOrigin(repository.path, branch.currentBranch);
 										const update = { behind: 0, ahead: $activeBranch.aheadBehind.ahead };
 										const newBranch = new Branch(
 											$activeBranch.name,
@@ -134,8 +126,8 @@
 											update
 										);
 										allBranches.updateBranch(newBranch);
-										await defaultBranch.setDefault($activeRepository);
-										await workingBranch.setWorking($activeRepository);
+										await defaultBranch.setDefault(repository);
+										await workingBranch.setWorking(repository);
 										toasts.success('Pulled from origin');
 									}
 								} finally {
@@ -143,25 +135,25 @@
 								}
 							}}
 						>
-							Pull <Badge class="ml-1" count={branch?.branchAheadBehind?.behind || 0} />
-							<GitPull class="ml-1" size={14} />
+							Pull <Badge class="ml-1" count={branch.branchAheadBehind?.behind || 0} />
+							<Icon name="pull-small" size={14} />
 						</Button>
 					</div>
 					<div class="flex" use:tooltip={{ text: 'Push origin', delay: 300 }}>
 						<Button
 							kind="outlined"
 							color="neutral"
-							disabled={!branch?.branchAheadBehind?.ahead}
+							disabled={!branch.branchAheadBehind?.ahead}
 							loading={isPushing}
 							on:click={async () => {
-								if (branch?.branchAheadBehind?.behind) {
+								if (branch.branchAheadBehind?.behind) {
 									toasts.error('Cannot push while branch is behind origin');
 									return;
 								}
 								isPushing = true;
 								try {
-									if ($activeRepository && branch?.currentBranch) {
-										await push($activeRepository.path);
+									if (branch.currentBranch) {
+										await push(repository.path);
 										const update = { behind: $activeBranch.aheadBehind.behind, ahead: 0 };
 										const newBranch = new Branch(
 											$activeBranch.name,
@@ -171,10 +163,8 @@
 											$activeBranch.ref,
 											update
 										);
-										workingBranch.setWorking($activeRepository);
-										await defaultBranch.setDefault($activeRepository);
 										allBranches.updateBranch(newBranch);
-										await loadLocalCommits($activeRepository, $activeBranch);
+										updateCurrentBranch(repository, newBranch);
 									}
 									toasts.success('Pushed to origin');
 								} finally {
@@ -182,19 +172,14 @@
 								}
 							}}
 						>
-							Push <Badge class="ml-1" count={branch?.branchAheadBehind?.ahead || 0} />
-							<GitPush class="ml-1" size={14} />
+							Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
+							<Icon name="push-small" size={14} />
 						</Button>
 					</div>
 				</div>
 				<div class="header__remote-branch">
-					<ActiveBranchStatus
-						{repository}
-						{branch}
-						{isUnapplied}
-						isLaneCollapsed={$isLaneCollapsed}
-					/>
-					{#if branch?.doConflictedFilesExist}
+					<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
+					{#if branch.doConflictedFilesExist}
 						<Tag
 							icon="locked-small"
 							color="warning"
@@ -211,12 +196,14 @@
 						kind="outlined"
 						icon="merged-pr-small"
 						loading={isPublishing}
-						color={branch?.branchAheadBehind !== undefined ? 'neutral' : 'primary'}
+						color={branch.branchAheadBehind !== undefined ? 'neutral' : 'primary'}
 						on:click={publishBranch}
-						disabled={branch?.branchAheadBehind !== undefined}>Publish</Button
+						disabled={branch.branchAheadBehind !== undefined}>Publish</Button
 					>
 				</div>
-				<PullRequestCard {repository} />
+				{#if branch && branch.branchAheadBehind !== undefined}
+					<PullRequestCard {repository} />
+				{/if}
 				<div class="header__buttons">
 					<Button
 						icon="fold-lane"

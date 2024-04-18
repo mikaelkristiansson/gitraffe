@@ -5,12 +5,11 @@
 	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
 	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
-	// import { computeFileStatus } from '$lib/utils/fileStatus';
 	import * as toasts from '$lib/utils/toasts';
 	import { join } from '@tauri-apps/api/path';
 	import { open } from '@tauri-apps/api/shell';
 	import type { Repository } from '$lib/models/repository';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import { AppFileStatusKind, type WorkingDirectoryFileChange } from '$lib/models/status';
 	import { discardChanges } from '$lib/git/discard';
 	import { activeRepository } from '$lib/stores/repository';
 	import { workingBranch } from '$lib/stores/branch';
@@ -20,13 +19,8 @@
 	let confirmationModal: Modal;
 	let popupMenu: PopupMenu;
 
-	function containsBinaryFiles(item: { files: WorkingDirectoryFileChange[] }) {
-		// return item.files.some((f: WorkingDirectoryFileChange) => f.status);
-		// return item.files.some((f: AnyFile) => f.binary);
-	}
-
-	function isDeleted(item: any) {
-		// return item.files.some((f: AnyFile) => computeFileStatus(f) === 'D');
+	function isDeleted(item: { file?: WorkingDirectoryFileChange }) {
+		return item.file?.status.kind === AppFileStatusKind.Deleted;
 	}
 
 	export function openByMouse(e: MouseEvent, item: any) {
@@ -37,57 +31,53 @@
 <PopupMenu bind:this={popupMenu} let:item let:dismiss>
 	<ContextMenu>
 		<ContextMenuSection>
-			{#if item.files !== undefined}
-				<!-- {#if containsBinaryFiles(item)}
-					<ContextMenuItem label="Discard changes (Binary files not yet supported)" disabled />
-				{:else} -->
+			{#if item.file !== undefined}
 				<ContextMenuItem
+					icon="undo-small"
 					label="Discard changes"
 					on:click={() => {
 						confirmationModal.show(item);
 						dismiss();
 					}}
 				/>
-				<!-- {/if} -->
-				{#if item.files.length === 1}
-					<ContextMenuItem
-						label="Copy Path"
-						on:click={async () => {
-							try {
-								if (!repository) return;
-								const absPath = await join(repository.path, item.files[0].path);
-								navigator.clipboard.writeText(absPath);
-								dismiss();
-							} catch (err) {
-								console.error('Failed to copy path', err);
-								toasts.error('Failed to copy path');
-							}
-						}}
-					/>
-					<ContextMenuItem
-						label="Copy Relative Path"
-						on:click={() => {
-							try {
-								if (!repository) return;
-								navigator.clipboard.writeText(item.files[0].path);
-								dismiss();
-							} catch (err) {
-								console.error('Failed to copy relative path', err);
-								toasts.error('Failed to copy relative path');
-							}
-						}}
-					/>
-				{/if}
-				<!-- disabled={isDeleted(item)} -->
 				<ContextMenuItem
+					icon="copy"
+					label="Copy Path"
+					on:click={async () => {
+						try {
+							if (!repository || !item.file) return;
+							const absPath = await join(repository.path, item.file.path);
+							navigator.clipboard.writeText(absPath);
+							dismiss();
+						} catch (err) {
+							console.error('Failed to copy path', err);
+							toasts.error('Failed to copy path');
+						}
+					}}
+				/>
+				<ContextMenuItem
+					icon="copy"
+					label="Copy Relative Path"
+					on:click={() => {
+						try {
+							if (!repository || !item.file) return;
+							navigator.clipboard.writeText(item.file.path);
+							dismiss();
+						} catch (err) {
+							console.error('Failed to copy relative path', err);
+							toasts.error('Failed to copy relative path');
+						}
+					}}
+				/>
+				<ContextMenuItem
+					disabled={isDeleted(item)}
+					icon="vscode"
 					label="Open in VSCode"
 					on:click={async () => {
 						try {
-							if (!repository) return;
-							for (let file of item.files) {
-								const absPath = await join(repository.path, file.path);
-								open(`vscode://file${absPath}`);
-							}
+							if (!repository || !item.file) return;
+							const absPath = await join(repository.path, item.file.path);
+							open(`vscode://file${absPath}`);
 							dismiss();
 						} catch {
 							console.error('Failed to open in VSCode');
@@ -105,9 +95,7 @@
 		<div>
 			Discarding changes to the following files:
 			<ul class="file-list">
-				{#each item.files as file}
-					<li><pre class="whitespace-pre-wrap break-words">{file.path}</pre></li>
-				{/each}
+				<li><pre class="whitespace-pre-wrap break-words">{item.file.path}</pre></li>
 			</ul>
 		</div>
 	{/if}
@@ -118,17 +106,19 @@
 			on:click={async () => {
 				if ($activeRepository && item) {
 					try {
-						await discardChanges(item.files, $activeRepository, false);
+						await discardChanges([item.file], $activeRepository, false);
 						// this will also close the modal since it updates the view
 						await workingBranch.setWorking($activeRepository);
 						item.setSelected(undefined);
 						toasts.success(
 							//@ts-ignore
-							`Changes discarded for ${item.files.flatMap((f) => f.path.split('/').pop()).join(', ')}`
+							`Changes discarded for ${item.file.path}`
 						);
 					} catch (e) {
 						console.error('Failed to discard changes', e);
 						toasts.error('Failed to discard changes');
+					} finally {
+						confirmationModal?.close();
 					}
 				}
 			}}

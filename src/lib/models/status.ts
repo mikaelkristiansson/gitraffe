@@ -320,9 +320,7 @@ export type ChangedFile = WorkingDirectoryFileChange | CommittedFileChange;
 /** the state of the working directory for a repository */
 export class WorkingDirectoryStatus {
 	/** Create a new status with the given files. */
-	public static fromFiles(
-		files: ReadonlyArray<WorkingDirectoryFileChange>
-	): WorkingDirectoryStatus {
+	public static fromFiles(files: Array<WorkingDirectoryFileChange>): WorkingDirectoryStatus {
 		return new WorkingDirectoryStatus(files, getIncludeAllState(files));
 	}
 
@@ -334,7 +332,7 @@ export class WorkingDirectoryStatus {
 	 *                         and perform two-way binding manually when this changes.
 	 */
 	private constructor(
-		public readonly files: ReadonlyArray<WorkingDirectoryFileChange>,
+		public readonly files: Array<WorkingDirectoryFileChange>,
 		public readonly includeAll: boolean | null = true
 	) {
 		files.forEach((f, ix) => this.fileIxById.set(f.id, ix));

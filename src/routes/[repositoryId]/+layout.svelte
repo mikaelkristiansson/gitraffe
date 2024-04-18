@@ -8,9 +8,10 @@
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
+	import { invoke } from '@tauri-apps/api/tauri';
 
 	let repository$: Repository | null = null;
-	activeRepository.subscribe(async (repo) => {
+	const unsubscribeActiveRepository = activeRepository.subscribe(async (repo) => {
 		if (repo) {
 			repository$ = repo;
 		}
@@ -89,6 +90,7 @@
 	// you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
 	onDestroy(() => {
 		unlisten();
+		unsubscribeActiveRepository();
 		clearTimeout(timeoutId);
 	});
 	$: baseError = null;

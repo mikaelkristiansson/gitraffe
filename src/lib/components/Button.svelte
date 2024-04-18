@@ -1,5 +1,13 @@
 <script lang="ts" context="module">
-	export type ButtonColor = 'primary' | 'neutral' | 'error' | 'warn' | 'pop' | 'purple' | 'success';
+	export type ButtonColor =
+		| 'primary'
+		| 'neutral'
+		| 'error'
+		| 'warn'
+		| 'pop'
+		| 'purple'
+		| 'success'
+		| 'ghost';
 </script>
 
 <script lang="ts">
@@ -46,12 +54,14 @@
 	class:purple-outline={color == 'purple' && kind == 'outlined'}
 	class:success-outline={color == 'success' && kind == 'outlined'}
 	class:neutral-outline={color == 'neutral' && kind == 'outlined'}
+	class:ghost-outline={color == 'ghost' && kind == 'outlined'}
 	class:error-filled={color == 'error' && kind == 'filled'}
 	class:primary-filled={color == 'primary' && kind == 'filled'}
 	class:warn-filled={color == 'warn' && kind == 'filled'}
-	class:neutral-filled={color == 'neutral' && kind == 'filled'}
 	class:purple-filled={color == 'purple' && kind == 'filled'}
 	class:success-filled={color == 'success' && kind == 'filled'}
+	class:neutral-filled={color == 'neutral' && kind == 'filled'}
+	class:ghost-filled={color == 'ghost' && kind == 'filled'}
 	class:pointer-events-none={loading}
 	class:icon-left={iconAlign == 'left'}
 	class:wide
@@ -137,6 +147,22 @@
 			background: color-mix(in srgb, transparent, var(--darken-tint-extralight));
 			border: 1px solid
 				color-mix(in srgb, var(--clr-theme-container-outline-light), var(--darken-tint-mid));
+		}
+	}
+
+	.ghost-filled {
+		color: var(--clr-theme-scale-ntrl-40);
+		&:hover,
+		&:focus {
+			background: color-mix(in srgb, transparent, var(--darken-tint-light));
+		}
+	}
+	.ghost-outline {
+		color: var(--clr-theme-scale-ntrl-40);
+		box-shadow: inset 0 0 0 1px var(--clr-theme-scale-ntrl-60);
+		&:hover,
+		&:focus {
+			background: color-mix(in srgb, var(--clr-core-ntrl-50), transparent 90%);
 		}
 	}
 
