@@ -19,7 +19,7 @@
 	<div class="left-btns">
 		<IconButton
 			icon="settings"
-			help="Project settings"
+			help="Repository settings"
 			size={isNavCollapsed ? 'l' : 'm'}
 			width={isNavCollapsed ? '100%' : undefined}
 			on:mousedown={() => repositorySettingsModal.show()}

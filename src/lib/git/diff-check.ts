@@ -19,7 +19,7 @@ export async function getFilesWithConflictMarkers(path: string): Promise<Map<str
 
 	// // result parsing
 	// const outputStr = output.toString('utf8')
-	const { stdout } = await git(path, ['diff', '--check']);
+	const { stdout } = await git(path, ['diff', '--check'], { successExitCodes: new Set([0, 2]) });
 	const captures = getCaptures(stdout, fileNameCaptureRe);
 	if (captures.length === 0) {
 		return new Map<string, number>();

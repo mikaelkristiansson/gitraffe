@@ -19,11 +19,15 @@
 	import { quintOut } from 'svelte/easing';
 	import FileCard from '$lib/components/FileCard.svelte';
 	import InfoMessage from '$lib/components/InfoMessage.svelte';
+	import type { IStashEntry } from '$lib/models/stash-entry';
+	import { stashStore } from '$lib/stores/stash';
+	import Stash from '$lib/components/Stash.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
 	let latestLocalCommit: Commit | null = null;
 	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
+	let stash: IStashEntry | null = null;
 
 	function setSelected(file: WorkingDirectoryFileChange | undefined) {
 		selected = file;
@@ -32,6 +36,10 @@
 
 	const unsubscribeCommitStore = commitStore.subscribe((store) => {
 		latestLocalCommit = store.localCommits[0];
+	});
+
+	const unsubscribeStashStore = stashStore.subscribe((store) => {
+		stash = store;
 	});
 
 	const unsubscribeWorkingBranch = workingBranch.subscribe((branch) => {
@@ -56,6 +64,7 @@
 	onDestroy(() => {
 		unsubscribeCommitStore();
 		unsubscribeWorkingBranch();
+		unsubscribeStashStore();
 	});
 
 	const commitBoxOpen = persisted<boolean>(
@@ -100,7 +109,6 @@
 											repository={$activeRepository}
 											{selectedFiles}
 											showCheckboxes={$commitBoxOpen}
-											allowMultiple={true}
 											readonly={false}
 											{selected}
 											{setSelected}
@@ -141,20 +149,11 @@
 								{/if}
 							</div>
 						{/if}
+						{#if stash}
+							<Stash {stash} />
+						{/if}
 						{#if $activeRepository && !$isLaneCollapsed}
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
-							<!-- TODO: add all commits -->
-							<!-- <div class="max-h-[8rem] overflow-x-scroll commit-wrapper">
-								<div class="flex flex-col gap-2 overflow-hidden">
-									{#each $commitStore.localCommits as commit}
-										<CommitCard
-											{commit}
-											isUnapplied={latestLocalCommit?.sha !== commit.sha}
-											repository={$activeRepository}
-										/>
-									{/each}
-								</div>
-							</div> -->
 						{/if}
 					</div>
 					{#if selected}
@@ -163,7 +162,6 @@
 							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
 						>
 							<FileCard
-								conflicted={selected.status.kind == 'Conflicted'}
 								file={selected}
 								repository={$activeRepository}
 								readonly={selected.status.kind !== 'Conflicted'}

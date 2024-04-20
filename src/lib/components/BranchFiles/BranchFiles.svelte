@@ -18,7 +18,6 @@
 		file: WorkingDirectoryFileChange
 	) => WorkingDirectoryFileChange | undefined;
 
-	export let allowMultiple: boolean;
 	export let readonly: boolean;
 
 	let selectedListMode: string;
@@ -32,7 +31,6 @@
 		<div class="files-padding max-h-[12rem] overflow-x-scroll">
 			{#if selectedListMode == 'list'}
 				<BranchFilesList
-					{allowMultiple}
 					{readonly}
 					{branchId}
 					{files}
@@ -46,7 +44,6 @@
 			{:else}
 				<FileTree
 					node={filesToFileTree(files)}
-					{allowMultiple}
 					{readonly}
 					{showCheckboxes}
 					{branchId}

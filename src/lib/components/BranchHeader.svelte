@@ -5,15 +5,15 @@
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Button from '$lib/components/Button.svelte';
 	import * as toasts from '$lib/utils/toasts';
-	import type { Persisted } from '$lib/persisted';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
+	import type { Persisted } from '$lib/persisted';
 	import type { IStatusResult } from '$lib/git/status';
+	import type { Repository } from '$lib/models/repository';
 	import Badge from './Badge.svelte';
 	import { Branch } from '$lib/models/branch';
-	import type { Repository } from '$lib/models/repository';
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
 	import type { IRemote } from '$lib/models/remote';
@@ -50,7 +50,7 @@
 			if (remoteName && remote) {
 				const safeRemote: IRemote = { name: remoteName, url: remote.url };
 				if (branch.currentBranch) {
-					await pushUpstream(repository, safeRemote, branch.currentBranch, null, null);
+					await pushUpstream(repository, null, safeRemote, branch.currentBranch, null, null);
 				}
 			}
 			workingBranch.setWorking(repository);

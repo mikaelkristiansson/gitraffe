@@ -2,6 +2,30 @@ import type { Repository } from '$lib/models/repository';
 import { git } from './cli';
 
 /**
+ * Format a local branch in the ref syntax, ensuring situations when the branch
+ * is ambiguous are handled.
+ *
+ * Examples:
+ *  - main -> refs/heads/main
+ *  - heads/Microsoft/main -> refs/heads/Microsoft/main
+ *
+ * @param branch The local branch name
+ */
+export function formatAsLocalRef(name: string): string {
+	if (name.startsWith('heads/')) {
+		// In some cases, Git will report this name explicitly to distinguish from
+		// a remote ref with the same name - this ensures we format it correctly.
+		return `refs/${name}`;
+	} else if (!name.startsWith('refs/heads/')) {
+		// By default Git will drop the heads prefix unless absolutely necessary
+		// - include this to ensure the ref is fully qualified.
+		return `refs/heads/${name}`;
+	} else {
+		return name;
+	}
+}
+
+/**
  * Read a symbolic ref from the repository.
  *
  * Symbolic refs are used to point to other refs, similar to how symlinks work
@@ -27,9 +51,15 @@ export async function getSymbolicRef(repository: Repository, ref: string): Promi
 	//     successExitCodes: new Set([0, 1, 128]),
 	//   }
 	// )
-	const { stdout } = await git(repository.path, ['symbolic-ref', '-q', ref]);
+	const { stdout, exitCode } = await git(repository.path, ['symbolic-ref', '-q', ref], {
+		//  - 1 is the exit code that Git throws in quiet mode when the ref is not a
+		//    symbolic ref
+		//  - 128 is the generic error code that Git returns when it can't find
+		//    something
+		successExitCodes: new Set([0, 1, 128])
+	});
 
-	if (!stdout) {
+	if (exitCode === 1 || exitCode === 128) {
 		return null;
 	}
 

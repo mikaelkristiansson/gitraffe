@@ -18,7 +18,6 @@
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
 	export let branchId: string;
 	export let isUnapplied: boolean;
-	export let allowMultiple = false;
 	export let readonly = false;
 	export let files: WorkingDirectoryFileChange[];
 	export let selected: WorkingDirectoryFileChange | undefined;
@@ -43,7 +42,6 @@
 					{branchId}
 					{isUnapplied}
 					{readonly}
-					{allowMultiple}
 					{selected}
 					{files}
 					{repository}
@@ -87,7 +85,6 @@
 						{branchId}
 						{isUnapplied}
 						{readonly}
-						{allowMultiple}
 						{files}
 						{repository}
 						on:checked

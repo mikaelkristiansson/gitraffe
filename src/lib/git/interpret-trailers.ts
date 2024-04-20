@@ -96,7 +96,9 @@ export async function parseTrailers(
 	repository: Repository,
 	commitMessage: string
 ): Promise<ReadonlyArray<ITrailer>> {
-	const result = await git(repository.path, ['interpret-trailers', '--parse'], commitMessage);
+	const result = await git(repository.path, ['interpret-trailers', '--parse'], {
+		stdin: commitMessage
+	});
 
 	const trailers = result.stdout;
 
@@ -156,7 +158,7 @@ export async function mergeTrailers(
 		args.push('--trailer', `${trailer.token}=${trailer.value}`);
 	}
 
-	const result = await git(repository.path, args, commitMessage);
+	const result = await git(repository.path, args, { stdin: commitMessage });
 
 	return result.stdout;
 }

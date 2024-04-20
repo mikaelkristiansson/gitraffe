@@ -3,6 +3,7 @@ import { join } from '@tauri-apps/api/path';
 import { git } from './cli';
 import { exists } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
+import { IGitError } from '$lib/models/git-errors';
 
 export enum MergeResult {
 	/** The merge completed successfully */
@@ -32,7 +33,9 @@ export async function merge(
 
 	args.push(branch);
 
-	const { status, stdout } = await git(repository.path, args);
+	const { status, stdout } = await git(repository.path, args, {
+		expectedErrors: new Set([IGitError.MergeConflicts])
+	});
 
 	if (status !== 0) {
 		return MergeResult.Failed;
@@ -61,7 +64,12 @@ export async function getMergeBase(
 	firstCommitish: string,
 	secondCommitish: string
 ): Promise<string | null> {
-	const process = await git(repository.path, ['merge-base', firstCommitish, secondCommitish]);
+	const process = await git(repository.path, ['merge-base', firstCommitish, secondCommitish], {
+		// - 1 is returned if a common ancestor cannot be resolved
+		// - 128 is returned if a ref cannot be found
+		//   "warning: ignoring broken ref refs/remotes/origin/main."
+		successExitCodes: new Set([0, 1, 128])
+	});
 
 	if (process.status === 1 || process.status === 128) {
 		return null;

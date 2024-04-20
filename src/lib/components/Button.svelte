@@ -45,13 +45,14 @@
 </script>
 
 <button
-	class="btn"
+	class="btn {$$props.class}"
 	class:medium={size == 'medium'}
 	class:large={size == 'large'}
 	class:error-outline={color == 'error' && kind == 'outlined'}
 	class:primary-outline={color == 'primary' && kind == 'outlined'}
 	class:warn-outline={color == 'warn' && kind == 'outlined'}
 	class:purple-outline={color == 'purple' && kind == 'outlined'}
+	class:pop-outline={color == 'pop' && kind == 'outlined'}
 	class:success-outline={color == 'success' && kind == 'outlined'}
 	class:neutral-outline={color == 'neutral' && kind == 'outlined'}
 	class:ghost-outline={color == 'ghost' && kind == 'outlined'}
@@ -59,6 +60,7 @@
 	class:primary-filled={color == 'primary' && kind == 'filled'}
 	class:warn-filled={color == 'warn' && kind == 'filled'}
 	class:purple-filled={color == 'purple' && kind == 'filled'}
+	class:pop-filled={color == 'pop' && kind == 'filled'}
 	class:success-filled={color == 'success' && kind == 'filled'}
 	class:neutral-filled={color == 'neutral' && kind == 'filled'}
 	class:ghost-filled={color == 'ghost' && kind == 'filled'}
@@ -233,6 +235,23 @@
 		&:focus {
 			color: color-mix(in srgb, var(--clr-theme-purple-outline), var(--darken-mid));
 			border: 1px solid color-mix(in srgb, var(--clr-theme-purple-outline), var(--darken-mid));
+		}
+	}
+	.pop-filled {
+		color: var(--clr-theme-pop-on-element);
+		background: var(--clr-theme-pop-element);
+		&:hover,
+		&:focus {
+			background: color-mix(in srgb, var(--clr-theme-pop-element), var(--darken-mid));
+		}
+	}
+	.pop-outline {
+		color: var(--clr-theme-pop-outline);
+		border: 1px solid var(--clr-theme-pop-outline);
+		&:hover,
+		&:focus {
+			color: color-mix(in srgb, var(--clr-theme-pop-outline), var(--darken-mid));
+			border: 1px solid color-mix(in srgb, var(--clr-theme-pop-outline), var(--darken-mid));
 		}
 	}
 

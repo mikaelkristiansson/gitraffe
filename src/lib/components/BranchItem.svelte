@@ -9,11 +9,12 @@
 	import AuthorIcon from './AuthorIcon.svelte';
 	import type { Repository } from '$lib/models/repository';
 	import Modal from './Modal.svelte';
-	import Button from './Button.svelte';
 	import { error } from '$lib/utils/toasts';
 	import BranchContextMenu from './BranchContextMenu.svelte';
 	import { onDestroy } from 'svelte';
 	import { updateCurrentBranch } from '$lib/store-updater';
+	import SwitchBranch from './SwitchBranch.svelte';
+	import { untracked } from '$lib/stores/modal';
 
 	export let repository: Repository;
 	export let branch: Branch;
@@ -27,6 +28,10 @@
 			props: { repository }
 		});
 	}
+
+	untracked.subscribe((u) => {
+		untrackedModal = u as any;
+	});
 
 	$: popupMenu = updateContextMenu();
 
@@ -58,7 +63,9 @@
 				error('Failed to switch branch');
 			}
 		} else {
-			untrackedModal.show();
+			untrackedModal.show({
+				branch
+			});
 			console.log('You have uncommitted changes');
 		}
 	}}
@@ -84,33 +91,7 @@
 		</div>
 	</div>
 </button>
-<Modal width="default" title="Manage Branch" bind:this={untrackedModal} let:item>
-	<div>
-		You have changes on the branch that are not committed. {item?.branch ? 'Deleting' : 'Switching'}
-		branches will discard these changes.
-		<ul class="file-list">
-			{#if $workingBranch}
-				{#each $workingBranch.workingDirectory.files as file}
-					<li>
-						<pre class="whitespace-pre-wrap break-words">{file.path}</pre>
-					</li>
-				{/each}
-			{/if}
-		</ul>
-	</div>
-	<svelte:fragment slot="controls" let:close>
-		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
-		<Button
-			color="error"
-			on:click={() => {
-				// branchController.unapplyFiles(item.files);
-				untrackedModal.close();
-			}}
-		>
-			Confirm
-		</Button>
-	</svelte:fragment>
-</Modal>
+<SwitchBranch {href} {branch} />
 
 <style lang="postcss">
 	.branch {
@@ -154,17 +135,5 @@
 	.selected {
 		background-color: color-mix(in srgb, transparent, var(--darken-tint-light));
 		transition: none;
-	}
-
-	.file-list {
-		list-style: disc;
-		padding-left: var(--size-26);
-		padding-top: var(--size-6);
-		background-color: var(--bg-card);
-		border-radius: var(--radius-m);
-	}
-	.file-list li {
-		padding: var(--size-2);
-		padding-left: var(--size-1);
 	}
 </style>

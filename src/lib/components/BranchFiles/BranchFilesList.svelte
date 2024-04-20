@@ -11,7 +11,6 @@
 	export let isUnapplied = false;
 	export let showCheckboxes = false;
 	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
-	export let allowMultiple = false;
 	export let readonly = false;
 	export let selected: WorkingDirectoryFileChange | undefined;
 	export let setSelected: (

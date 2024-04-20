@@ -63,6 +63,7 @@
 		"marked": "^12.0.1",
 		"svelte-french-toast": "^1.2.0",
 		"svelte-outclick": "^3.7.1",
-		"tauri-plugin-store-api": "^0.0.0"
+		"tauri-plugin-store-api": "^0.0.0",
+		"tinykeys": "^2.1.0"
 	}
 }

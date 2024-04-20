@@ -23,6 +23,9 @@ dependencies:
   tauri-plugin-store-api:
     specifier: ^0.0.0
     version: 0.0.0
+  tinykeys:
+    specifier: ^2.1.0
+    version: 2.1.0
 
 devDependencies:
   '@codemirror/lang-cpp':
@@ -2935,6 +2938,10 @@ packages:
       globalyzer: 0.1.0
       globrex: 0.1.2
     dev: true
+
+  /tinykeys@2.1.0:
+    resolution: {integrity: sha512-/MESnqBD1xItZJn5oGQ4OsNORQgJfPP96XSGoyu4eLpwpL0ifO0SYR5OD76u0YMhMXsqkb0UqvI9+yXTh4xv8Q==}
+    dev: false
 
   /to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}

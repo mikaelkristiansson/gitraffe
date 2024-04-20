@@ -4,23 +4,10 @@
 	import DomainButton from './DomainButton.svelte';
 	import Footer from './Footer.svelte';
 	import ProjectSelector from './ProjectSelector.svelte';
-	// import { SETTINGS_CONTEXT, type SettingsStore } from '$lib/settings/userSettings';
-	// import * as hotkeys from '$lib/utils/hotkeys';
-	// import { unsubscribe } from '$lib/utils/random';
-	// import { platform } from '@tauri-apps/api/os';
-	// import { onMount } from 'svelte';
-	// import { getContext } from 'svelte';
-	// import type { User } from '$lib/backend/cloud';
-	// import { goto } from '$app/navigation';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository;
-	// export let user: User | undefined;
 
-	// const minResizerWidth = 280;
-	// const minResizerRatio = 150;
-	// const platformName = platform();
-	// const userSettings = getContext<SettingsStore>(SETTINGS_CONTEXT);
 	const defaultTrayWidthRem = undefined;
 
 	let viewport: HTMLDivElement;
@@ -33,14 +20,6 @@
 	function toggleNavCollapse() {
 		isNavCollapsed = !isNavCollapsed;
 	}
-
-	// onMount(() =>
-	// 	unsubscribe(
-	// 		hotkeys.on('Meta+/', () => {
-	// 			toggleNavCollapse();
-	// 		})
-	// 	)
-	// );
 </script>
 
 <aside class="navigation-wrapper" class:hide-fold-button={isScrollbarDragging}>

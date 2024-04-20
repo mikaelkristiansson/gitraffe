@@ -2,19 +2,23 @@
 	import Overlay from './Overlay.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import type iconsJson from '$lib/icons/icons.json';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
-	import type { IStatusResult } from '$lib/git/status';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 
 	export function show(newItem?: any) {
 		item = newItem;
 		modal.show();
+		dispatch('open', newItem);
 	}
 	export function close() {
 		item = undefined;
 		modal.close();
+		dispatch('close', undefined);
 	}
 
-	export let width: 'default' | 'small' | 'large' = 'default';
+	export let width: 'default' | 'small' | 'large' | 'full' = 'default';
+	export let height: 'default' | 'full' = 'default';
 	export let title: string | undefined = undefined;
 	export let icon: keyof typeof iconsJson | undefined = undefined;
 	export let hoverText: string | undefined = undefined;
@@ -23,7 +27,7 @@
 	let modal: Overlay;
 </script>
 
-<Overlay bind:this={modal} let:close on:close {width}>
+<Overlay bind:this={modal} let:close on:close on:show {width} {height}>
 	{#if title}
 		<div class="modal__header">
 			<div class="modal__header__content" class:adjust-header={$$slots.header_controls}>
@@ -42,7 +46,7 @@
 		</div>
 	{/if}
 
-	<div class="modal__body custom-scrollbar">
+	<div class="modal__body custom-scrollbar" class:h-full={height === 'full'}>
 		<slot {item} />
 	</div>
 
@@ -75,6 +79,10 @@
 	.modal__body {
 		overflow: auto;
 		padding: var(--size-16);
+	}
+
+	.h-full {
+		height: 100%;
 	}
 
 	.modal__footer {

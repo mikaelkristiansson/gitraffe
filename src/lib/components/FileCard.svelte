@@ -2,25 +2,27 @@
 	import FileCardHeader from './FileCardHeader.svelte';
 	import FileDiff from './FileDiff.svelte';
 	import ScrollableContainer from '$lib/components/ScrollableContainer.svelte';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile, CommittedFileChange } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 	import { type IDiff } from '$lib/models/diff';
-	import { getWorkingDirectoryDiff } from '$lib/git/diff';
-	import Button from './Button.svelte';
-	import { workingBranch } from '$lib/stores/branch';
+	import { getCommitDiff, getWorkingDirectoryDiff } from '$lib/git/diff';
 
-	export let file: WorkingDirectoryFileChange;
-	export let conflicted: boolean;
+	export let file: ChangedFile;
+	export let isCommitedFile: boolean = false;
 	export let repository: Repository;
 	export let selectable = false;
 	export let readonly = false;
 	let diff: IDiff | null = null;
 
-	function setWorkingDirectoryDiff() {
-		getWorkingDirectoryDiff(repository, file).then((resp) => {
-			diff = resp;
-		});
-	}
+	const setWorkingDirectoryDiff = async () => {
+		let response = null;
+		if (isCommitedFile) {
+			response = await getCommitDiff(repository, file, (file as CommittedFileChange).commitish);
+		} else {
+			response = await getWorkingDirectoryDiff(repository, file);
+		}
+		diff = response;
+	};
 
 	$: file && setWorkingDirectoryDiff();
 </script>

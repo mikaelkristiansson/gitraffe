@@ -25,9 +25,11 @@ export async function listSubmodules(
 	// We don't recurse when listing submodules here because we don't have a good
 	// story about managing these currently. So for now we're only listing
 	// changes to the top-level submodules to be consistent with `git status`
-	const { stdout, stderr } = await git(repository.path, ['submodule', 'status', '--']);
+	const { stdout, exitCode } = await git(repository.path, ['submodule', 'status', '--'], {
+		successExitCodes: new Set([0, 128])
+	});
 
-	if (stderr) {
+	if (exitCode === 128) {
 		// unable to parse submodules in repository, giving up
 		return [];
 	}

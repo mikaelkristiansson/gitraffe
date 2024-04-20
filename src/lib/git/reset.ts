@@ -87,7 +87,7 @@ export async function resetPaths(
 		// https://github.com/desktop/desktop/issues/2833#issuecomment-331352952
 		// for more context.
 		const args = [...baseArgs, '--stdin', '-z', '--'];
-		await git(repository.path, args, paths.join('\0'));
+		await git(repository.path, args, { stdin: paths.join('\0') });
 	} else {
 		const args = [...baseArgs, '--', ...paths];
 		await git(repository.path, args);

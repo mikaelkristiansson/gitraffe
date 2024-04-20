@@ -1,6 +1,5 @@
 import { exists } from '@tauri-apps/api/fs';
 import { resolve } from '@tauri-apps/api/path';
-import type { GitResponse } from './type';
 import { git } from './cli';
 
 export type RepositoryType =
@@ -27,12 +26,13 @@ export async function getRepositoryType(path: string): Promise<RepositoryType> {
 		//     'getRepositoryType',
 		//     { successExitCodes: new Set([0, 128]) }
 		//   )
-		const { stdout }: GitResponse = await git(path, [
-			'rev-parse',
-			'--is-bare-repository',
-			'--show-cdup'
-		]);
-		if (stdout) {
+		const { stdout, exitCode } = await git(
+			path,
+			['rev-parse', '--is-bare-repository', '--show-cdup'],
+			{ successExitCodes: new Set([0, 128]) }
+		);
+
+		if (exitCode === 0) {
 			const [isBare, cdup] = stdout.split('\n', 2);
 
 			return isBare === 'true'

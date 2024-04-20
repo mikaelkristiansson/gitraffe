@@ -1,10 +1,23 @@
 import { getBranches } from '$lib/git/branch';
+import { checkoutBranch } from '$lib/git/checkout';
+import { GitError } from '$lib/git/cli';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { MergeResult, merge } from '$lib/git/merge';
 import { getRemoteHEAD } from '$lib/git/remote';
+import {
+	createGitfoxStashEntry,
+	dropGitfoxStashEntry,
+	getLastGitfoxStashEntryForBranch,
+	popStashEntry
+} from '$lib/git/stash';
 import { BranchType, type Branch } from '$lib/models/branch';
+import { ErrorWithMetadata } from '$lib/models/error-with-metadata';
+import type { IGitAccount } from '$lib/models/git-account';
+import { IGitError } from '$lib/models/git-errors';
 import { UpstreamRemoteName } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
+import type { WorkingDirectoryStatus } from '$lib/models/status';
+import { getUntrackedFiles } from './status';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -263,4 +276,108 @@ export async function mergeBranch(
 		console.log('Already up to date');
 	}
 	return mergeResult;
+}
+
+/**
+ * Checkout the given branch and leave any local changes on the current branch
+ *
+ * Note that this will ovewrite any existing stash enty on the current branch.
+ */
+export async function checkoutAndLeaveChanges(
+	repository: Repository,
+	branch: Branch,
+	workingBranch: Branch,
+	workingDirectory: WorkingDirectoryStatus,
+	account: IGitAccount | null
+) {
+	if (workingDirectory.files.length > 0) {
+		await createStashAndDropPreviousEntry(repository, workingBranch, workingDirectory);
+	}
+
+	return checkoutIgnoringChanges(repository, branch, account);
+}
+
+/**
+ * Checkout the given branch and move any local changes along.
+ *
+ * Will attempt to simply check out the branch and if that fails due to
+ * local changes risking being overwritten it'll create a transient stash
+ * entry, switch branches, and pop said stash entry.
+ *
+ * Note that the transient stash entry will not overwrite any current stash
+ * entry for the target branch.
+ */
+export async function checkoutAndBringChanges(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus,
+	account: IGitAccount | null
+) {
+	try {
+		await checkoutBranch(repository, account, branch);
+	} catch (checkoutError) {
+		if (!isLocalChangesOverwrittenError(checkoutError as Error)) {
+			throw checkoutError;
+		}
+
+		const stash = (await createStashEntry(repository, branch, workingDirectory))
+			? await getLastGitfoxStashEntryForBranch(repository, branch)
+			: null;
+
+		// Failing to stash the changes when we know that there are changes
+		// preventing a checkout is very likely due to assume-unchanged or
+		// skip-worktree. So instead of showing a "could not create stash" error
+		// we'll show the checkout error to the user and let them figure it out.
+		if (stash === null) {
+			throw checkoutError;
+		}
+
+		await checkoutIgnoringChanges(repository, branch, account);
+		await popStashEntry(repository, stash.stashSha);
+	}
+}
+
+/** Checkout the given branch without taking local changes into account */
+async function checkoutIgnoringChanges(
+	repository: Repository,
+	branch: Branch,
+	account: IGitAccount | null
+) {
+	await checkoutBranch(repository, account, branch);
+}
+
+async function createStashEntry(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus
+) {
+	const untrackedFiles = getUntrackedFiles(workingDirectory);
+	return createGitfoxStashEntry(repository, branch, untrackedFiles);
+}
+
+function isLocalChangesOverwrittenError(error: Error): boolean {
+	if (error instanceof ErrorWithMetadata) {
+		return isLocalChangesOverwrittenError(error.underlyingError);
+	}
+
+	return error instanceof GitError && error.result.gitError === IGitError.LocalChangesOverwritten;
+}
+
+async function createStashAndDropPreviousEntry(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus
+) {
+	const entry = await getLastGitfoxStashEntryForBranch(repository, branch);
+
+	const createdStash = await createStashEntry(repository, branch, workingDirectory);
+
+	if (createdStash === true && entry !== null) {
+		const { stashSha, branchName } = entry;
+
+		await dropGitfoxStashEntry(repository, stashSha);
+		console.info(`Dropped stash '${stashSha}' associated with ${branchName}`);
+	}
+
+	return createdStash === true;
 }

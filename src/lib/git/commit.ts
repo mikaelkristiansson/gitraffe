@@ -52,7 +52,7 @@ export async function createCommit(
 	//   }
 	// )
 	try {
-		const { stdout } = await git(repository.path, ['commit', ...args], message);
+		const { stdout } = await git(repository.path, ['commit', ...args], { stdin: message });
 		return parseCommitSHA(stdout);
 	} catch (e) {
 		console.error('createCommit: ', e);

@@ -3,6 +3,7 @@ import { CommitIdentity } from '$lib/models/commit-identity';
 import { createForEachRefParser } from './git-delimiter-parser';
 import type { Repository } from '$lib/models/repository';
 import { git } from './cli';
+import { IGitError } from '$lib/models/git-errors';
 
 /** Get all the branches. */
 export async function getBranches(
@@ -39,9 +40,15 @@ export async function getBranches(
 	// }
 
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
-	const { stdout, stderr } = await git(repository.path, args);
+	const { stdout, stderr, gitError } = await git(repository.path, args, {
+		expectedErrors: new Set([IGitError.NotAGitRepository])
+	});
 	if (stderr) {
 		throw new Error(stderr);
+	}
+
+	if (gitError === IGitError.NotAGitRepository) {
+		return [];
 	}
 
 	const branches = [];
@@ -98,16 +105,16 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	//   // error code 128 is returned if the branch is unborn
 	//   return []
 	// }
-	const { stdout } = await git(repository.path, [
-		'log',
-		'-g',
-		'--no-abbrev-commit',
-		'--pretty=oneline',
-		'HEAD',
-		'-n',
-		'2500',
-		'--'
-	]);
+	const { stdout, exitCode } = await git(
+		repository.path,
+		['log', '-g', '--no-abbrev-commit', '--pretty=oneline', 'HEAD', '-n', '2500', '--'],
+		{ successExitCodes: new Set([0, 128]) }
+	);
+
+	if (exitCode === 128) {
+		// error code 128 is returned if the branch is unborn
+		return [];
+	}
 
 	const lines = stdout.split('\n');
 	const names = new Set<string>();

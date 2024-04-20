@@ -1,7 +1,7 @@
 /**
  * This is simplified copy of the persisted store in square/svelte-store.
  */
-import { writable, type Writable } from 'svelte/store';
+import { get, writable, type Updater, type Writable } from 'svelte/store';
 export type Persisted<T> = Writable<T>;
 
 export function getStorageItem(key: string): unknown {
@@ -32,8 +32,10 @@ export function persisted<T>(initial: T, key: string): Persisted<T> {
 		}
 	}
 
-	function update() {
-		throw 'Not implemented';
+	function update(updater: Updater<T>) {
+		synchronize(set);
+		const newValue = updater(get(thisStore));
+		setAndPersist(newValue, thisStore.set);
 	}
 
 	const thisStore = writable<T>(initial, (set) => {
