@@ -5,6 +5,7 @@
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Button from '$lib/components/Button.svelte';
 	import * as toasts from '$lib/utils/toasts';
+	import * as hotkeys from '$lib/utils/hotkeys';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin, push } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
@@ -21,6 +22,7 @@
 	import PullRequestCard from './PullRequestCard.svelte';
 	import Icon from './Icon.svelte';
 	import { updateCurrentBranch } from '$lib/store-updater';
+	import { onMount } from 'svelte';
 
 	export let isUnapplied = false;
 	export let branch: IStatusResult;
@@ -41,7 +43,7 @@
 		$isLaneCollapsed = false;
 	}
 
-	async function publishBranch() {
+	const publishBranch = async () => {
 		isPublishing = true;
 		try {
 			const remotes = await getRemotes(repository);
@@ -61,7 +63,68 @@
 		} finally {
 			isPublishing = false;
 		}
-	}
+	};
+
+	const pullBranch = async () => {
+		if (branch.workingDirectory?.files && branch.workingDirectory?.files.length > 0) {
+			toasts.error('Cannot pull while there are uncommitted changes');
+			return;
+		}
+		isPulling = true;
+		try {
+			if (branch.currentBranch) {
+				await pullOrigin(repository.path, branch.currentBranch);
+				const update = { behind: 0, ahead: $activeBranch.aheadBehind.ahead };
+				const newBranch = new Branch(
+					$activeBranch.name,
+					$activeBranch.upstream,
+					$activeBranch.tip,
+					$activeBranch.type,
+					$activeBranch.ref,
+					update
+				);
+				allBranches.updateBranch(newBranch);
+				await defaultBranch.setDefault(repository);
+				await workingBranch.setWorking(repository);
+				toasts.success('Pulled from origin');
+			}
+		} finally {
+			isPulling = false;
+		}
+	};
+
+	const pushBranch = async () => {
+		if (branch.branchAheadBehind?.behind) {
+			toasts.error('Cannot push while branch is behind origin');
+			return;
+		}
+		isPushing = true;
+		try {
+			if (branch.currentBranch) {
+				await push(repository.path);
+				const update = { behind: $activeBranch.aheadBehind.behind, ahead: 0 };
+				const newBranch = new Branch(
+					$activeBranch.name,
+					$activeBranch.upstream,
+					$activeBranch.tip,
+					$activeBranch.type,
+					$activeBranch.ref,
+					update
+				);
+				allBranches.updateBranch(newBranch);
+				updateCurrentBranch(repository, newBranch);
+			}
+			toasts.success('Pushed to origin');
+		} finally {
+			isPushing = false;
+		}
+	};
+
+	onMount(() => {
+		hotkeys.on('Meta+P', () => {
+			pushBranch();
+		});
+	});
 </script>
 
 {#if $isLaneCollapsed}
@@ -107,33 +170,7 @@
 							class="items-center"
 							disabled={!branch.branchAheadBehind?.behind}
 							loading={isPulling}
-							on:click={async () => {
-								if (branch.workingDirectory?.files && branch.workingDirectory?.files.length > 0) {
-									toasts.error('Cannot pull while there are uncommitted changes');
-									return;
-								}
-								isPulling = true;
-								try {
-									if (branch.currentBranch) {
-										await pullOrigin(repository.path, branch.currentBranch);
-										const update = { behind: 0, ahead: $activeBranch.aheadBehind.ahead };
-										const newBranch = new Branch(
-											$activeBranch.name,
-											$activeBranch.upstream,
-											$activeBranch.tip,
-											$activeBranch.type,
-											$activeBranch.ref,
-											update
-										);
-										allBranches.updateBranch(newBranch);
-										await defaultBranch.setDefault(repository);
-										await workingBranch.setWorking(repository);
-										toasts.success('Pulled from origin');
-									}
-								} finally {
-									isPulling = false;
-								}
-							}}
+							on:click={pullBranch}
 						>
 							Pull <Badge class="ml-1" count={branch.branchAheadBehind?.behind || 0} />
 							<Icon name="pull-small" size={14} />
@@ -145,32 +182,7 @@
 							color="neutral"
 							disabled={!branch.branchAheadBehind?.ahead}
 							loading={isPushing}
-							on:click={async () => {
-								if (branch.branchAheadBehind?.behind) {
-									toasts.error('Cannot push while branch is behind origin');
-									return;
-								}
-								isPushing = true;
-								try {
-									if (branch.currentBranch) {
-										await push(repository.path);
-										const update = { behind: $activeBranch.aheadBehind.behind, ahead: 0 };
-										const newBranch = new Branch(
-											$activeBranch.name,
-											$activeBranch.upstream,
-											$activeBranch.tip,
-											$activeBranch.type,
-											$activeBranch.ref,
-											update
-										);
-										allBranches.updateBranch(newBranch);
-										updateCurrentBranch(repository, newBranch);
-									}
-									toasts.success('Pushed to origin');
-								} finally {
-									isPushing = false;
-								}
-							}}
+							on:click={pushBranch}
 						>
 							Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
 							<Icon name="push-small" size={14} />
