@@ -179,7 +179,6 @@ export async function createGitfoxStashEntry(
 
 async function getStashEntryMatchingSha(repository: Repository, sha: string) {
 	const stash = await getStashes(repository);
-	console.log('🚀 ~ getStashEntryMatchingSha ~ stash:', stash);
 	return stash.gitfoxEntries.find((e) => e.stashSha === sha) || null;
 }
 
@@ -189,9 +188,7 @@ async function getStashEntryMatchingSha(repository: Repository, sha: string) {
  * @param stashSha the SHA that identifies the stash entry
  */
 export async function dropGitfoxStashEntry(repository: Repository, stashSha: string) {
-	console.log('🚀 ~ dropGitfoxStashEntry ~ stashSha:', stashSha);
 	const entryToDelete = await getStashEntryMatchingSha(repository, stashSha);
-	console.log('🚀 ~ dropGitfoxStashEntry ~ entryToDelete:', entryToDelete);
 
 	if (entryToDelete !== null) {
 		const args = ['stash', 'drop', entryToDelete.name];
