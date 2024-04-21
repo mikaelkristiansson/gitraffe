@@ -63,10 +63,6 @@
 				) {
 					commitStore.set(commits);
 				}
-				if (currentBranch) {
-					const lastStash = await getLastGitfoxStashEntryForBranch(repository$, currentBranch);
-					stashStore.set(lastStash);
-				}
 				if (updatePath) {
 					goto(`/${repository$.id}/board/${activeBranch?.currentBranch}`);
 				}

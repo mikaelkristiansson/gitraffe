@@ -39,13 +39,19 @@
 	});
 
 	const unsubscribeStashStore = stashStore.subscribe((store) => {
-		stash = store;
+		if (!$activeRepository || !branch$) return;
+		const identifier = $activeRepository.id + '_' + branch$.currentBranch;
+		stash = store[identifier];
 	});
 
 	const unsubscribeWorkingBranch = workingBranch.subscribe((branch) => {
 		branch$ = branch;
 		if (branch?.workingDirectory) {
 			selectedFiles.set(branch.workingDirectory.files);
+		}
+		if (branch) {
+			const identifier = $activeRepository!.id + '_' + branch.currentBranch;
+			stash = $stashStore[identifier];
 		}
 	});
 

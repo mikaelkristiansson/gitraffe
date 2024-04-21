@@ -16,6 +16,7 @@
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { activeBranch } from '$lib/stores/branch';
 	import { writable } from 'svelte/store';
+	import { stashStore } from '$lib/stores/stash';
 
 	export let stash: IStashEntry;
 
@@ -53,6 +54,7 @@
 		try {
 			if ($activeRepository) {
 				await dropGitfoxStashEntry($activeRepository, $persistedStash.stashSha);
+				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
 				stashModal.close();
 				success('Stash discarded');
 				await updateCurrentBranch($activeRepository, $activeBranch);
@@ -68,6 +70,7 @@
 		try {
 			if ($activeRepository) {
 				await popStashEntry($activeRepository, $persistedStash.stashSha);
+				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
 				stashModal.close();
 				success('Stash restored');
 				await updateCurrentBranch($activeRepository, $activeBranch);

@@ -17,6 +17,7 @@ import { IGitError } from '$lib/models/git-errors';
 import { UpstreamRemoteName } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
 import type { WorkingDirectoryStatus } from '$lib/models/status';
+import { stashStore } from '$lib/stores/stash';
 import { getUntrackedFiles } from './status';
 
 export function normalizeBranchName(value: string) {
@@ -292,6 +293,11 @@ export async function checkoutAndLeaveChanges(
 ) {
 	if (workingDirectory.files.length > 0) {
 		await createStashAndDropPreviousEntry(repository, workingBranch, workingDirectory);
+	}
+
+	const lastStash = await getLastGitfoxStashEntryForBranch(repository, workingBranch);
+	if (lastStash) {
+		stashStore.setNewStash(lastStash, repository.id + '_' + workingBranch.name);
 	}
 
 	return checkoutIgnoringChanges(repository, branch, account);
