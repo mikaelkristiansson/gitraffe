@@ -1,7 +1,6 @@
 <script lang="ts">
 	import ListItem from './ListItem.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { activeRepository, addRepository, repositories } from '$lib/stores/repository';
 
 	export let isNavCollapsed: boolean;
@@ -37,7 +36,7 @@
 		{#if $repositories.length > 0}
 			<div class="popup__projects">
 				{#each $repositories as repository}
-					{@const selected = repository.id == $page.params.repositoryId}
+					{@const selected = repository.id == $activeRepository?.id}
 					<ListItem
 						{selected}
 						icon={selected ? 'tick' : undefined}

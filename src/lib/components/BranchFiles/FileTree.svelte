@@ -20,10 +20,10 @@
 	export let isUnapplied: boolean;
 	export let readonly = false;
 	export let files: WorkingDirectoryFileChange[];
-	export let selected: WorkingDirectoryFileChange | undefined;
+	export let selected: WorkingDirectoryFileChange | undefined = undefined;
 	export let setSelected: (
 		file: WorkingDirectoryFileChange
-	) => WorkingDirectoryFileChange | undefined;
+	) => WorkingDirectoryFileChange | undefined = () => undefined;
 
 	function toggle() {
 		expanded = !expanded;
