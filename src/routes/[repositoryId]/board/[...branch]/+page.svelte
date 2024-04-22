@@ -26,12 +26,14 @@
 	import { unsubscribe } from '$lib/utils/unsubscribe';
 	import { createRequestUrl } from '$lib/utils/url';
 	import type { Repository } from '$lib/models/repository';
+	import { pushActiveBranch } from '$lib/utils/branch';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
 	let latestLocalCommit: Commit | null = null;
 	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
 	let stash: IStashEntry | null = null;
+	let isPushing = false;
 
 	function setSelected(file: WorkingDirectoryFileChange | undefined) {
 		selected = file;
@@ -74,6 +76,17 @@
 						$activeRepository as Repository,
 						($workingBranch as IStatusResult).currentBranch as string
 					);
+				}),
+				hotkeys.on('Meta+P', async () => {
+					if ($activeRepository && $workingBranch && $activeBranch) {
+						isPushing = true;
+						await pushActiveBranch(
+							$activeRepository as Repository,
+							$workingBranch as IStatusResult,
+							$activeBranch
+						);
+						isPushing = false;
+					}
 				})
 			);
 		}
@@ -115,6 +128,7 @@
 							{isUnapplied}
 							bind:isLaneCollapsed
 							repository={$activeRepository}
+							{isPushing}
 						/>
 						{#if !$isLaneCollapsed}
 							<div>

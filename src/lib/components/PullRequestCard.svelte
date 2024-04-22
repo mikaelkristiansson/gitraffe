@@ -16,7 +16,7 @@
 	});
 </script>
 
-{#if currentBranch.upstream && currentBranch.ref !== $defaultBranch.ref}
+{#if currentBranch?.upstream && currentBranch?.ref !== $defaultBranch.ref}
 	{#if type === 'tag'}
 		<Tag
 			clickable

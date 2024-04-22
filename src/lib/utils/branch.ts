@@ -1,6 +1,6 @@
 import { deleteLocalBranch, deleteRemoteBranch, getBranches } from '$lib/git/branch';
 import { checkoutBranch } from '$lib/git/checkout';
-import { GitError } from '$lib/git/cli';
+import { GitError, push } from '$lib/git/cli';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { MergeResult, merge } from '$lib/git/merge';
 import { getRemoteHEAD } from '$lib/git/remote';
@@ -10,16 +10,20 @@ import {
 	getLastGitfoxStashEntryForBranch,
 	popStashEntry
 } from '$lib/git/stash';
-import { BranchType, type Branch } from '$lib/models/branch';
+import type { IStatusResult } from '$lib/git/status';
+import { Branch, BranchType } from '$lib/models/branch';
 import { ErrorWithMetadata } from '$lib/models/error-with-metadata';
 import type { IGitAccount } from '$lib/models/git-account';
 import { IGitError } from '$lib/models/git-errors';
 import { UpstreamRemoteName } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
 import type { WorkingDirectoryStatus } from '$lib/models/status';
+import { updateCurrentBranch } from '$lib/store-updater';
+import { allBranches } from '$lib/stores/branch';
 import { stashStore } from '$lib/stores/stash';
 import { performFailableOperation } from './failable-operation';
 import { getUntrackedFiles } from './status';
+import { error, success } from './toasts';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -490,3 +494,38 @@ async function deleteLocalBranchAndUpstreamBranch(
 	}
 	return;
 }
+
+export const pushActiveBranch = async (
+	repository: Repository,
+	status: IStatusResult,
+	activeBranch: Branch
+) => {
+	if (status.branchAheadBehind?.behind) {
+		error('Cannot push while branch is behind origin');
+		return;
+	}
+	if (status.branchAheadBehind?.ahead === 0) {
+		return;
+	}
+	try {
+		if (activeBranch) {
+			await push(repository.path);
+			const update = { behind: activeBranch.aheadBehind.behind, ahead: 0 };
+			const newBranch = new Branch(
+				activeBranch.name,
+				activeBranch.upstream,
+				activeBranch.tip,
+				activeBranch.type,
+				activeBranch.ref,
+				update
+			);
+			allBranches.updateBranch(newBranch);
+			updateCurrentBranch(repository, newBranch);
+		}
+		success('Pushed to origin');
+		return true;
+	} catch (e) {
+		error('Failed to push to origin');
+		return false;
+	}
+};

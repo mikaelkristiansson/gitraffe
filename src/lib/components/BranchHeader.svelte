@@ -5,9 +5,8 @@
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Button from '$lib/components/Button.svelte';
 	import * as toasts from '$lib/utils/toasts';
-	import * as hotkeys from '$lib/utils/hotkeys';
 	import { tooltip } from '$lib/utils/tooltip';
-	import { pullOrigin, push } from '$lib/git/cli';
+	import { pullOrigin } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import type { Persisted } from '$lib/persisted';
@@ -21,20 +20,18 @@
 	import { commitStore } from '$lib/stores/commits';
 	import PullRequestCard from './PullRequestCard.svelte';
 	import Icon from './Icon.svelte';
-	import { updateCurrentBranch } from '$lib/store-updater';
-	import { onMount } from 'svelte';
-	import { unsubscribe } from '$lib/utils/unsubscribe';
+	import { pushActiveBranch } from '$lib/utils/branch';
 
 	export let isUnapplied = false;
 	export let branch: IStatusResult;
 	export let repository: Repository;
 	export let isLaneCollapsed: Persisted<boolean>;
+	export let isPushing = false;
 
 	let meatballButton: HTMLDivElement;
 	let visible = false;
 	let isPublishing = false;
 	let isPulling = false;
-	let isPushing = false;
 
 	function collapseLane() {
 		$isLaneCollapsed = true;
@@ -95,39 +92,10 @@
 	};
 
 	const pushBranch = async () => {
-		if (branch.branchAheadBehind?.behind) {
-			toasts.error('Cannot push while branch is behind origin');
-			return;
-		}
 		isPushing = true;
-		try {
-			if (branch.currentBranch) {
-				await push(repository.path);
-				const update = { behind: $activeBranch.aheadBehind.behind, ahead: 0 };
-				const newBranch = new Branch(
-					$activeBranch.name,
-					$activeBranch.upstream,
-					$activeBranch.tip,
-					$activeBranch.type,
-					$activeBranch.ref,
-					update
-				);
-				allBranches.updateBranch(newBranch);
-				updateCurrentBranch(repository, newBranch);
-			}
-			toasts.success('Pushed to origin');
-		} finally {
-			isPushing = false;
-		}
+		await pushActiveBranch(repository, branch, $activeBranch);
+		isPushing = false;
 	};
-
-	onMount(() => {
-		return unsubscribe(
-			hotkeys.on('Meta+P', () => {
-				pushBranch();
-			})
-		);
-	});
 </script>
 
 {#if $isLaneCollapsed}
