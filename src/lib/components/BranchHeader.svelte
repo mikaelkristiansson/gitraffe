@@ -23,6 +23,7 @@
 	import Icon from './Icon.svelte';
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { onMount } from 'svelte';
+	import { unsubscribe } from '$lib/utils/unsubscribe';
 
 	export let isUnapplied = false;
 	export let branch: IStatusResult;
@@ -121,9 +122,11 @@
 	};
 
 	onMount(() => {
-		hotkeys.on('Meta+P', () => {
-			pushBranch();
-		});
+		return unsubscribe(
+			hotkeys.on('Meta+P', () => {
+				pushBranch();
+			})
+		);
 	});
 </script>
 
