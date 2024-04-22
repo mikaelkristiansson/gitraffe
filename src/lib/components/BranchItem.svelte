@@ -54,6 +54,7 @@
 			untrackedModal
 		})}
 	on:click={async () => {
+		if (selected) return;
 		if ($workingBranch?.workingDirectory.files.length === 0) {
 			try {
 				await checkout(repository.path, branch.name);
@@ -128,6 +129,10 @@
 
 	.branch__author {
 		color: var(--clr-theme-scale-ntrl-50);
+	}
+
+	.selected {
+		cursor: default;
 	}
 
 	.branch:not(.selected):hover,
