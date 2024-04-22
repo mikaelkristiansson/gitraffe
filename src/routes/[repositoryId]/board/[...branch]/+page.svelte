@@ -2,6 +2,7 @@
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
+	import * as hotkeys from '$lib/utils/hotkeys';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
 	import { projectLaneCollapsed } from '$lib/config/config';
@@ -22,6 +23,9 @@
 	import type { IStashEntry } from '$lib/models/stash-entry';
 	import { stashStore } from '$lib/stores/stash';
 	import Stash from '$lib/components/Stash.svelte';
+	import { unsubscribe } from '$lib/utils/unsubscribe';
+	import { createRequestUrl } from '$lib/utils/url';
+	import type { Repository } from '$lib/models/repository';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
@@ -64,6 +68,14 @@
 			if (shouldUpdate) {
 				workingBranch.setWorking($activeRepository);
 			}
+			return unsubscribe(
+				hotkeys.on('Meta+R', () => {
+					createRequestUrl(
+						$activeRepository as Repository,
+						($workingBranch as IStatusResult).currentBranch as string
+					);
+				})
+			);
 		}
 	});
 
