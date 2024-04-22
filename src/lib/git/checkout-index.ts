@@ -23,7 +23,10 @@ export async function checkoutIndex(repository: Repository, paths: ReadonlyArray
 		return;
 	}
 
-	await git(repository.path, ['checkout-index', '-f', '-u', '-q', '--stdin', '-z'], {
+	const options = {
+		successExitCodes: new Set([0, 1]),
 		stdin: paths.join('\0')
-	});
+	};
+
+	await git(repository.path, ['checkout-index', '-f', '-u', '-q', '--stdin', '-z'], options);
 }

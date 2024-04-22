@@ -1,4 +1,4 @@
-import { getBranches } from '$lib/git/branch';
+import { deleteLocalBranch, deleteRemoteBranch, getBranches } from '$lib/git/branch';
 import { checkoutBranch } from '$lib/git/checkout';
 import { GitError } from '$lib/git/cli';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
@@ -18,6 +18,7 @@ import { UpstreamRemoteName } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
 import type { WorkingDirectoryStatus } from '$lib/models/status';
 import { stashStore } from '$lib/stores/stash';
+import { performFailableOperation } from './failable-operation';
 import { getUntrackedFiles } from './status';
 
 export function normalizeBranchName(value: string) {
@@ -386,4 +387,106 @@ async function createStashAndDropPreviousEntry(
 	}
 
 	return createdStash === true;
+}
+
+export async function deleteBranch(
+	repository: Repository,
+	branch: Branch,
+	currentBranch: Branch | null,
+	defaultBranch: Branch | null,
+	includeUpstream?: boolean,
+	toCheckout?: Branch | null
+) {
+	// If solely a remote branch, there is no need to checkout a branch.
+	if (branch.type === BranchType.Remote) {
+		const { remoteName, tip, nameWithoutRemote } = branch;
+		if (remoteName === null) {
+			// This is based on the branches ref. It should not be null for a
+			// remote branch
+			throw new Error(`Could not determine remote name from: ${branch.ref}.`);
+		}
+		await performFailableOperation(
+			() => deleteRemoteBranch(repository, null, remoteName, nameWithoutRemote),
+			repository
+		);
+
+		// We log the remote branch's sha so that the user can recover it.
+		console.info(`Deleted branch ${branch.upstreamWithoutRemote} (was ${tip.sha})`);
+
+		//   return this._refreshRepository(r)
+		return true;
+	}
+	// If a local branch, user may have the branch to delete checked out and
+	// we need to switch to a different branch (default or recent).
+	const branchToCheckout =
+		toCheckout ?? getBranchToCheckoutAfterDelete(branch, currentBranch, defaultBranch);
+
+	if (branchToCheckout !== null) {
+		await performFailableOperation(
+			() => checkoutBranch(repository, null, branchToCheckout),
+			repository
+		);
+	}
+
+	await performFailableOperation(() => {
+		return deleteLocalBranchAndUpstreamBranch(repository, branch, null, includeUpstream);
+	}, repository);
+
+	//   return this._refreshRepository(r)
+	return true;
+}
+
+function getBranchToCheckoutAfterDelete(
+	branchToDelete: Branch,
+	currentBranch: Branch | null,
+	defaultBranch: Branch | null
+): Branch | null {
+	// const { branchesState } = this.repositoryStateCache.get(repository)
+	// const tip = branchesState.tip
+	// const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
+	// if current branch is not the branch being deleted, no need to switch
+	// branches
+	if (currentBranch !== null && branchToDelete.name !== currentBranch.name) {
+		return null;
+	}
+
+	// If the default branch is null, use the most recent branch excluding the branch
+	// the branch to delete as the branch to checkout.
+	// const branchToCheckout =
+	//   branchesState.defaultBranch ??
+	//   branchesState.recentBranches.find(x => x.name !== branchToDelete.name)
+	const branchToCheckout = defaultBranch ?? null;
+
+	if (branchToCheckout === undefined) {
+		throw new Error(`It's not possible to delete the only existing branch in a repository.`);
+	}
+
+	return branchToCheckout;
+}
+
+/**
+ * Deletes the local branch. If the parameter `includeUpstream` is true, the
+ * upstream branch will be deleted also.
+ */
+async function deleteLocalBranchAndUpstreamBranch(
+	repository: Repository,
+	branch: Branch,
+	account: IGitAccount | null,
+	includeUpstream?: boolean
+): Promise<void> {
+	await deleteLocalBranch(repository, branch.name);
+
+	if (
+		includeUpstream === true &&
+		branch.upstreamRemoteName !== null &&
+		branch.upstreamWithoutRemote !== null
+	) {
+		await deleteRemoteBranch(
+			repository,
+			account,
+			branch.upstreamRemoteName,
+			branch.upstreamWithoutRemote
+		);
+	}
+	return;
 }

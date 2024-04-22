@@ -12,7 +12,19 @@
 	export let repository: Repository;
 
 	let createBranchModal: Modal;
-	let branchName = '';
+	let form: HTMLFormElement;
+
+	const createNewBranch = async (e: Event) => {
+		e?.preventDefault();
+		const formData = new FormData(form as HTMLFormElement);
+		const branchName = formData.get('name') as string;
+		await createBranch(repository, branchName, null);
+		createBranchModal.close();
+		success(`Creating branch ${branchName}`);
+		await allBranches.fetch(repository, {
+			defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
+		});
+	};
 </script>
 
 <div class="header">
@@ -33,26 +45,12 @@
 	</div>
 </div>
 <Modal width="small" title="Create New Branch" bind:this={createBranchModal}>
-	<TextBox
-		label="Branch name"
-		on:change={(e) => (branchName = e.detail)}
-		placeholder="Enter branch name"
-	/>
+	<form bind:this={form} on:submit={createNewBranch}>
+		<TextBox initialFocus label="Branch name" name="name" placeholder="Enter branch name" />
+	</form>
 	<svelte:fragment slot="controls" let:close>
 		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
-		<Button
-			color="success"
-			on:click={async () => {
-				await createBranch(repository, branchName, null);
-				createBranchModal.close();
-				success(`Creating branch ${branchName}`);
-				await allBranches.fetch(repository, {
-					defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
-				});
-			}}
-		>
-			Create
-		</Button>
+		<Button color="success" on:click={createNewBranch}>Create</Button>
 	</svelte:fragment>
 </Modal>
 

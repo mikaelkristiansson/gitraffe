@@ -106,7 +106,7 @@
 			on:click={async () => {
 				if ($activeRepository && item) {
 					try {
-						await discardChanges([item.file], $activeRepository, false);
+						await discardChanges([item.file], $activeRepository);
 						// this will also close the modal since it updates the view
 						await workingBranch.setWorking($activeRepository);
 						item.setSelected(undefined);

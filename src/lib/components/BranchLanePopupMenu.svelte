@@ -4,14 +4,15 @@
 	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
 	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
-	import { deleteLocalBranch } from '$lib/git/branch';
 	import { checkout } from '$lib/git/cli';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Commit } from '$lib/models/commit';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import { activeRepository } from '$lib/stores/repository';
+	import { deleteBranch } from '$lib/utils/branch';
 	import * as toasts from '$lib/utils/toasts';
 	import Icon from './Icon.svelte';
+	import InfoMessage from './InfoMessage.svelte';
 
 	export let branch: IStatusResult;
 	export let commits: ReadonlyArray<Commit>;
@@ -23,31 +24,46 @@
 </script>
 
 {#if visible}
-	<ContextMenu>
-		<ContextMenuSection>
-			<ContextMenuItem
-				label="Delete branch"
-				icon="bin-small"
-				on:click={async () => {
-					if (commits.length === 0 && branch.workingDirectory.files?.length === 0) {
+	{#if branch.currentBranch !== $defaultBranch.name}
+		<ContextMenu>
+			<ContextMenuSection>
+				<ContextMenuItem
+					label="Delete branch"
+					icon="bin-small"
+					on:click={async () => {
 						deleteBranchModal.show(branch);
-					} else {
-						// TODO: add confirmation dialog
-					}
-					visible = false;
-				}}
-			/>
-		</ContextMenuSection>
-	</ContextMenu>
+						visible = false;
+					}}
+				/>
+			</ContextMenuSection>
+		</ContextMenu>
+	{/if}
 {/if}
 
 <Modal width="small" title="Delete branch" bind:this={deleteBranchModal} let:item={branch}>
-	<div class="flex items-center gap-4">
-		<Icon name="warning" size={30} opacity={0.8} color="warn" />
-		<div>
-			Delete branch <span class="tag">{branch.currentBranch}</span> ? <br />
-			This action cannot be undone
+	<div class="flex flex-col gap-4">
+		<div class="flex items-center gap-4">
+			<Icon name="warning" size={30} opacity={0.8} color="warn" />
+			<div>
+				Delete branch <span class="tag">{branch.currentBranch}</span> ? <br />
+				This action cannot be undone
+			</div>
 		</div>
+		{#if branch.currentBranch === $workingBranch?.currentBranch && $workingBranch?.workingDirectory.files.length !== 0}
+			<InfoMessage>
+				You have changes on the branch that are not committed. Deleting this branch will bring these
+				changes to next branch.
+				<ul class="file-list">
+					{#if $workingBranch?.workingDirectory}
+						{#each $workingBranch?.workingDirectory.files as file}
+							<li>
+								<code class="whitespace-pre-wrap break-words">{file.path}</code>
+							</li>
+						{/each}
+					{/if}
+				</ul>
+			</InfoMessage>
+		{/if}
 	</div>
 	<svelte:fragment slot="controls" let:close let:item={branch}>
 		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
@@ -56,7 +72,7 @@
 			on:click={async () => {
 				if ($activeRepository && branch) {
 					try {
-						await deleteLocalBranch($activeRepository, branch.currentBranch);
+						await deleteBranch($activeRepository, $activeBranch, $activeBranch, $defaultBranch);
 						deleteBranchModal.close();
 						toasts.success(`Deleting branch ${branch.currentBranch}`);
 						await allBranches.fetch($activeRepository, {
@@ -81,4 +97,23 @@
 </Modal>
 
 <style lang="postcss">
+	.tag {
+		height: var(--size-control-s);
+		padding: var(--size-2) var(--size-4);
+		border-radius: var(--radius-m);
+		transition: background-color var(--transition-fast);
+		color: var(--clr-theme-scale-warn-20);
+		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%);
+		box-shadow: inset 0 0 0 1px var(--clr-theme-scale-warn-60);
+	}
+	.file-list {
+		list-style: disc;
+		padding-left: var(--size-26);
+		background-color: var(--bg-card);
+		border-radius: var(--radius-m);
+	}
+	.file-list li {
+		padding: var(--size-2);
+		padding-left: var(--size-1);
+	}
 </style>

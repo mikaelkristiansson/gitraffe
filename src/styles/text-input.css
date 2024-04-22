@@ -20,7 +20,7 @@
 
 	&:focus,
 	&:focus-within,
-	&.focus-visible {
+	&:focus-visible {
 		background: color-mix(
 			in srgb,
 			var(--clr-theme-container-light),

@@ -6,9 +6,9 @@ import { resolve } from '@tauri-apps/api/path';
 import { listSubmodules, resetSubmodulePaths } from './submodule';
 import { IndexStatus, getIndexChanges } from './diff-index';
 import { GitResetMode, resetPaths } from './reset';
-import { ErrorWithMetadata, type IErrorMetadata } from '$lib/models/error-with-metadata';
-import { emit } from '@tauri-apps/api/event';
 import { checkoutIndex } from './checkout-index';
+import { invoke } from '@tauri-apps/api/tauri';
+import { performFailableOperation } from '$lib/utils/failable-operation';
 
 export async function discardChanges(
 	files: Array<WorkingDirectoryFileChange>,
@@ -29,11 +29,14 @@ export async function discardChanges(
 			// running it inside this work queue that spreads out the calls across
 			// as many animation frames as it needs to.
 			try {
-				await removeFile(await resolve(repository.path, file.path));
+				const filePath = await resolve(repository.path, file.path);
+				await invoke('expand_scope', { folderPath: filePath });
+				await removeFile(filePath);
 			} catch (e) {
 				if (askForConfirmationOnDiscardChangesPermanently) {
 					console.error(e);
 				}
+				console.error(e);
 			}
 		}
 
@@ -89,30 +92,6 @@ export async function discardChanges(
 		await resetPaths(repository, GitResetMode.Mixed, 'HEAD', necessaryPathsToReset);
 		await checkoutIndex(repository, necessaryPathsToCheckout);
 	}, repository);
-}
 
-/**
- * Perform an operation that may fail by throwing an error. If an error is
- * thrown, catch it and emit it, and return `undefined`.
- *
- * @param errorMetadata - The metadata which should be attached to any errors
- *                        that are thrown.
- */
-async function performFailableOperation<T>(
-	fn: () => Promise<T>,
-	repository: Repository,
-	errorMetadata?: IErrorMetadata
-): Promise<T | undefined> {
-	try {
-		const result = await fn();
-		return result;
-	} catch (e) {
-		const error = new ErrorWithMetadata(e as Error, {
-			repository: repository,
-			...errorMetadata
-		});
-
-		emit('did-error', error);
-		return undefined;
-	}
+	// We're done!
 }

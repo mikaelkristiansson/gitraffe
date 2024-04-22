@@ -5,6 +5,7 @@
 
 	export let element: HTMLElement | undefined = undefined;
 	export let id: string | undefined = undefined; // Required to make label clickable
+	export let name: string | undefined = undefined;
 	export let icon: keyof typeof iconsJson | undefined = undefined;
 	export let value: string | undefined = undefined;
 	export let placeholder: string | undefined = undefined;
@@ -17,10 +18,20 @@
 	export let noselect = false;
 	export let selectall = false;
 	export let spellcheck = false;
+	export let initialFocus = false;
 
 	export let type: 'text' | 'password' | 'select' = 'text';
 
 	const dispatch = createEventDispatcher<{ input: string; change: string }>();
+
+	const init = (el: HTMLInputElement) => {
+		// we have to wait for modal animation to finish before focusing
+		requestAnimationFrame(() => {
+			if (initialFocus) {
+				el.focus();
+			}
+		});
+	};
 </script>
 
 <div class="textbox" bind:this={element} class:wide>
@@ -48,6 +59,8 @@
 			{placeholder}
 			{spellcheck}
 			{disabled}
+			use:init
+			{name}
 			{...{ type }}
 			class="text-input textbox__input text-base-13"
 			class:textbox__readonly={type != 'select' && readonly}
