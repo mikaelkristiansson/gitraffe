@@ -2,6 +2,7 @@
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
+	import * as hotkeys from '$lib/utils/hotkeys';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
 	import { projectLaneCollapsed } from '$lib/config/config';
@@ -19,11 +20,20 @@
 	import { quintOut } from 'svelte/easing';
 	import FileCard from '$lib/components/FileCard.svelte';
 	import InfoMessage from '$lib/components/InfoMessage.svelte';
+	import type { IStashEntry } from '$lib/models/stash-entry';
+	import { stashStore } from '$lib/stores/stash';
+	import Stash from '$lib/components/Stash.svelte';
+	import { unsubscribe } from '$lib/utils/unsubscribe';
+	import { createRequestUrl } from '$lib/utils/url';
+	import type { Repository } from '$lib/models/repository';
+	import { pushActiveBranch } from '$lib/utils/branch';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
 	let latestLocalCommit: Commit | null = null;
 	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
+	let stash: IStashEntry | null = null;
+	let isPushing = false;
 
 	function setSelected(file: WorkingDirectoryFileChange | undefined) {
 		selected = file;
@@ -34,10 +44,20 @@
 		latestLocalCommit = store.localCommits[0];
 	});
 
+	const unsubscribeStashStore = stashStore.subscribe((store) => {
+		if (!$activeRepository || !branch$) return;
+		const identifier = $activeRepository.id + '_' + branch$.currentBranch;
+		stash = store[identifier];
+	});
+
 	const unsubscribeWorkingBranch = workingBranch.subscribe((branch) => {
 		branch$ = branch;
 		if (branch?.workingDirectory) {
 			selectedFiles.set(branch.workingDirectory.files);
+		}
+		if (branch) {
+			const identifier = $activeRepository!.id + '_' + branch.currentBranch;
+			stash = $stashStore[identifier];
 		}
 	});
 
@@ -50,12 +70,32 @@
 			if (shouldUpdate) {
 				workingBranch.setWorking($activeRepository);
 			}
+			return unsubscribe(
+				hotkeys.on('Meta+R', () => {
+					createRequestUrl(
+						$activeRepository as Repository,
+						($workingBranch as IStatusResult).currentBranch as string
+					);
+				}),
+				hotkeys.on('Meta+P', async () => {
+					if ($activeRepository && $workingBranch && $activeBranch) {
+						isPushing = true;
+						await pushActiveBranch(
+							$activeRepository as Repository,
+							$workingBranch as IStatusResult,
+							$activeBranch
+						);
+						isPushing = false;
+					}
+				})
+			);
 		}
 	});
 
 	onDestroy(() => {
 		unsubscribeCommitStore();
 		unsubscribeWorkingBranch();
+		unsubscribeStashStore();
 	});
 
 	const commitBoxOpen = persisted<boolean>(
@@ -88,6 +128,7 @@
 							{isUnapplied}
 							bind:isLaneCollapsed
 							repository={$activeRepository}
+							{isPushing}
 						/>
 						{#if !$isLaneCollapsed}
 							<div>
@@ -100,7 +141,6 @@
 											repository={$activeRepository}
 											{selectedFiles}
 											showCheckboxes={$commitBoxOpen}
-											allowMultiple={true}
 											readonly={false}
 											{selected}
 											{setSelected}
@@ -141,20 +181,11 @@
 								{/if}
 							</div>
 						{/if}
+						{#if stash}
+							<Stash {stash} />
+						{/if}
 						{#if $activeRepository && !$isLaneCollapsed}
 							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
-							<!-- TODO: add all commits -->
-							<!-- <div class="max-h-[8rem] overflow-x-scroll commit-wrapper">
-								<div class="flex flex-col gap-2 overflow-hidden">
-									{#each $commitStore.localCommits as commit}
-										<CommitCard
-											{commit}
-											isUnapplied={latestLocalCommit?.sha !== commit.sha}
-											repository={$activeRepository}
-										/>
-									{/each}
-								</div>
-							</div> -->
 						{/if}
 					</div>
 					{#if selected}
@@ -163,7 +194,6 @@
 							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
 						>
 							<FileCard
-								conflicted={selected.status.kind == 'Conflicted'}
 								file={selected}
 								repository={$activeRepository}
 								readonly={selected.status.kind !== 'Conflicted'}

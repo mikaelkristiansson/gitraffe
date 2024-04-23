@@ -2,7 +2,12 @@ import { Branch, BranchType, type IBranchTip } from '$lib/models/branch';
 import { CommitIdentity } from '$lib/models/commit-identity';
 import { createForEachRefParser } from './git-delimiter-parser';
 import type { Repository } from '$lib/models/repository';
-import { git } from './cli';
+import { git, gitNetworkArguments } from './cli';
+import { IGitError } from '$lib/models/git-errors';
+import type { IGitAccount } from '$lib/models/git-account';
+// import { getRemoteURL } from './remote';
+// import { getFallbackUrlForProxyResolve } from './environment';
+import { deleteRef } from './update-ref';
 
 /** Get all the branches. */
 export async function getBranches(
@@ -39,9 +44,15 @@ export async function getBranches(
 	// }
 
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
-	const { stdout, stderr } = await git(repository.path, args);
+	const { stdout, stderr, gitError } = await git(repository.path, args, {
+		expectedErrors: new Set([IGitError.NotAGitRepository])
+	});
 	if (stderr) {
 		throw new Error(stderr);
+	}
+
+	if (gitError === IGitError.NotAGitRepository) {
+		return [];
 	}
 
 	const branches = [];
@@ -98,16 +109,16 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	//   // error code 128 is returned if the branch is unborn
 	//   return []
 	// }
-	const { stdout } = await git(repository.path, [
-		'log',
-		'-g',
-		'--no-abbrev-commit',
-		'--pretty=oneline',
-		'HEAD',
-		'-n',
-		'2500',
-		'--'
-	]);
+	const { stdout, exitCode } = await git(
+		repository.path,
+		['log', '-g', '--no-abbrev-commit', '--pretty=oneline', 'HEAD', '-n', '2500', '--'],
+		{ successExitCodes: new Set([0, 128]) }
+	);
+
+	if (exitCode === 128) {
+		// error code 128 is returned if the branch is unborn
+		return [];
+	}
 
 	const lines = stdout.split('\n');
 	const names = new Set<string>();
@@ -171,4 +182,46 @@ export async function createBranch(
 	}
 
 	await git(repository.path, args);
+}
+
+/**
+ * Deletes a remote branch
+ *
+ * @param remoteName - the name of the remote to delete the branch from
+ * @param remoteBranchName - the name of the branch on the remote
+ */
+export async function deleteRemoteBranch(
+	repository: Repository,
+	account: IGitAccount | null,
+	remoteName: string,
+	remoteBranchName: string
+): Promise<true> {
+	// const remoteUrl =
+	// 	(await getRemoteURL(repository, remoteName).catch((err) => {
+	// 		// If we can't get the URL then it's very unlikely Git will be able to
+	// 		// either and the push will fail. The URL is only used to resolve the
+	// 		// proxy though so it's not critical.
+	// 		console.error(`Could not resolve remote url for remote ${remoteName}`, err);
+	// 		return null;
+	// 	})) || getFallbackUrlForProxyResolve(account, repository);
+
+	const args = [...gitNetworkArguments(), 'push', remoteName, `:${remoteBranchName}`];
+
+	// If the user is not authenticated, the push is going to fail
+	// Let this propagate and leave it to the caller to handle
+	const result = await git(repository.path, args, {
+		//   env: await envForRemoteOperation(account, remoteUrl),
+		expectedErrors: new Set<IGitError>([IGitError.BranchDeletionFailed])
+	});
+
+	// It's possible that the delete failed because the ref has already
+	// been deleted on the remote. If we identify that specific
+	// error we can safely remove our remote ref which is what would
+	// happen if the push didn't fail.
+	if (result.gitError === IGitError.BranchDeletionFailed) {
+		const ref = `refs/remotes/${remoteName}/${remoteBranchName}`;
+		await deleteRef(repository, ref);
+	}
+
+	return true;
 }

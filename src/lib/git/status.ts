@@ -102,9 +102,11 @@ export async function getStatus(repository: Repository): Promise<IStatusResult |
 		'-z'
 	];
 
-	const { stdout, stderr } = await git(repository.path, args);
+	const { stdout, exitCode } = await git(repository.path, args, {
+		successExitCodes: new Set([0, 128])
+	});
 
-	if (stderr) {
+	if (exitCode === 128) {
 		console.debug(
 			`'git status' returned 128 for '${repository.path}' and is likely missing its .git directory`
 		);

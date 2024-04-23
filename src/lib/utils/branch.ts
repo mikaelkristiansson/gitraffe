@@ -1,10 +1,29 @@
-import { getBranches } from '$lib/git/branch';
+import { deleteLocalBranch, deleteRemoteBranch, getBranches } from '$lib/git/branch';
+import { checkoutBranch } from '$lib/git/checkout';
+import { GitError, push } from '$lib/git/cli';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { MergeResult, merge } from '$lib/git/merge';
 import { getRemoteHEAD } from '$lib/git/remote';
-import { BranchType, type Branch } from '$lib/models/branch';
+import {
+	createGitfoxStashEntry,
+	dropGitfoxStashEntry,
+	getLastGitfoxStashEntryForBranch,
+	popStashEntry
+} from '$lib/git/stash';
+import type { IStatusResult } from '$lib/git/status';
+import { Branch, BranchType } from '$lib/models/branch';
+import { ErrorWithMetadata } from '$lib/models/error-with-metadata';
+import type { IGitAccount } from '$lib/models/git-account';
+import { IGitError } from '$lib/models/git-errors';
 import { UpstreamRemoteName } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
+import type { WorkingDirectoryStatus } from '$lib/models/status';
+import { updateCurrentBranch } from '$lib/store-updater';
+import { allBranches } from '$lib/stores/branch';
+import { stashStore } from '$lib/stores/stash';
+import { performFailableOperation } from './failable-operation';
+import { getUntrackedFiles } from './status';
+import { error, success } from './toasts';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -264,3 +283,249 @@ export async function mergeBranch(
 	}
 	return mergeResult;
 }
+
+/**
+ * Checkout the given branch and leave any local changes on the current branch
+ *
+ * Note that this will ovewrite any existing stash enty on the current branch.
+ */
+export async function checkoutAndLeaveChanges(
+	repository: Repository,
+	branch: Branch,
+	workingBranch: Branch,
+	workingDirectory: WorkingDirectoryStatus,
+	account: IGitAccount | null
+) {
+	if (workingDirectory.files.length > 0) {
+		await createStashAndDropPreviousEntry(repository, workingBranch, workingDirectory);
+	}
+
+	const lastStash = await getLastGitfoxStashEntryForBranch(repository, workingBranch);
+	if (lastStash) {
+		stashStore.setNewStash(lastStash, repository.id + '_' + workingBranch.name);
+	}
+
+	return checkoutIgnoringChanges(repository, branch, account);
+}
+
+/**
+ * Checkout the given branch and move any local changes along.
+ *
+ * Will attempt to simply check out the branch and if that fails due to
+ * local changes risking being overwritten it'll create a transient stash
+ * entry, switch branches, and pop said stash entry.
+ *
+ * Note that the transient stash entry will not overwrite any current stash
+ * entry for the target branch.
+ */
+export async function checkoutAndBringChanges(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus,
+	account: IGitAccount | null
+) {
+	try {
+		await checkoutBranch(repository, account, branch);
+	} catch (checkoutError) {
+		if (!isLocalChangesOverwrittenError(checkoutError as Error)) {
+			throw checkoutError;
+		}
+
+		const stash = (await createStashEntry(repository, branch, workingDirectory))
+			? await getLastGitfoxStashEntryForBranch(repository, branch)
+			: null;
+
+		// Failing to stash the changes when we know that there are changes
+		// preventing a checkout is very likely due to assume-unchanged or
+		// skip-worktree. So instead of showing a "could not create stash" error
+		// we'll show the checkout error to the user and let them figure it out.
+		if (stash === null) {
+			throw checkoutError;
+		}
+
+		await checkoutIgnoringChanges(repository, branch, account);
+		await popStashEntry(repository, stash.stashSha);
+	}
+}
+
+/** Checkout the given branch without taking local changes into account */
+async function checkoutIgnoringChanges(
+	repository: Repository,
+	branch: Branch,
+	account: IGitAccount | null
+) {
+	await checkoutBranch(repository, account, branch);
+}
+
+async function createStashEntry(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus
+) {
+	const untrackedFiles = getUntrackedFiles(workingDirectory);
+	return createGitfoxStashEntry(repository, branch, untrackedFiles);
+}
+
+function isLocalChangesOverwrittenError(error: Error): boolean {
+	if (error instanceof ErrorWithMetadata) {
+		return isLocalChangesOverwrittenError(error.underlyingError);
+	}
+
+	return error instanceof GitError && error.result.gitError === IGitError.LocalChangesOverwritten;
+}
+
+async function createStashAndDropPreviousEntry(
+	repository: Repository,
+	branch: Branch,
+	workingDirectory: WorkingDirectoryStatus
+) {
+	const entry = await getLastGitfoxStashEntryForBranch(repository, branch);
+
+	const createdStash = await createStashEntry(repository, branch, workingDirectory);
+
+	if (createdStash === true && entry !== null) {
+		const { stashSha, branchName } = entry;
+
+		await dropGitfoxStashEntry(repository, stashSha);
+		console.info(`Dropped stash '${stashSha}' associated with ${branchName}`);
+	}
+
+	return createdStash === true;
+}
+
+export async function deleteBranch(
+	repository: Repository,
+	branch: Branch,
+	currentBranch: Branch | null,
+	defaultBranch: Branch | null,
+	includeUpstream?: boolean,
+	toCheckout?: Branch | null
+) {
+	// If solely a remote branch, there is no need to checkout a branch.
+	if (branch.type === BranchType.Remote) {
+		const { remoteName, tip, nameWithoutRemote } = branch;
+		if (remoteName === null) {
+			// This is based on the branches ref. It should not be null for a
+			// remote branch
+			throw new Error(`Could not determine remote name from: ${branch.ref}.`);
+		}
+		await performFailableOperation(
+			() => deleteRemoteBranch(repository, null, remoteName, nameWithoutRemote),
+			repository
+		);
+
+		// We log the remote branch's sha so that the user can recover it.
+		console.info(`Deleted branch ${branch.upstreamWithoutRemote} (was ${tip.sha})`);
+
+		//   return this._refreshRepository(r)
+		return true;
+	}
+	// If a local branch, user may have the branch to delete checked out and
+	// we need to switch to a different branch (default or recent).
+	const branchToCheckout =
+		toCheckout ?? getBranchToCheckoutAfterDelete(branch, currentBranch, defaultBranch);
+
+	if (branchToCheckout !== null) {
+		await performFailableOperation(
+			() => checkoutBranch(repository, null, branchToCheckout),
+			repository
+		);
+	}
+
+	await performFailableOperation(() => {
+		return deleteLocalBranchAndUpstreamBranch(repository, branch, null, includeUpstream);
+	}, repository);
+
+	//   return this._refreshRepository(r)
+	return true;
+}
+
+function getBranchToCheckoutAfterDelete(
+	branchToDelete: Branch,
+	currentBranch: Branch | null,
+	defaultBranch: Branch | null
+): Branch | null {
+	// const { branchesState } = this.repositoryStateCache.get(repository)
+	// const tip = branchesState.tip
+	// const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
+	// if current branch is not the branch being deleted, no need to switch
+	// branches
+	if (currentBranch !== null && branchToDelete.name !== currentBranch.name) {
+		return null;
+	}
+
+	// If the default branch is null, use the most recent branch excluding the branch
+	// the branch to delete as the branch to checkout.
+	// const branchToCheckout =
+	//   branchesState.defaultBranch ??
+	//   branchesState.recentBranches.find(x => x.name !== branchToDelete.name)
+	const branchToCheckout = defaultBranch ?? null;
+
+	if (branchToCheckout === undefined) {
+		throw new Error(`It's not possible to delete the only existing branch in a repository.`);
+	}
+
+	return branchToCheckout;
+}
+
+/**
+ * Deletes the local branch. If the parameter `includeUpstream` is true, the
+ * upstream branch will be deleted also.
+ */
+async function deleteLocalBranchAndUpstreamBranch(
+	repository: Repository,
+	branch: Branch,
+	account: IGitAccount | null,
+	includeUpstream?: boolean
+): Promise<void> {
+	await deleteLocalBranch(repository, branch.name);
+
+	if (
+		includeUpstream === true &&
+		branch.upstreamRemoteName !== null &&
+		branch.upstreamWithoutRemote !== null
+	) {
+		await deleteRemoteBranch(
+			repository,
+			account,
+			branch.upstreamRemoteName,
+			branch.upstreamWithoutRemote
+		);
+	}
+	return;
+}
+
+export const pushActiveBranch = async (
+	repository: Repository,
+	status: IStatusResult,
+	activeBranch: Branch
+) => {
+	if (status.branchAheadBehind?.behind) {
+		error('Cannot push while branch is behind origin');
+		return;
+	}
+	if (status.branchAheadBehind?.ahead === 0) {
+		return;
+	}
+	try {
+		if (activeBranch) {
+			await push(repository.path);
+			const update = { behind: activeBranch.aheadBehind.behind, ahead: 0 };
+			const newBranch = new Branch(
+				activeBranch.name,
+				activeBranch.upstream,
+				activeBranch.tip,
+				activeBranch.type,
+				activeBranch.ref,
+				update
+			);
+			allBranches.updateBranch(newBranch);
+			updateCurrentBranch(repository, newBranch);
+		}
+		success('Pushed to origin');
+		return true;
+	} catch (e) {
+		error('Failed to push to origin');
+		return false;
+	}
+};

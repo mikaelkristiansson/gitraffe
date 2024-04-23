@@ -9,10 +9,10 @@
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
-	import { deleteLocalBranch } from '$lib/git/branch';
 	import { checkout } from '$lib/git/cli';
-	import { mergeBranch } from '$lib/utils/branch';
+	import { deleteBranch, mergeBranch } from '$lib/utils/branch';
 	import { MergeResult } from '$lib/git/merge';
+	import InfoMessage from './InfoMessage.svelte';
 
 	export let repository: Repository | undefined;
 
@@ -52,15 +52,8 @@
 			<ContextMenuItem
 				icon="removed-branch-small"
 				label="Delete branch"
-				on:click={async () => {
-					if (
-						item.branch?.name === $workingBranch?.currentBranch &&
-						$workingBranch?.workingDirectory.files.length !== 0
-					) {
-						item.untrackedModal?.show(item);
-					} else {
-						confirmationModal.show(item);
-					}
+				on:click={() => {
+					confirmationModal.show(item);
 					dismiss();
 				}}
 			/>
@@ -69,15 +62,32 @@
 </PopupMenu>
 
 <Modal width="small" title="Delete Branch" bind:this={confirmationModal} let:item>
-	{#if item}
-		<div class="flex items-center gap-4">
-			<Icon name="warning" size={30} opacity={0.8} color="warn" />
-			<div>
-				Delete branch <span class="tag">{item.branch.name}</span> ? <br />
-				This action cannot be undone
+	<div class="flex flex-col gap-4">
+		{#if item}
+			<div class="flex items-center gap-4">
+				<Icon name="warning" size={30} opacity={0.8} color="warn" />
+				<div>
+					Delete branch <span class="tag">{item.branch.name}</span> ? <br />
+					This action cannot be undone
+				</div>
 			</div>
-		</div>
-	{/if}
+		{/if}
+		{#if item.branch?.name === $workingBranch?.currentBranch && $workingBranch?.workingDirectory.files.length !== 0}
+			<InfoMessage>
+				You have changes on the branch that are not committed. Deleting this branch will bring these
+				changes to next branch.
+				<ul class="file-list">
+					{#if $workingBranch?.workingDirectory}
+						{#each $workingBranch?.workingDirectory.files as file}
+							<li>
+								<code class="whitespace-pre-wrap break-words">{file.path}</code>
+							</li>
+						{/each}
+					{/if}
+				</ul>
+			</InfoMessage>
+		{/if}
+	</div>
 	<svelte:fragment slot="controls" let:close let:item>
 		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
 		<Button
@@ -85,7 +95,11 @@
 			on:click={async () => {
 				if (repository && item) {
 					try {
-						await deleteLocalBranch(repository, item.branch.name);
+						if (item.branch.name === $defaultBranch.name) {
+							toasts.error('Cannot delete default branch');
+							return;
+						}
+						await deleteBranch(repository, item.branch, $activeBranch, $defaultBranch);
 						confirmationModal.close();
 						toasts.success(`Deleting branch ${item.branch.name}`);
 						await allBranches.fetch(repository, {
@@ -118,5 +132,16 @@
 		color: var(--clr-theme-scale-warn-20);
 		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%);
 		box-shadow: inset 0 0 0 1px var(--clr-theme-scale-warn-60);
+	}
+
+	.file-list {
+		list-style: disc;
+		padding-left: var(--size-26);
+		background-color: var(--bg-card);
+		border-radius: var(--radius-m);
+	}
+	.file-list li {
+		padding: var(--size-2);
+		padding-left: var(--size-1);
 	}
 </style>

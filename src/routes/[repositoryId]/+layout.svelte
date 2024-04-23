@@ -8,7 +8,8 @@
 	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
-	import { invoke } from '@tauri-apps/api/tauri';
+	import { getLastGitfoxStashEntryForBranch } from '$lib/git/stash';
+	import { stashStore } from '$lib/stores/stash';
 
 	let repository$: Repository | null = null;
 	const unsubscribeActiveRepository = activeRepository.subscribe(async (repo) => {

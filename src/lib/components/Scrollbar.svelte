@@ -3,11 +3,11 @@
 </script>
 
 <script lang="ts">
-	// import { SETTINGS_CONTEXT, type SettingsStore } from '$lib/settings/userSettings';
+	import { SETTINGS_CONTEXT, type SettingsStore } from '$lib/settings/userSettings';
 	import { onDestroy, createEventDispatcher } from 'svelte';
 	import { getContext } from 'svelte';
 
-	// const userSettings = getContext(SETTINGS_CONTEXT) as SettingsStore;
+	const userSettings = getContext(SETTINGS_CONTEXT) as SettingsStore;
 
 	export let viewport: Element;
 	export let contents: Element;
@@ -57,7 +57,7 @@
 	$: thumbTop = wholeHeight > 0 ? (scrollTop / wholeHeight) * trackHeight : 0;
 	$: thumbLeft = wholeHeight > 0 ? (scrollLeft / wholeWidth) * trackWidth : 0;
 
-	$: alwaysVisible = false; //$userSettings.scrollbarVisabilityOnHover;
+	$: alwaysVisible = $userSettings.scrollbarVisabilityOnHover;
 
 	$: scrollableY = wholeHeight > trackHeight;
 	$: scrollableX = wholeWidth > trackWidth;

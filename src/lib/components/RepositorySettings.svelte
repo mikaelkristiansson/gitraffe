@@ -74,19 +74,13 @@
 	</section>
 {/if}
 
-<style lang="post-css">
+<style lang="postcss">
 	.content-wrapper {
 		user-select: none;
 		width: 100%;
 		height: 100%;
 		flex: 1;
 	}
-
-	.drag-region {
-		width: 100%;
-		min-height: 100vh;
-	}
-
 	.content {
 		padding: var(--size-48) var(--size-32);
 		display: flex;

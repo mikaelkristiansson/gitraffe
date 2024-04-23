@@ -1,9 +1,22 @@
+import { forceUnwrap } from '$lib/fatal-error';
 import { Commit } from '$lib/models/commit';
 import { CommitIdentity } from '$lib/models/commit-identity';
 import type { Repository } from '$lib/models/repository';
+import {
+	AppFileStatusKind,
+	CommittedFileChange,
+	type AppFileStatus,
+	type CopiedOrRenamedFileStatus,
+	type PlainFileStatus,
+	type SubmoduleStatus,
+	type UntrackedFileStatus
+} from '$lib/models/status';
 import { git } from './cli';
 import { createLogParser } from './git-delimiter-parser';
 import { parseRawUnfoldedTrailers } from './interpret-trailers';
+
+const isCopyOrRename = (status: AppFileStatus): status is CopiedOrRenamedFileStatus =>
+	status.kind === AppFileStatusKind.Copied || status.kind === AppFileStatusKind.Renamed;
 
 /**
  * Get the repository's commits using `revisionRange` and limited to `limit`
@@ -47,16 +60,14 @@ export async function getCommits(
 	}
 
 	args.push(...formatArgs, '--no-show-signature', '--no-color', ...additionalArgs, '--');
-	const result = await git(repository.path, args);
-
-	// {
-	//     successExitCodes: new Set([0, 128]),
-	//   }
+	const result = await git(repository.path, args, {
+		successExitCodes: new Set([0, 128])
+	});
 
 	// if the repository has an unborn HEAD, return an empty history of commits
-	// if (result.exitCode === 128) {
-	//   return new Array<Commit>()
-	// }
+	if (result.exitCode === 128) {
+		return new Array<Commit>();
+	}
 
 	const parsed = parse(result.stdout);
 
@@ -97,4 +108,153 @@ export async function getCommit(repository: Repository, ref: string): Promise<Co
 	}
 
 	return commits[0];
+}
+
+/**
+ * Parses output of diff flags -z --raw --numstat.
+ *
+ * Given the -z flag the new lines are separated by \0 character (left them as
+ * new lines below for ease of reading)
+ *
+ * For modified, added, deleted, untracked:
+ *    100644 100644 5716ca5 db3c77d M
+ *    file_one_path
+ *    :100644 100644 0835e4f 28096ea M
+ *    file_two_path
+ *    1    0       file_one_path
+ *    1    0       file_two_path
+ *
+ * For copied or renamed:
+ *    100644 100644 5716ca5 db3c77d M
+ *    file_one_original_path
+ *    file_one_new_path
+ *    :100644 100644 0835e4f 28096ea M
+ *    file_two_original_path
+ *    file_two_new_path
+ *    1    0
+ *    file_one_original_path
+ *    file_one_new_path
+ *    1    0
+ *    file_two_original_path
+ *    file_two_new_path
+ */
+
+export function parseRawLogWithNumstat(stdout: string, sha: string, parentCommitish: string) {
+	const files = new Array<CommittedFileChange>();
+	let linesAdded = 0;
+	let linesDeleted = 0;
+	let numStatCount = 0;
+	const lines = stdout.split('\0');
+
+	for (let i = 0; i < lines.length - 1; i++) {
+		const line = lines[i];
+		if (line.startsWith(':')) {
+			const lineComponents = line.split(' ');
+			const srcMode = forceUnwrap(
+				'Invalid log output (srcMode)',
+				lineComponents[0]?.replace(':', '')
+			);
+			const dstMode = forceUnwrap('Invalid log output (dstMode)', lineComponents[1]);
+			const status = forceUnwrap('Invalid log output (status)', lineComponents.at(-1));
+			const oldPath = /^R|C/.test(status)
+				? forceUnwrap('Missing old path', lines.at(++i))
+				: undefined;
+
+			const path = forceUnwrap('Missing path', lines.at(++i));
+
+			files.push(
+				new CommittedFileChange(
+					path,
+					mapStatus(status, oldPath, srcMode, dstMode),
+					sha,
+					parentCommitish
+				)
+			);
+		} else {
+			const match = /^(\d+|-)\t(\d+|-)\t/.exec(line);
+			const [, added, deleted] = forceUnwrap('Invalid numstat line', match);
+			linesAdded += added === '-' ? 0 : parseInt(added, 10);
+			linesDeleted += deleted === '-' ? 0 : parseInt(deleted, 10);
+
+			// If this entry denotes a rename or copy the old and new paths are on
+			// two separate fields (separated by \0). Otherwise they're on the same
+			// line as the added and deleted lines.
+			if (isCopyOrRename(files[numStatCount].status)) {
+				i += 2;
+			}
+			numStatCount++;
+		}
+	}
+
+	return { files, linesAdded, linesDeleted };
+}
+
+// File mode 160000 is used by git specifically for submodules:
+// https://github.com/git/git/blob/v2.37.3/cache.h#L62-L69
+const SubmoduleFileMode = '160000';
+
+function mapSubmoduleStatusFileModes(
+	status: string,
+	srcMode: string,
+	dstMode: string
+): SubmoduleStatus | undefined {
+	return srcMode === SubmoduleFileMode && dstMode === SubmoduleFileMode && status === 'M'
+		? {
+				commitChanged: true,
+				untrackedChanges: false,
+				modifiedChanges: false
+			}
+		: (srcMode === SubmoduleFileMode && status === 'D') ||
+			  (dstMode === SubmoduleFileMode && status === 'A')
+			? {
+					commitChanged: false,
+					untrackedChanges: false,
+					modifiedChanges: false
+				}
+			: undefined;
+}
+
+/**
+ * Map the raw status text from Git to an app-friendly value
+ * shamelessly borrowed from GitHub Desktop (Windows)
+ */
+function mapStatus(
+	rawStatus: string,
+	oldPath: string | undefined,
+	srcMode: string,
+	dstMode: string
+): PlainFileStatus | CopiedOrRenamedFileStatus | UntrackedFileStatus {
+	const status = rawStatus.trim();
+	const submoduleStatus = mapSubmoduleStatusFileModes(status, srcMode, dstMode);
+
+	if (status === 'M') {
+		return { kind: AppFileStatusKind.Modified, submoduleStatus };
+	} // modified
+	if (status === 'A') {
+		return { kind: AppFileStatusKind.New, submoduleStatus };
+	} // added
+	if (status === '?') {
+		return { kind: AppFileStatusKind.Untracked, submoduleStatus };
+	} // untracked
+	if (status === 'D') {
+		return { kind: AppFileStatusKind.Deleted, submoduleStatus };
+	} // deleted
+	if (status === 'R' && oldPath != null) {
+		return { kind: AppFileStatusKind.Renamed, oldPath, submoduleStatus };
+	} // renamed
+	if (status === 'C' && oldPath != null) {
+		return { kind: AppFileStatusKind.Copied, oldPath, submoduleStatus };
+	} // copied
+
+	// git log -M --name-status will return a RXXX - where XXX is a percentage
+	if (status.match(/R[0-9]+/) && oldPath != null) {
+		return { kind: AppFileStatusKind.Renamed, oldPath, submoduleStatus };
+	}
+
+	// git log -C --name-status will return a CXXX - where XXX is a percentage
+	if (status.match(/C[0-9]+/) && oldPath != null) {
+		return { kind: AppFileStatusKind.Copied, oldPath, submoduleStatus };
+	}
+
+	return { kind: AppFileStatusKind.Modified, submoduleStatus };
 }

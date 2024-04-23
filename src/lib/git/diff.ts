@@ -11,7 +11,8 @@ import {
 	FileChange,
 	WorkingDirectoryFileChange,
 	type SubmoduleStatus,
-	CommittedFileChange
+	CommittedFileChange,
+	type ChangedFile
 } from '$lib/models/status';
 import { getCaptures } from '$lib/utils/regex';
 import { extname, join } from '@tauri-apps/api/path';
@@ -139,7 +140,7 @@ export async function getBlobImage(
  */
 export async function getWorkingDirectoryDiff(
 	repository: Repository,
-	file: WorkingDirectoryFileChange,
+	file: ChangedFile,
 	hideWhitespaceInDiff: boolean = false
 ): Promise<IDiff> {
 	// `--no-ext-diff` should be provided wherever we invoke `git diff` so that any

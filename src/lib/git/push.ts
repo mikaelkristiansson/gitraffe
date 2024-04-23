@@ -1,7 +1,10 @@
-// import type { IGitAccount } from '$lib/models/git-account';
+import type { IGitAccount } from '$lib/models/git-account';
+import { IGitError } from '$lib/models/git-errors';
 import type { IRemote } from '$lib/models/remote';
 import type { Repository } from '$lib/models/repository';
-import { git, GitError, gitNetworkArguments } from './cli';
+import { AuthenticationErrors } from './authentication';
+import { git, GitError, gitNetworkArguments, type IGitExecutionOptions } from './cli';
+// import { envForRemoteOperation } from './environment';
 
 export type PushOptions = {
 	/**
@@ -39,7 +42,7 @@ export type PushOptions = {
  */
 export async function push(
 	repository: Repository,
-	// account: IGitAccount | null,
+	account: IGitAccount | null,
 	remote: IRemote,
 	localBranch: string,
 	remoteBranch: string | null,
@@ -65,13 +68,13 @@ export async function push(
 		args.push('--force-with-lease');
 	}
 
-	// const expectedErrors = new Set<DugiteError>(AuthenticationErrors)
-	// expectedErrors.add(DugiteError.ProtectedBranchForcePush)
+	const expectedErrors = new Set<IGitError>(AuthenticationErrors);
+	expectedErrors.add(IGitError.ProtectedBranchForcePush);
 
-	// let opts: IGitExecutionOptions = {
-	//   env: await envForRemoteOperation(account, remote.url),
-	//   expectedErrors,
-	// }
+	const opts: IGitExecutionOptions = {
+		// env: await envForRemoteOperation(account, remote.url),
+		expectedErrors
+	};
 
 	// if (progressCallback) {
 	//   args.push('--progress')
@@ -107,9 +110,9 @@ export async function push(
 	//   })
 	// }
 
-	const result = await git(repository.path, args);
+	const result = await git(repository.path, args, opts);
 
-	if (result.stderr) {
+	if (result.gitErrorDescription) {
 		throw new GitError(result, args);
 	}
 }
