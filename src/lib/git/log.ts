@@ -145,7 +145,6 @@ export async function getChangedFiles(
 		'-z',
 		'--'
 	];
-	console.log('🚀 ~ args:', args);
 
 	const { stdout } = await git(repository.path, args);
 	return parseRawLogWithNumstat(stdout, sha, `${sha}^`);
