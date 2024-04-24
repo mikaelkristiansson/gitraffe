@@ -6,7 +6,7 @@ import { writable } from 'svelte/store';
 
 export interface CommitStore {
 	localCommitSHAs: string[];
-	localCommits: ReadonlyArray<Commit>;
+	localCommits: Array<Commit>;
 	lastFetched: string;
 }
 
@@ -43,7 +43,7 @@ export async function loadLocalCommits(
 		return { ...defaultCommitStore, lastFetched: new Date().toISOString() };
 	}
 
-	let localCommits: ReadonlyArray<Commit> | undefined;
+	let localCommits: Array<Commit> | undefined;
 	if (branch.upstream) {
 		const range = revRange(branch.upstream, branch.name);
 		localCommits = await getCommits(repository, range, CommitBatchSize);
@@ -60,7 +60,7 @@ export async function loadLocalCommits(
 
 	const localCommitSHAs = localCommits.map((c) => c.sha);
 	const update = {
-		localCommits: localCommits as ReadonlyArray<Commit>,
+		localCommits: localCommits as Array<Commit>,
 		localCommitSHAs,
 		lastFetched: new Date().toISOString()
 	};
@@ -79,7 +79,7 @@ function setCommitsStore() {
 				return store;
 			});
 		},
-		updateLocalCommits: (localCommits: ReadonlyArray<Commit>) => {
+		updateLocalCommits: (localCommits: Array<Commit>) => {
 			update((store) => {
 				store.localCommits = localCommits;
 				return store;

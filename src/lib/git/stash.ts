@@ -244,7 +244,7 @@ function extractBranchFromMessage(message: string): string | null {
 export async function getStashedFiles(
 	repository: Repository,
 	stashSha: string
-): Promise<ReadonlyArray<CommittedFileChange>> {
+): Promise<Array<CommittedFileChange>> {
 	const args = [
 		'stash',
 		'show',

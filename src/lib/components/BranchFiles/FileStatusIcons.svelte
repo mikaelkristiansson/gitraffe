@@ -4,11 +4,11 @@
 	import {
 		isConflictedFileStatus,
 		isConflictWithMarkers,
-		type WorkingDirectoryFileChange
+		type ChangedFile
 	} from '$lib/models/status';
 	import { tooltip } from '$lib/utils/tooltip';
 
-	export let file: WorkingDirectoryFileChange;
+	export let file: ChangedFile;
 </script>
 
 <div class="file-status" use:tooltip={{ delay: 400, text: file.status.kind }}>

@@ -5,11 +5,11 @@
  * hirerarchical structure for easy rendering.
  */
 
-import type { WorkingDirectoryFileChange } from '$lib/models/status';
+import type { ChangedFile } from '$lib/models/status';
 
 export interface TreeNode {
 	name: string;
-	file?: WorkingDirectoryFileChange;
+	file?: ChangedFile;
 	children: TreeNode[];
 	parent?: TreeNode;
 }
@@ -41,7 +41,7 @@ export function sortChildren(node: TreeNode) {
 	}
 }
 
-export function filesToFileTree(files: ReadonlyArray<WorkingDirectoryFileChange>): TreeNode {
+export function filesToFileTree(files: ReadonlyArray<ChangedFile>): TreeNode {
 	const acc: TreeNode = { name: 'root', children: [] };
 	files.forEach((f) => {
 		const pathParts = f.path.split('/');
@@ -52,8 +52,8 @@ export function filesToFileTree(files: ReadonlyArray<WorkingDirectoryFileChange>
 	return acc;
 }
 
-function fileTreeToList(node: TreeNode): WorkingDirectoryFileChange[] {
-	const list: WorkingDirectoryFileChange[] = [];
+function fileTreeToList(node: TreeNode): ChangedFile[] {
+	const list: ChangedFile[] = [];
 	if (node.file) list.push(node.file);
 	node.children.forEach((child) => {
 		list.push(...fileTreeToList(child));
@@ -62,8 +62,6 @@ function fileTreeToList(node: TreeNode): WorkingDirectoryFileChange[] {
 }
 
 // Sorts a file list the same way it is sorted in a file tree
-export function sortLikeFileTree(
-	files: ReadonlyArray<WorkingDirectoryFileChange>
-): ReadonlyArray<WorkingDirectoryFileChange> {
+export function sortLikeFileTree(files: ReadonlyArray<ChangedFile>): ReadonlyArray<ChangedFile> {
 	return fileTreeToList(filesToFileTree(files));
 }

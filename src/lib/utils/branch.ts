@@ -50,8 +50,12 @@ export function mergeRemoteAndLocalBranches(branches: Array<Branch>): Array<Bran
 	const allBranchesWithUpstream = new Array<Branch>();
 
 	for (const branch of localBranches) {
+		if (remoteBranches.find((b) => b.name === branch.upstream)) {
+			branch.remoteExists = true;
+		} else {
+			branch.remoteExists = false;
+		}
 		allBranchesWithUpstream.push(branch);
-
 		if (branch.upstream) {
 			upstreamBranchesAdded.add(branch.upstream);
 		}
@@ -94,7 +98,7 @@ export async function findDefaultBranch(
 	const defaultBranchName = remoteHead ?? (await getDefaultBranch(repository));
 	const remoteRef = remoteHead ? `${remoteName}/${remoteHead}` : undefined;
 
-	const upstreamName = remoteRef || `origin/${defaultBranchName}`;
+	const upstreamName = remoteRef || `${defaultRemoteName}/${defaultBranchName}`;
 	const branches = await getBranches(repository, upstreamName);
 
 	let localHit: Branch | undefined = undefined;

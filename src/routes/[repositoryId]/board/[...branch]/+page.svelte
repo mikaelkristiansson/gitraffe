@@ -10,12 +10,11 @@
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
 	import type { IStatusResult } from '$lib/git/status';
 	import { onDestroy, onMount } from 'svelte';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore } from '$lib/stores/commits';
 	import type { Commit } from '$lib/models/commit';
-	import CommitCard from '$lib/components/CommitCard.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import FileCard from '$lib/components/FileCard.svelte';
@@ -27,21 +26,22 @@
 	import { createRequestUrl } from '$lib/utils/url';
 	import type { Repository } from '$lib/models/repository';
 	import { pushActiveBranch } from '$lib/utils/branch';
+	import Commits from '$lib/components/Commits.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
-	const selectedFiles = writable<WorkingDirectoryFileChange[]>([]);
-	let latestLocalCommit: Commit | null = null;
-	let selected: WorkingDirectoryFileChange | undefined = $selectedFiles[0];
+	const selectedFiles = writable<ChangedFile[]>([]);
+	let commits: Commit[] | null = null;
+	let selected: ChangedFile | undefined = $selectedFiles[0];
 	let stash: IStashEntry | null = null;
 	let isPushing = false;
 
-	function setSelected(file: WorkingDirectoryFileChange | undefined) {
+	function setSelected(file: ChangedFile | undefined) {
 		selected = file;
 		return file;
 	}
 
 	const unsubscribeCommitStore = commitStore.subscribe((store) => {
-		latestLocalCommit = store.localCommits[0];
+		commits = store.localCommits;
 	});
 
 	const unsubscribeStashStore = stashStore.subscribe((store) => {
@@ -135,15 +135,13 @@
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
 									<div class="card">
 										<BranchFiles
-											branchId={branch$.currentTip || branch$.currentBranch || 'branch'}
 											files={branch$.workingDirectory.files}
-											{isUnapplied}
 											repository={$activeRepository}
 											{selectedFiles}
 											showCheckboxes={$commitBoxOpen}
-											readonly={false}
 											{selected}
 											{setSelected}
+											class="max-h-[12rem] overflow-x-scroll"
 										/>
 										{#if branch$.doConflictedFilesExist}
 											<div class="card-notifications">
@@ -184,15 +182,12 @@
 						{#if stash}
 							<Stash {stash} />
 						{/if}
-						{#if $activeRepository && !$isLaneCollapsed}
-							<CommitCard commit={latestLocalCommit} {isUnapplied} repository={$activeRepository} />
+						{#if commits && commits.length > 0}
+							<Commits {commits} repository={$activeRepository} />
 						{/if}
 					</div>
 					{#if selected}
-						<div
-							class="file-preview resize-viewport"
-							in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
-						>
+						<div class="file-preview" in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}>
 							<FileCard
 								file={selected}
 								repository={$activeRepository}
@@ -359,10 +354,9 @@
 		display: flex;
 		position: relative;
 		height: 100%;
-
+		width: 100%;
 		overflow: hidden;
 		align-items: self-start;
-		min-width: 20rem;
 		/* padding: var(--size-12) var(--size-12) var(--size-12) 0; */
 	}
 </style>

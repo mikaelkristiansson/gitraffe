@@ -1,28 +1,25 @@
 <script lang="ts">
 	import { dropGitfoxStashEntry, getStashedFiles, popStashEntry } from '$lib/git/stash';
-	import noSelectSvg from '$lib/assets/empty-state/lane-new.svg?raw';
 	import { StashedChangesLoadStates, type IStashEntry } from '$lib/models/stash-entry';
 	import { activeRepository } from '$lib/stores/repository';
 	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
-	import { getVSIFileIcon } from '$lib/ext-icons';
-	import { slide } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
-	import FileCard from './FileCard.svelte';
-	import type { CommittedFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import { error, success } from '$lib/utils/toasts';
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { activeBranch } from '$lib/stores/branch';
 	import { writable } from 'svelte/store';
 	import { stashStore } from '$lib/stores/stash';
+	import FilePreview from './FilePreview.svelte';
+	import BranchFiles from './BranchFiles/BranchFiles.svelte';
 
 	export let stash: IStashEntry;
 
 	let stashModal: Modal;
 	let persistedStash = writable(stash);
-	let selected: CommittedFileChange | undefined = undefined;
+	let selected: ChangedFile | undefined = undefined;
 
 	async function loadFilesForCurrentStashEntry() {
 		if (!stash || stash.files.kind !== StashedChangesLoadStates.NotLoaded) {
@@ -95,12 +92,18 @@
 <Modal width="full" height="full" title="Stashed files" bind:this={stashModal}>
 	<div class="grid grid-cols-2 divide-x divide-light-200 dark:divide-dark-400 h-full">
 		<div class="list-item-wrapper">
-			{#if $persistedStash.files}
+			{#if $persistedStash.files && $activeRepository}
 				{@const files =
 					$persistedStash.files.kind === StashedChangesLoadStates.Loaded
 						? $persistedStash.files.files
 						: []}
-				{#each files as file (file.id)}
+				<BranchFiles
+					{files}
+					repository={$activeRepository}
+					{selected}
+					setSelected={(file) => (selected = file)}
+				/>
+				<!-- {#each files as file (file.id)}
 					<div
 						class="file-list-item"
 						id={`file-${file.id}`}
@@ -122,15 +125,15 @@
 							</div>
 						</div>
 					</div>
-				{/each}
+				{/each} -->
 			{/if}
 		</div>
-		<div class="preview-wrapper">
+		{#if $activeRepository}
+			<FilePreview {selected} repository={$activeRepository} />
+		{/if}
+		<!-- <div class="preview-wrapper">
 			{#if selected && $activeRepository}
-				<div
-					class="file-preview resize-viewport"
-					in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
-				>
+				<div class="file-preview" in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}>
 					<FileCard
 						file={selected}
 						isCommitedFile={true}
@@ -148,7 +151,7 @@
 					<h2 class="text-base-body-13">No selected file</h2>
 				</div>
 			{/if}
-		</div>
+		</div> -->
 	</div>
 	<svelte:fragment slot="controls" let:close>
 		<Button kind="filled" color="success" on:click={onRestoreClick}>Restore</Button>
@@ -174,10 +177,10 @@
 		display: flex;
 		gap: var(--size-8);
 		padding: 0 var(--size-8);
+		flex-direction: column;
 	}
 
 	.file-list-item {
-		flex: 1;
 		display: flex;
 		align-items: center;
 		height: var(--size-28);
@@ -261,5 +264,14 @@
 		justify-content: center;
 		height: 100%;
 		cursor: default; /* was defaulting to text cursor */
+	}
+
+	.file-preview {
+		display: flex;
+		position: relative;
+		height: 100%;
+		width: 100%;
+		overflow: hidden;
+		align-items: self-start;
 	}
 </style>

@@ -1,12 +1,14 @@
 import type { Repository } from '$lib/models/repository';
-// import { platform } from '@tauri-apps/api/os';
-import { git, gitNetworkArguments } from './cli';
+import { git, gitNetworkArguments, type IGitExecutionOptions } from './cli';
 import type { IGitAccount } from '$lib/models/git-account';
 import { BranchType, type Branch } from '$lib/models/branch';
 import { enableRecurseSubmodulesFlag } from '$lib/feature-flags';
 import type { ICheckoutProgress } from '$lib/models/progress';
-// import { envForRemoteOperation, getFallbackUrlForProxyResolve } from './environment';
-// import { AuthenticationErrors } from './authentication';
+import { executionOptionsWithProgress } from '$lib/utils/progress/from-process';
+import { envForRemoteOperation, getFallbackUrlForProxyResolve } from './environment';
+import { AuthenticationErrors } from './authentication';
+import { CheckoutProgressParser } from '$lib/utils/progress/checkout';
+import { platform } from '@tauri-apps/api/os';
 
 /** Check out the paths at HEAD. */
 export async function checkoutPaths(
@@ -37,56 +39,53 @@ async function getBranchCheckoutArgs(branch: Branch) {
 		: baseArgs.concat(branch.name, '--');
 }
 
-// async function getCheckoutOpts(
-//   repository: Repository,
-//   account: IGitAccount | null,
-//   title: string,
-//   target: string,
-//   progressCallback?: ProgressCallback,
-//   initialDescription?: string
-// ): Promise<IGitExecutionOptions> {
-//   const opts: IGitExecutionOptions = {
-//     env: await envForRemoteOperation(
-//       account,
-//       getFallbackUrlForProxyResolve(account, repository)
-//     ),
-//     expectedErrors: AuthenticationErrors,
-//   }
+async function getCheckoutOpts(
+	repository: Repository,
+	account: IGitAccount | null,
+	title: string,
+	target: string,
+	progressCallback?: ProgressCallback,
+	initialDescription?: string
+): Promise<IGitExecutionOptions> {
+	const opts: IGitExecutionOptions = {
+		env: await envForRemoteOperation(account, getFallbackUrlForProxyResolve(account, repository)),
+		expectedErrors: AuthenticationErrors
+	};
 
-//   if (!progressCallback) {
-//     return opts
-//   }
+	if (!progressCallback) {
+		return opts;
+	}
 
-//   const kind = 'checkout'
+	const kind = 'checkout';
 
-//   // Initial progress
-//   progressCallback({
-//     kind,
-//     title,
-//     description: initialDescription ?? title,
-//     value: 0,
-//     target,
-//   })
+	// Initial progress
+	progressCallback({
+		kind,
+		title,
+		description: initialDescription ?? title,
+		value: 0,
+		target
+	});
 
-//   return await executionOptionsWithProgress(
-//     { ...opts, trackLFSProgress: true },
-//     new CheckoutProgressParser(),
-//     progress => {
-//       if (progress.kind === 'progress') {
-//         const description = progress.details.text
-//         const value = progress.percent
+	return await executionOptionsWithProgress(
+		{ ...opts, trackLFSProgress: true },
+		new CheckoutProgressParser(),
+		(progress) => {
+			if (progress.kind === 'progress') {
+				const description = progress.details.text;
+				const value = progress.percent;
 
-//         progressCallback({
-//           kind,
-//           title,
-//           description,
-//           value,
-//           target,
-//         })
-//       }
-//     }
-//   )
-// }
+				progressCallback({
+					kind,
+					title,
+					description,
+					value,
+					target
+				});
+			}
+		}
+	);
+}
 
 /**
  * Check out the given branch.
@@ -108,19 +107,19 @@ export async function checkoutBranch(
 	branch: Branch,
 	progressCallback?: ProgressCallback
 ): Promise<true> {
-	// const platformName = await platform();
-	//   const opts = await getCheckoutOpts(
-	//     repository,
-	//     account,
-	//     `Checking out branch ${branch.name}`,
-	//     branch.name,
-	//     progressCallback,
-	//     `Switching to ${platformName === 'darwin' ? 'Branch' : 'branch'}`
-	//   )
+	const platformName = await platform();
+	const opts = await getCheckoutOpts(
+		repository,
+		account,
+		`Checking out branch ${branch.name}`,
+		branch.name,
+		progressCallback,
+		`Switching to ${platformName === 'darwin' ? 'Branch' : 'branch'}`
+	);
 
 	const baseArgs = getCheckoutArgs(progressCallback);
 	const args = [...baseArgs, ...(await getBranchCheckoutArgs(branch))];
 
-	await git(repository.path, args); //, opts)
+	await git(repository.path, args, opts);
 	return true;
 }

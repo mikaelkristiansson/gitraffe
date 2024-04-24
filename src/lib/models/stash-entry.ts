@@ -36,7 +36,7 @@ export type StashedFileChanges =
 	  }
 	| {
 			readonly kind: StashedChangesLoadStates.Loaded;
-			readonly files: ReadonlyArray<CommittedFileChange>;
+			readonly files: Array<CommittedFileChange>;
 	  };
 
 export type StashCallback = (stashEntry: IStashEntry) => Promise<void>;

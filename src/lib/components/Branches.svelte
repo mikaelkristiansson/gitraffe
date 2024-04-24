@@ -47,11 +47,8 @@
 	}
 
 	function setGroups(branches: Branch[]) {
-		const groups = groupBranches(
-			$defaultBranch,
-			mergeRemoteAndLocalBranches(branches),
-			recentBranches
-		);
+		const merged = mergeRemoteAndLocalBranches(branches);
+		const groups = groupBranches($defaultBranch, merged, recentBranches);
 		groups$ = groups;
 		filteredGroups$ = groups;
 	}

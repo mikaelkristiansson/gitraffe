@@ -2,41 +2,32 @@
 	import BranchFilesHeader from './BranchFilesHeader.svelte';
 	import BranchFilesList from './BranchFilesList.svelte';
 	import FileTree from './FileTree.svelte';
-	import type { Writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import { filesToFileTree } from './filetree';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository;
-	export let branchId: string;
-	export let files: WorkingDirectoryFileChange[];
-	export let isUnapplied: boolean;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
+	export let files: ChangedFile[];
+	export let selectedFiles: Writable<ChangedFile[]> = writable([]);
 	export let showCheckboxes = false;
-	export let selected: WorkingDirectoryFileChange | undefined;
-	export let setSelected: (
-		file: WorkingDirectoryFileChange
-	) => WorkingDirectoryFileChange | undefined;
-
-	export let readonly: boolean;
+	export let selected: ChangedFile | undefined;
+	export let setSelected: (file: ChangedFile) => ChangedFile | undefined;
 
 	let selectedListMode: string;
 </script>
 
-<div class="branch-files" class:isUnapplied>
+<div class="branch-files">
 	<div class="branch-files__header">
 		<BranchFilesHeader {files} {showCheckboxes} bind:selectedListMode {selectedFiles} />
 	</div>
 	{#if files.length > 0}
-		<div class="files-padding max-h-[12rem] overflow-x-scroll">
+		<div class="files-padding {$$props.class}">
 			{#if selectedListMode == 'list'}
 				<BranchFilesList
-					{readonly}
-					{branchId}
 					{files}
 					{selectedFiles}
 					{showCheckboxes}
-					{isUnapplied}
 					{repository}
 					{selected}
 					{setSelected}
@@ -44,12 +35,9 @@
 			{:else}
 				<FileTree
 					node={filesToFileTree(files)}
-					{readonly}
 					{showCheckboxes}
-					{branchId}
 					isRoot={true}
 					{selectedFiles}
-					{isUnapplied}
 					{files}
 					{repository}
 					{selected}
@@ -65,10 +53,6 @@
 		flex: 1;
 		background: var(--clr-theme-container-light);
 		border-radius: var(--radius-m) var(--radius-m) 0 0;
-
-		&.isUnapplied {
-			border-radius: var(--radius-m);
-		}
 	}
 	.branch-files__header {
 		padding-top: var(--size-14);

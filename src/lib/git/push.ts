@@ -4,7 +4,7 @@ import type { IRemote } from '$lib/models/remote';
 import type { Repository } from '$lib/models/repository';
 import { AuthenticationErrors } from './authentication';
 import { git, GitError, gitNetworkArguments, type IGitExecutionOptions } from './cli';
-// import { envForRemoteOperation } from './environment';
+import { envForRemoteOperation } from './environment';
 
 export type PushOptions = {
 	/**
@@ -72,7 +72,7 @@ export async function push(
 	expectedErrors.add(IGitError.ProtectedBranchForcePush);
 
 	const opts: IGitExecutionOptions = {
-		// env: await envForRemoteOperation(account, remote.url),
+		env: await envForRemoteOperation(account, remote.url),
 		expectedErrors
 	};
 

@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import { getBranchStatus, getCurrentBranchName } from '../git/cli';
 import type { IStatusResult } from '../git/status';
 import { getBranches } from '../git/branch';
-import type { Branch } from '../models/branch';
+import { type Branch } from '../models/branch';
 import { findDefaultBranch } from '../utils/branch';
 import type { Repository } from '../models/repository';
 
@@ -115,6 +115,9 @@ function createDefautBranch() {
 			const branch = await findDefaultBranch(repository, 'origin');
 			if (!branch) {
 				return;
+			}
+			if (branch.upstream) {
+				branch.remoteExists = true;
 			}
 			set(branch);
 			return branch;

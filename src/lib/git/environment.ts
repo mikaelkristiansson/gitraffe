@@ -69,13 +69,13 @@ export async function envForRemoteOperation(account: IGitAccount | null, remoteU
  *
  * @param remoteUrl The remote url to resolve a proxy for.
  * @param env       The current environment variables, defaults
- *                  to `process.env`
+ *                  to `import.meta.env`
  * @param resolve   The method to use when resolving the proxy url,
  *                  defaults to `resolveGitProxy`
  */
 export async function envForProxy(
 	remoteUrl: string,
-	env: object = process.env,
+	env: object = import.meta.env,
 	resolve: (url: string) => Promise<string | undefined> = resolveGitProxy
 ): Promise<object | undefined> {
 	const protocolMatch = /^(https?):\/\//i.exec(remoteUrl);

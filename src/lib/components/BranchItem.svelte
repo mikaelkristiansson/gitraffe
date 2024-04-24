@@ -71,7 +71,7 @@
 		}
 	}}
 >
-	<BranchIcon name={branch.upstream ? 'remote-branch' : 'local-branch'} />
+	<BranchIcon name={branch.remoteExists ? 'remote-branch' : 'local-branch'} />
 	<div class="branch__info flex flex-col gap-2">
 		<div class="branch__details">
 			<p class="text-base-13 branch__name">

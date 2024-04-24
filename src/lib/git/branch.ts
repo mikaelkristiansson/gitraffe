@@ -8,6 +8,8 @@ import type { IGitAccount } from '$lib/models/git-account';
 // import { getRemoteURL } from './remote';
 // import { getFallbackUrlForProxyResolve } from './environment';
 import { deleteRef } from './update-ref';
+import { envForRemoteOperation, getFallbackUrlForProxyResolve } from './environment';
+import { getRemoteURL } from './remote';
 
 /** Get all the branches. */
 export async function getBranches(
@@ -44,20 +46,19 @@ export async function getBranches(
 	// }
 
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
-	const { stdout, stderr, gitError } = await git(repository.path, args, {
-		expectedErrors: new Set([IGitError.NotAGitRepository])
+	const result = await git(repository.path, args, {
+		expectedErrors: new Set([IGitError.NotAGitRepository]),
+		successExitCodes: new Set([0, 128])
 	});
-	if (stderr) {
-		throw new Error(stderr);
-	}
+	//TODO: investigate why this is returning 128
 
-	if (gitError === IGitError.NotAGitRepository) {
+	if (result.gitError === IGitError.NotAGitRepository) {
 		return [];
 	}
 
 	const branches = [];
 
-	for (const ref of parse(stdout)) {
+	for (const ref of parse(result.stdout)) {
 		// excude symbolic refs from the branch list
 		if (ref.symRef.length > 0) {
 			continue;
@@ -196,21 +197,21 @@ export async function deleteRemoteBranch(
 	remoteName: string,
 	remoteBranchName: string
 ): Promise<true> {
-	// const remoteUrl =
-	// 	(await getRemoteURL(repository, remoteName).catch((err) => {
-	// 		// If we can't get the URL then it's very unlikely Git will be able to
-	// 		// either and the push will fail. The URL is only used to resolve the
-	// 		// proxy though so it's not critical.
-	// 		console.error(`Could not resolve remote url for remote ${remoteName}`, err);
-	// 		return null;
-	// 	})) || getFallbackUrlForProxyResolve(account, repository);
+	const remoteUrl =
+		(await getRemoteURL(repository, remoteName).catch((err) => {
+			// If we can't get the URL then it's very unlikely Git will be able to
+			// either and the push will fail. The URL is only used to resolve the
+			// proxy though so it's not critical.
+			console.error(`Could not resolve remote url for remote ${remoteName}`, err);
+			return null;
+		})) || getFallbackUrlForProxyResolve(account, repository);
 
 	const args = [...gitNetworkArguments(), 'push', remoteName, `:${remoteBranchName}`];
 
 	// If the user is not authenticated, the push is going to fail
 	// Let this propagate and leave it to the caller to handle
 	const result = await git(repository.path, args, {
-		//   env: await envForRemoteOperation(account, remoteUrl),
+		env: await envForRemoteOperation(account, remoteUrl),
 		expectedErrors: new Set<IGitError>([IGitError.BranchDeletionFailed])
 	});
 

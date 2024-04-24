@@ -5,11 +5,14 @@
 	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
 	import { checkout } from '$lib/git/cli';
+	import { getRemotes } from '$lib/git/remote';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Commit } from '$lib/models/commit';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import { activeRepository } from '$lib/stores/repository';
 	import { deleteBranch } from '$lib/utils/branch';
+	import { findDefaultRemote } from '$lib/utils/find-default-remote';
+	import { fetchRemote } from '$lib/utils/remote';
 	import * as toasts from '$lib/utils/toasts';
 	import Icon from './Icon.svelte';
 	import InfoMessage from './InfoMessage.svelte';
@@ -24,8 +27,8 @@
 </script>
 
 {#if visible}
-	{#if branch.currentBranch !== $defaultBranch.name}
-		<ContextMenu>
+	<ContextMenu>
+		{#if branch.currentBranch !== $defaultBranch.name}
 			<ContextMenuSection>
 				<ContextMenuItem
 					label="Delete branch"
@@ -36,8 +39,26 @@
 					}}
 				/>
 			</ContextMenuSection>
-		</ContextMenu>
-	{/if}
+		{/if}
+		<ContextMenuSection>
+			<ContextMenuItem
+				label="Fetch from remote"
+				icon="remote"
+				on:click={async () => {
+					if ($activeRepository) {
+						const remotes = await getRemotes($activeRepository);
+						const remote = findDefaultRemote(remotes);
+						const remoteName = branch.currentUpstreamBranch || remote?.name;
+						if (remoteName && remote) {
+							const safeRemote = { name: remoteName, url: remote.url };
+							fetchRemote(null, $activeRepository, safeRemote, false);
+						}
+					}
+					visible = false;
+				}}
+			/>
+		</ContextMenuSection>
+	</ContextMenu>
 {/if}
 
 <Modal width="small" title="Delete branch" bind:this={deleteBranchModal} let:item={branch}>

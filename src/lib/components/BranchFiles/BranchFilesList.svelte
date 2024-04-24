@@ -2,20 +2,15 @@
 	import FileListItem from './FileListItem.svelte';
 	import type { Writable } from 'svelte/store';
 	import { sortLikeFileTree } from './filetree';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository | undefined;
-	export let branchId: string;
-	export let files: WorkingDirectoryFileChange[];
-	export let isUnapplied = false;
+	export let files: ChangedFile[];
 	export let showCheckboxes = false;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
-	export let readonly = false;
-	export let selected: WorkingDirectoryFileChange | undefined;
-	export let setSelected: (
-		file: WorkingDirectoryFileChange
-	) => WorkingDirectoryFileChange | undefined;
+	export let selectedFiles: Writable<ChangedFile[]>;
+	export let selected: ChangedFile | undefined;
+	export let setSelected: (file: ChangedFile) => ChangedFile | undefined;
 
 	$: sortedFiles = sortLikeFileTree(files);
 </script>
@@ -23,9 +18,6 @@
 {#each sortedFiles as file (file.id)}
 	<FileListItem
 		{file}
-		{readonly}
-		{branchId}
-		{isUnapplied}
 		{selectedFiles}
 		{files}
 		{repository}

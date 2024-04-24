@@ -1,12 +1,12 @@
 <script lang="ts">
 	// import { AIService } from '$lib/backend/aiService';
 	import Button from '$lib/components/Button.svelte';
-	import Checkbox from '$lib/components/Checkbox.svelte';
-	import DropDownButton from '$lib/components/DropDownButton.svelte';
+	// import Checkbox from '$lib/components/Checkbox.svelte';
+	// import DropDownButton from '$lib/components/DropDownButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
-	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
-	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
+	// import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
+	// import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
 	import {
 		projectAiGenEnabled,
 		projectCommitGenerationExtraConcise,
@@ -14,17 +14,17 @@
 		projectRunCommitHooks,
 		persistedCommitMessage
 	} from '$lib/config/config';
-	import { getContextByClass } from '$lib/utils/context';
+	// import { getContextByClass } from '$lib/utils/context';
 	import * as toasts from '$lib/utils/toasts';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { setAutoHeight } from '$lib/utils/useAutoHeight';
-	import { createEventDispatcher, onMount } from 'svelte';
+	// import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
 	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile, WorkingDirectoryFileChange } from '$lib/models/status';
 	import { allBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/stores/repository';
@@ -39,22 +39,20 @@
 	export let repositoryId: Repository['id'];
 	export let branch: IStatusResult;
 	// export let user: User | undefined;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
+	export let selectedFiles: Writable<ChangedFile[]>;
 	export let expanded: Writable<boolean>;
-	export let setSelected: (
-		file: WorkingDirectoryFileChange | undefined
-	) => WorkingDirectoryFileChange | undefined;
+	export let setSelected: (file: ChangedFile | undefined) => ChangedFile | undefined;
 
 	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
-	const runCommitHooks = projectRunCommitHooks(repositoryId);
-	const commitGenerationExtraConcise = projectCommitGenerationExtraConcise(repositoryId);
-	const commitGenerationUseEmojis = projectCommitGenerationUseEmojis(repositoryId);
+	// const runCommitHooks = projectRunCommitHooks(repositoryId);
+	// const commitGenerationExtraConcise = projectCommitGenerationExtraConcise(repositoryId);
+	// const commitGenerationUseEmojis = projectCommitGenerationUseEmojis(repositoryId);
 
 	let isCommitting = false;
 	let aiLoading = false;
 
-	let contextMenu: ContextMenu;
+	// let contextMenu: ContextMenu;
 
 	let titleTextArea: HTMLTextAreaElement;
 	let descriptionTextArea: HTMLTextAreaElement;
@@ -85,7 +83,11 @@
 		isCommitting = true;
 		try {
 			if ($activeRepository) {
-				await createCommit($activeRepository, message.trim(), $selectedFiles);
+				await createCommit(
+					$activeRepository,
+					message.trim(),
+					$selectedFiles as WorkingDirectoryFileChange[]
+				);
 				await workingBranch.setWorking($activeRepository);
 				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
 				if (updateBranch) {

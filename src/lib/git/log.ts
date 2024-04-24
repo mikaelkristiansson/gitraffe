@@ -27,7 +27,7 @@ export async function getCommits(
 	limit?: number,
 	skip?: number,
 	additionalArgs: ReadonlyArray<string> = []
-): Promise<ReadonlyArray<Commit>> {
+): Promise<Array<Commit>> {
 	const { formatArgs, parse } = createLogParser({
 		sha: '%H', // SHA
 		shortSha: '%h', // short SHA
@@ -108,6 +108,47 @@ export async function getCommit(repository: Repository, ref: string): Promise<Co
 	}
 
 	return commits[0];
+}
+
+/** This interface contains information of a changeset. */
+export interface IChangesetData {
+	/** Files changed in the changeset. */
+	readonly files: Array<CommittedFileChange>;
+
+	/** Number of lines added in the changeset. */
+	readonly linesAdded: number;
+
+	/** Number of lines deleted in the changeset. */
+	readonly linesDeleted: number;
+}
+
+/** Get the files that were changed in the given commit. */
+export async function getChangedFiles(
+	repository: Repository,
+	sha: string
+): Promise<IChangesetData> {
+	// opt-in for rename detection (-M) and copies detection (-C)
+	// this is equivalent to the user configuring 'diff.renames' to 'copies'
+	// NOTE: order here matters - doing -M before -C means copies aren't detected
+	const args = [
+		'log',
+		sha,
+		'-C',
+		'-M',
+		'-m',
+		'-1',
+		'--no-show-signature',
+		'--first-parent',
+		'--raw',
+		'--format=format:',
+		'--numstat',
+		'-z',
+		'--'
+	];
+	console.log('🚀 ~ args:', args);
+
+	const { stdout } = await git(repository.path, args);
+	return parseRawLogWithNumstat(stdout, sha, `${sha}^`);
 }
 
 /**

@@ -6,6 +6,7 @@ import type { Repository } from '$lib/models/repository';
 import { GitErrorRegexes, IGitError } from '$lib/models/git-errors';
 import { assertNever } from '$lib/fatal-error';
 import { getFileFromExceedsError } from '$lib/utils/regex';
+import type { ChildProcess } from '@tauri-apps/api/shell';
 
 export async function git(
 	path: string,
@@ -164,13 +165,13 @@ function getDescriptionForError(
 	// 	}
 
 	switch (error) {
-		//   case IGitError.BadConfigValue:
-		// 	// const errorInfo = GitProcess.parseBadConfigValueErrorInfo(stderr)
-		// 	// if (errorInfo === null) {
-		// 	//   return 'Unsupported git configuration value.'
-		// 	// }
+		case IGitError.BadConfigValue:
+			// const errorInfo = GitProcess.parseBadConfigValueErrorInfo(stderr)
+			// if (errorInfo === null) {
+			return 'Unsupported git configuration value.';
+		// }
 
-		// 	return `Unsupported value '${errorInfo.value}' for git config key '${errorInfo.key}'`
+		// return `Unsupported value '${errorInfo.value}' for git config key '${errorInfo.key}'`
 		case IGitError.SSHKeyAuditUnverified:
 			return 'The SSH key is unverified.';
 		case IGitError.RemoteDisconnection:
@@ -358,6 +359,27 @@ interface ExecutionOptions {
 	 * after spawning the process.
 	 */
 	readonly stdin?: string;
+	/**
+	 * The encoding to use when writing to stdin, if the stdin
+	 * parameter is a string.
+	 */
+	readonly stdinEncoding?: string;
+	/**
+	 * The size the output buffer to allocate to the spawned process. Set this
+	 * if you are anticipating a large amount of output.
+	 *
+	 * If not specified, this will be 10MB (10485760 bytes) which should be
+	 * enough for most Git operations.
+	 */
+	readonly maxBuffer?: number;
+	/**
+	 * An optional callback which will be invoked with the child
+	 * process instance after spawning the git process.
+	 *
+	 * Note that if the stdin parameter was specified the stdin
+	 * stream will be closed by the time this callback fires.
+	 */
+	readonly processCallback?: (process: ChildProcess) => void;
 }
 
 /**

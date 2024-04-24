@@ -5,21 +5,16 @@
 	import { getVSIFileIcon } from '$lib/ext-icons';
 	import { onDestroy } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository | undefined;
-	export let branchId: string;
-	export let file: WorkingDirectoryFileChange;
-	export let isUnapplied: boolean;
+	export let file: ChangedFile;
 	export let selected: boolean;
-	export let files: WorkingDirectoryFileChange[];
+	export let files: ChangedFile[];
 	export let showCheckbox: boolean = false;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
-	export let setSelected: (
-		file: WorkingDirectoryFileChange
-	) => WorkingDirectoryFileChange | undefined;
-	export let readonly = false;
+	export let selectedFiles: Writable<ChangedFile[]>;
+	export let setSelected: (file: ChangedFile) => ChangedFile | undefined;
 
 	let checked = false;
 	let indeterminate = false;

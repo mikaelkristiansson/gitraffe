@@ -19,7 +19,7 @@ import { git } from './cli';
 export async function createCommit(
 	repository: Repository,
 	message: string,
-	files: ReadonlyArray<WorkingDirectoryFileChange>,
+	files: Array<WorkingDirectoryFileChange>,
 	amend: boolean = false
 ): Promise<string> {
 	// Clear the staging area, our diffs reflect the difference between the

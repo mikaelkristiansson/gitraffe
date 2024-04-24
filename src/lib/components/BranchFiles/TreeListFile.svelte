@@ -4,12 +4,12 @@
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import { getVSIFileIcon } from '$lib/ext-icons/index';
 	import { onDestroy } from 'svelte';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository | undefined;
-	export let file: WorkingDirectoryFileChange;
-	export let selected: WorkingDirectoryFileChange | undefined;
+	export let file: ChangedFile;
+	export let selected: ChangedFile | undefined;
 	export let showCheckbox: boolean = false;
 
 	let checked = false;
@@ -17,10 +17,12 @@
 
 	function updateContextMenu() {
 		if (popupMenu) popupMenu.$destroy();
-		return new FileContextMenu({
-			target: document.body,
-			props: { repository }
-		});
+		if (repository) {
+			return new FileContextMenu({
+				target: document.body,
+				props: { repository }
+			});
+		}
 	}
 
 	$: popupMenu = updateContextMenu();
@@ -34,7 +36,7 @@
 
 <div
 	on:contextmenu|preventDefault={(e) =>
-		popupMenu.openByMouse(e, {
+		popupMenu?.openByMouse(e, {
 			file
 		})}
 	on:click

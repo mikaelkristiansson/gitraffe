@@ -36,7 +36,8 @@ export class Branch {
 		public readonly tip: IBranchTip,
 		public readonly type: BranchType,
 		public readonly ref: string,
-		public readonly aheadBehind: IAheadBehind
+		public readonly aheadBehind: IAheadBehind,
+		public remoteExists: boolean = false
 	) {}
 
 	/** The name of the upstream's remote. */
@@ -105,4 +106,12 @@ export class Branch {
 	public get isDesktopForkRemoteBranch() {
 		return this.type === BranchType.Remote && this.name.startsWith(ForkedRemotePrefix);
 	}
+}
+
+/** Basic data about a branch, and the branch it's tracking. */
+export interface ITrackingBranch {
+	readonly ref: string;
+	readonly sha: string;
+	readonly upstreamRef: string;
+	readonly upstreamSha: string;
 }

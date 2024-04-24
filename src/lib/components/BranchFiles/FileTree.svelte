@@ -7,7 +7,7 @@
 	import TreeListFolder from './TreeListFolder.svelte';
 	import type { TreeNode } from './filetree';
 	import type { Writable } from 'svelte/store';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository | undefined;
@@ -15,15 +15,10 @@
 	export let node: TreeNode;
 	export let isRoot = false;
 	export let showCheckboxes = false;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
-	export let branchId: string;
-	export let isUnapplied: boolean;
-	export let readonly = false;
-	export let files: WorkingDirectoryFileChange[];
-	export let selected: WorkingDirectoryFileChange | undefined = undefined;
-	export let setSelected: (
-		file: WorkingDirectoryFileChange
-	) => WorkingDirectoryFileChange | undefined = () => undefined;
+	export let selectedFiles: Writable<ChangedFile[]>;
+	export let files: ChangedFile[];
+	export let selected: ChangedFile | undefined = undefined;
+	export let setSelected: (file: ChangedFile) => ChangedFile | undefined = () => undefined;
 
 	function toggle() {
 		expanded = !expanded;
@@ -39,9 +34,6 @@
 					node={childNode}
 					{showCheckboxes}
 					{selectedFiles}
-					{branchId}
-					{isUnapplied}
-					{readonly}
 					{selected}
 					{files}
 					{repository}
@@ -82,9 +74,6 @@
 						expanded={true}
 						{showCheckboxes}
 						{selectedFiles}
-						{branchId}
-						{isUnapplied}
-						{readonly}
 						{files}
 						{repository}
 						on:checked

@@ -3,16 +3,16 @@
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import Segment from '$lib/components/SegmentControl/Segment.svelte';
 	import SegmentedControl from '$lib/components/SegmentControl/SegmentedControl.svelte';
-	import type { WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { ChangedFile } from '$lib/models/status';
 	import type { Writable } from 'svelte/store';
 
-	export let files: WorkingDirectoryFileChange[];
+	export let files: ChangedFile[];
 	export let showCheckboxes = false;
-	export let selectedFiles: Writable<WorkingDirectoryFileChange[]>;
+	export let selectedFiles: Writable<ChangedFile[]>;
 
 	export let selectedListMode: string;
 
-	function isAllChecked(selectedCheckboxes: WorkingDirectoryFileChange[]): boolean {
+	function isAllChecked(selectedCheckboxes: ChangedFile[]): boolean {
 		return files.every((f) => selectedCheckboxes.some((box) => box.id === f.id));
 	}
 
