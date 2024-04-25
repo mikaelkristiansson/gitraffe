@@ -5,12 +5,13 @@
 	import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
 	import { checkout } from '$lib/git/cli';
+	import { MergeResult } from '$lib/git/merge';
 	import { getRemotes } from '$lib/git/remote';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Commit } from '$lib/models/commit';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import { activeRepository } from '$lib/stores/repository';
-	import { deleteBranch } from '$lib/utils/branch';
+	import { deleteBranch, mergeBranch } from '$lib/utils/branch';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
 	import { fetchRemote } from '$lib/utils/remote';
 	import * as toasts from '$lib/utils/toasts';
@@ -28,18 +29,6 @@
 
 {#if visible}
 	<ContextMenu>
-		{#if branch.currentBranch !== $defaultBranch.name}
-			<ContextMenuSection>
-				<ContextMenuItem
-					label="Delete branch"
-					icon="bin-small"
-					on:click={async () => {
-						deleteBranchModal.show(branch);
-						visible = false;
-					}}
-				/>
-			</ContextMenuSection>
-		{/if}
 		<ContextMenuSection>
 			<ContextMenuItem
 				label="Fetch from remote"
@@ -57,7 +46,35 @@
 					visible = false;
 				}}
 			/>
+			<ContextMenuItem
+				icon="rebase-small"
+				label={'Update from ' + $defaultBranch.nameWithoutRemote}
+				on:click={async () => {
+					if ($activeRepository) {
+						const mergeStatus = await mergeBranch($activeRepository, $defaultBranch);
+						if (mergeStatus === MergeResult.Success) {
+							toasts.success('Branch updated');
+						} else if (mergeStatus === MergeResult.AlreadyUpToDate) {
+							toasts.success('Branch is already up to date');
+						} else {
+							toasts.error('Failed to update branch');
+						}
+					}
+				}}
+			/>
 		</ContextMenuSection>
+		{#if branch.currentBranch !== $defaultBranch.name}
+			<ContextMenuSection>
+				<ContextMenuItem
+					label="Delete branch"
+					icon="bin-small"
+					on:click={async () => {
+						deleteBranchModal.show(branch);
+						visible = false;
+					}}
+				/>
+			</ContextMenuSection>
+		{/if}
 	</ContextMenu>
 {/if}
 

@@ -10,8 +10,7 @@
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import { checkout } from '$lib/git/cli';
-	import { deleteBranch, mergeBranch } from '$lib/utils/branch';
-	import { MergeResult } from '$lib/git/merge';
+	import { deleteBranch } from '$lib/utils/branch';
 	import InfoMessage from './InfoMessage.svelte';
 
 	export let repository: Repository | undefined;
@@ -32,21 +31,6 @@
 				label="Rename branch"
 				on:click={async () => {
 					dismiss();
-				}}
-			/>
-			<ContextMenuItem
-				icon="rebase-small"
-				label={'Update from ' + $defaultBranch.nameWithoutRemote}
-				on:click={async () => {
-					dismiss();
-					if (repository) {
-						const mergeStatus = await mergeBranch(repository, $defaultBranch);
-						if (mergeStatus === MergeResult.Success) {
-							toasts.success('Branch updated');
-						} else {
-							toasts.error('Failed to update branch');
-						}
-					}
 				}}
 			/>
 			<ContextMenuItem

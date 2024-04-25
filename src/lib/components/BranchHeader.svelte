@@ -184,13 +184,18 @@
 				</div>
 			</div>
 			<div class="header__actions">
-				{#if branch && branch.branchAheadBehind !== undefined}
-					<PullRequestCard {repository} />
-				{:else}
-					<Button icon="merged-pr-small" loading={isPublishing} color="pop" on:click={publishBranch}
-						>Publish Branch</Button
-					>
-				{/if}
+				<div>
+					{#if branch && branch.branchAheadBehind !== undefined}
+						<PullRequestCard {repository} />
+					{:else}
+						<Button
+							icon="merged-pr-small"
+							loading={isPublishing}
+							color="pop"
+							on:click={publishBranch}>Publish Branch</Button
+						>
+					{/if}
+				</div>
 				<div class="header__buttons">
 					<Button
 						icon="fold-lane"
