@@ -28,7 +28,6 @@
 	let maxHeight = 200;
 
 	function handleItemClick(item: any) {
-		console.log('🚀 ~ handleItemClick ~ item:', item);
 		if (item?.selectable === false) return;
 		if (value && value[itemId] === item[itemId]) return closeList();
 		selectedItemId = item[itemId];
