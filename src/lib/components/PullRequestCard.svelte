@@ -20,9 +20,8 @@
 	{#if type === 'tag'}
 		<Tag
 			clickable
-			color="success"
+			color="pop"
 			icon="pr-small"
-			filled
 			verticalOrientation={isLaneCollapsed}
 			on:click={() => createRequestUrl(repository, currentBranch.name)}
 		>
@@ -31,8 +30,15 @@
 	{:else}
 		<Button
 			icon="pr-small"
-			color="success"
-			on:click={() => createRequestUrl(repository, currentBranch.name)}>Open Pull Request</Button
+			color="pop"
+			on:click={() => createRequestUrl(repository, currentBranch.name)}
 		>
+			<kbd
+				class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-base-10 font-medium opacity-60"
+			>
+				<span>⌘</span>R
+			</kbd>
+			Open Pull Request
+		</Button>
 	{/if}
 {/if}

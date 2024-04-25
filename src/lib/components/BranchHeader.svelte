@@ -134,11 +134,26 @@
 					<div class="header__label text-base-13 text-bold">
 						{branch.currentBranch}
 					</div>
-					<div class="flex mr-2" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
+					<div class="header__remote-branch">
+						<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
+						{#if branch.doConflictedFilesExist}
+							<Tag
+								icon="locked-small"
+								color="warning"
+								help="Applying this branch will add merge conflict markers that you will have to resolve"
+							>
+								Conflict
+							</Tag>
+						{/if}
+					</div>
+				</div>
+				<div class="flex flex-1 justify-evenly">
+					<div class="flex w-full" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
 						<Button
 							kind="outlined"
 							color="neutral"
-							class="items-center"
+							wide
+							class="!rounded-r-none !border-r-0"
 							disabled={!branch.branchAheadBehind?.behind}
 							loading={isPulling}
 							on:click={pullBranch}
@@ -147,45 +162,34 @@
 							<Icon name="pull-small" size={14} />
 						</Button>
 					</div>
-					<div class="flex" use:tooltip={{ text: 'Push origin', delay: 300 }}>
+					<div class="flex w-full" use:tooltip={{ text: 'Push origin', delay: 300 }}>
 						<Button
 							kind="outlined"
 							color="neutral"
+							wide
+							class="!rounded-l-none"
 							disabled={!branch.branchAheadBehind?.ahead}
 							loading={isPushing}
 							on:click={pushBranch}
 						>
+							<kbd
+								class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-base-10 font-medium opacity-60"
+							>
+								<span>⌘</span>P
+							</kbd>
 							Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
 							<Icon name="push-small" size={14} />
 						</Button>
 					</div>
 				</div>
-				<div class="header__remote-branch">
-					<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
-					{#if branch.doConflictedFilesExist}
-						<Tag
-							icon="locked-small"
-							color="warning"
-							help="Applying this branch will add merge conflict markers that you will have to resolve"
-						>
-							Conflict
-						</Tag>
-					{/if}
-				</div>
 			</div>
 			<div class="header__actions">
-				<div class="flex gap-2">
-					<Button
-						kind="outlined"
-						icon="merged-pr-small"
-						loading={isPublishing}
-						color={branch.branchAheadBehind !== undefined ? 'neutral' : 'primary'}
-						on:click={publishBranch}
-						disabled={branch.branchAheadBehind !== undefined}>Publish</Button
-					>
-				</div>
 				{#if branch && branch.branchAheadBehind !== undefined}
 					<PullRequestCard {repository} />
+				{:else}
+					<Button icon="merged-pr-small" loading={isPublishing} color="pop" on:click={publishBranch}
+						>Publish Branch</Button
+					>
 				{/if}
 				<div class="header__buttons">
 					<Button

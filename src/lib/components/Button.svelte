@@ -45,7 +45,7 @@
 </script>
 
 <button
-	class="btn {$$props.class}"
+	class="btn {$$props.class || ''}"
 	class:medium={size == 'medium'}
 	class:large={size == 'large'}
 	class:error-outline={color == 'error' && kind == 'outlined'}
@@ -238,20 +238,19 @@
 		}
 	}
 	.pop-filled {
-		color: var(--clr-theme-pop-on-element);
-		background: var(--clr-theme-pop-element);
+		color: var(--clr-theme-scale-pop-20);
+		background: color-mix(in srgb, var(--clr-core-pop-50), transparent 80%);
 		&:hover,
 		&:focus {
-			background: color-mix(in srgb, var(--clr-theme-pop-element), var(--darken-mid));
+			background: color-mix(in srgb, var(--clr-core-pop-50), transparent 70%);
 		}
 	}
 	.pop-outline {
-		color: var(--clr-theme-pop-outline);
-		border: 1px solid var(--clr-theme-pop-outline);
+		color: var(--clr-theme-scale-pop-20);
+		border: 1px solid color-mix(in srgb, var(--clr-core-pop-20), transparent 80%);
 		&:hover,
 		&:focus {
-			color: color-mix(in srgb, var(--clr-theme-pop-outline), var(--darken-mid));
-			border: 1px solid color-mix(in srgb, var(--clr-theme-pop-outline), var(--darken-mid));
+			border: 1px solid color-mix(in srgb, var(--clr-core-pop-20), transparent 70%);
 		}
 	}
 

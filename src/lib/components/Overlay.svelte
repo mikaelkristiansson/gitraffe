@@ -49,7 +49,7 @@
 		flex-direction: column;
 		position: relative;
 		width: 100%;
-		border-radius: var(--radius-l);
+		border-radius: var(--radius-m);
 		background-color: var(--clr-theme-container-light);
 		border: 1px solid var(--clr-theme-container-outline-light);
 		box-shadow: var(--fx-shadow-l);
@@ -58,7 +58,7 @@
 	/* modifiers */
 
 	.s-full {
-		max-width: 98%;
+		max-width: 96%;
 	}
 
 	.s-large {
@@ -74,7 +74,7 @@
 	}
 
 	.h-full {
-		min-height: 90%;
+		height: 90%;
 	}
 	.h-default {
 		max-height: calc(100vh - 5rem);

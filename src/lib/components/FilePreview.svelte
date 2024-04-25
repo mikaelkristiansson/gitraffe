@@ -35,6 +35,7 @@
 <style lang="postcss">
 	.preview-wrapper {
 		padding: 0 var(--size-8);
+		overflow: scroll;
 	}
 	.no-selected {
 		user-select: none;
@@ -56,6 +57,6 @@
 		width: 100%;
 		overflow: hidden;
 		align-items: self-start;
-		max-height: 28rem;
+		max-height: 25rem;
 	}
 </style>

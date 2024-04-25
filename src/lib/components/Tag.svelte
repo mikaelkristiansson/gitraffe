@@ -9,7 +9,6 @@
 		| 'pop'
 		| 'purple'
 		| 'neutral';
-	export type ComponentStyleKind = 'solid' | 'soft';
 </script>
 
 <script lang="ts">
@@ -29,12 +28,11 @@
 	export let loading = false;
 	export let shrinkable = false;
 	export let verticalOrientation = false;
-	// Style props
-	export let kind: ComponentStyleKind = 'soft';
+	export let wide = false;
 </script>
 
 <div
-	class={`tag text-base-11 text-semibold ${kind}`}
+	class="tag text-base-11 text-semibold"
 	class:ghost={color == 'ghost'}
 	class:neutral={color == 'neutral'}
 	class:light={color == 'light'}
@@ -60,7 +58,7 @@
 	class:clickable
 	use:tooltip={help}
 >
-	<span class="label" class:verticalLabel={verticalOrientation}>
+	<span class="label" class:verticalLabel={verticalOrientation} class:wide>
 		<slot />
 	</span>
 	{#if loading}
@@ -255,6 +253,12 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
+	}
+
+	.wide {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
 	}
 
 	.verticalOrientation {

@@ -179,10 +179,10 @@
 								{/if}
 							</div>
 						{/if}
-						{#if stash}
+						{#if stash && !$isLaneCollapsed}
 							<Stash {stash} />
 						{/if}
-						{#if commits && commits.length > 0}
+						{#if commits && commits.length > 0 && !$isLaneCollapsed}
 							<Commits {commits} repository={$activeRepository} />
 						{/if}
 					</div>

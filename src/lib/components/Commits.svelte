@@ -112,18 +112,20 @@
 
 <Modal width="full" height="full" title="Commited Files" bind:this={commitsModal}>
 	<div class="h-full flex flex-col gap-4 divide-y divide-light-200 dark:divide-dark-400">
-		<Select
-			label="Select a commit"
-			items={commits.map((commit) => ({ name: commit.summary, value: commit.sha }))}
-			itemId="value"
-			labelId="name"
-			on:select={(e) => setFilesForCommit(e.detail.item.value)}
-			selectedItemId={selectedCommit?.sha}
-		>
-			<SelectItem slot="template" selected={selectedCommit?.sha === item.value} let:item>
-				{item.name}
-			</SelectItem>
-		</Select>
+		<div class="flex">
+			<Select
+				label="Select a commit"
+				items={commits.map((commit) => ({ name: commit.summary, value: commit.sha }))}
+				itemId="value"
+				labelId="name"
+				on:select={(e) => setFilesForCommit(e.detail.item.value)}
+				selectedItemId={selectedCommit?.sha}
+			>
+				<SelectItem slot="template" selected={selectedCommit?.sha === item.value} let:item>
+					{item.name}
+				</SelectItem>
+			</Select>
+		</div>
 		<div class="grid grid-cols-2 divide-x divide-light-200 dark:divide-dark-400 h-full py-4">
 			<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
 			{#if $activeRepository}

@@ -14,6 +14,7 @@
 	import { stashStore } from '$lib/stores/stash';
 	import FilePreview from './FilePreview.svelte';
 	import BranchFiles from './BranchFiles/BranchFiles.svelte';
+	import Tag from './Tag.svelte';
 
 	export let stash: IStashEntry;
 
@@ -84,10 +85,10 @@
 	});
 </script>
 
-<button class="btn card" type="button" on:mousedown={() => stashModal.show()}>
-	<span class="text-base-14 text-semibold">Stashed changes</span>
-	<Icon name="pin" />
-</button>
+<Tag color="warning" size="medium" wide clickable on:click={() => stashModal.show()}>
+	<span class="text-base-12 text-semibold">Stashed changes</span>
+	<Icon name="pr-draft" />
+</Tag>
 
 <Modal width="full" height="full" title="Stashed files" bind:this={stashModal}>
 	<div class="grid grid-cols-2 divide-x divide-light-200 dark:divide-dark-400 h-full">
@@ -103,59 +104,15 @@
 					{selected}
 					setSelected={(file) => (selected = file)}
 				/>
-				<!-- {#each files as file (file.id)}
-					<div
-						class="file-list-item"
-						id={`file-${file.id}`}
-						on:click={() => (selected = file)}
-						on:keydown
-						role="button"
-						tabindex="0"
-						class:selected={selected?.id === file.id}
-					>
-						<div class="info-wrap">
-							<div class="info">
-								<img draggable="false" class="file-icon" src={getVSIFileIcon(file.path)} alt="js" />
-								<span class="text-base-12 name">
-									{file.path.split('/').pop()}
-								</span>
-								<span class="text-base-12 path">
-									{file.path}
-								</span>
-							</div>
-						</div>
-					</div>
-				{/each} -->
 			{/if}
 		</div>
 		{#if $activeRepository}
 			<FilePreview {selected} repository={$activeRepository} />
 		{/if}
-		<!-- <div class="preview-wrapper">
-			{#if selected && $activeRepository}
-				<div class="file-preview" in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}>
-					<FileCard
-						file={selected}
-						isCommitedFile={true}
-						repository={$activeRepository}
-						readonly={selected.status.kind !== 'Conflicted'}
-						selectable={false}
-						on:close={() => {
-							selected = undefined;
-						}}
-					/>
-				</div>
-			{:else}
-				<div class="no-selected">
-					{@html noSelectSvg}
-					<h2 class="text-base-body-13">No selected file</h2>
-				</div>
-			{/if}
-		</div> -->
 	</div>
 	<svelte:fragment slot="controls" let:close>
 		<Button kind="filled" color="success" on:click={onRestoreClick}>Restore</Button>
-		<Button kind="filled" color="warn" on:click={onDiscardClick}>Discard</Button>
+		<Button kind="filled" color="error" on:click={onDiscardClick}>Discard</Button>
 		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
 	</svelte:fragment>
 </Modal>
