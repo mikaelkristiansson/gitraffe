@@ -35,33 +35,42 @@
 				icon="remote"
 				on:click={async () => {
 					if ($activeRepository) {
+						let fetchCurrentRemote = null;
 						const remotes = await getRemotes($activeRepository);
 						const remote = findDefaultRemote(remotes);
 						const remoteName = branch.currentUpstreamBranch || remote?.name;
 						if (remoteName && remote) {
 							const safeRemote = { name: remoteName, url: remote.url };
-							fetchRemote(null, $activeRepository, safeRemote, false);
+							fetchCurrentRemote = fetchRemote(null, $activeRepository, safeRemote, false);
 						}
+						const allPromises = Promise.all([remotes, fetchCurrentRemote]);
+						toasts.promise(allPromises, {
+							success: 'Fetched from remote',
+							loading: 'Fetching',
+							error: 'Failed to fetch from remote'
+						});
 					}
 					visible = false;
 				}}
 			/>
-			<ContextMenuItem
-				icon="rebase-small"
-				label={'Update from ' + $defaultBranch.nameWithoutRemote}
-				on:click={async () => {
-					if ($activeRepository) {
-						const mergeStatus = await mergeBranch($activeRepository, $defaultBranch);
-						if (mergeStatus === MergeResult.Success) {
-							toasts.success('Branch updated');
-						} else if (mergeStatus === MergeResult.AlreadyUpToDate) {
-							toasts.success('Branch is already up to date');
-						} else {
-							toasts.error('Failed to update branch');
+			{#if branch.currentBranch !== $defaultBranch.name}
+				<ContextMenuItem
+					icon="rebase-small"
+					label={'Update from ' + $defaultBranch.nameWithoutRemote}
+					on:click={async () => {
+						if ($activeRepository) {
+							const mergeStatus = await mergeBranch($activeRepository, $defaultBranch);
+							if (mergeStatus === MergeResult.Success) {
+								toasts.success('Branch updated');
+							} else if (mergeStatus === MergeResult.AlreadyUpToDate) {
+								toasts.success('Branch is already up to date');
+							} else {
+								toasts.error('Failed to update branch');
+							}
 						}
-					}
-				}}
-			/>
+					}}
+				/>
+			{/if}
 		</ContextMenuSection>
 		{#if branch.currentBranch !== $defaultBranch.name}
 			<ContextMenuSection>
