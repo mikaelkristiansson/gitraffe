@@ -134,18 +134,18 @@
 					<div class="header__label text-base-13 text-bold">
 						{branch.currentBranch}
 					</div>
-					<div class="header__remote-branch">
-						<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
-						{#if branch.doConflictedFilesExist}
-							<Tag
-								icon="locked-small"
-								color="warning"
-								help="Applying this branch will add merge conflict markers that you will have to resolve"
-							>
-								Conflict
-							</Tag>
-						{/if}
-					</div>
+				</div>
+				<div class="header__remote-branch">
+					<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
+					{#if branch.doConflictedFilesExist}
+						<Tag
+							icon="locked-small"
+							color="warning"
+							help="Applying this branch will add merge conflict markers that you will have to resolve"
+						>
+							Conflict
+						</Tag>
+					{/if}
 				</div>
 				<div class="flex flex-1 justify-evenly">
 					<div class="flex w-full" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
@@ -292,7 +292,7 @@
 		color: var(--clr-theme-scale-ntrl-50);
 		display: flex;
 		gap: var(--size-4);
-		justify-content: space-between;
+		justify-content: start;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		align-items: center;

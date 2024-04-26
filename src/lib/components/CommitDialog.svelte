@@ -17,7 +17,6 @@
 	// import { getContextByClass } from '$lib/utils/context';
 	import * as toasts from '$lib/utils/toasts';
 	import { tooltip } from '$lib/utils/tooltip';
-	import { setAutoHeight } from '$lib/utils/useAutoHeight';
 	// import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
@@ -58,7 +57,6 @@
 	let descriptionTextArea: HTMLTextAreaElement;
 
 	$: [title, description] = splitMessage($commitMessage);
-	$: if ($commitMessage) updateHeights();
 
 	function splitMessage(message: string) {
 		const parts = message.split(/\n+(.*)/s);
@@ -71,11 +69,6 @@
 
 	function focusTextareaOnMount(el: HTMLTextAreaElement) {
 		el.focus();
-	}
-
-	function updateHeights() {
-		setAutoHeight(titleTextArea);
-		setAutoHeight(descriptionTextArea);
 	}
 
 	async function commit() {
@@ -169,7 +162,6 @@
 					rows="1"
 					bind:this={titleTextArea}
 					use:focusTextareaOnMount
-					on:focus={(e) => setAutoHeight(e.currentTarget)}
 					on:input={(e) => {
 						$commitMessage = concatMessage(e.currentTarget.value, description);
 					}}
@@ -191,7 +183,6 @@
 						spellcheck="false"
 						rows="1"
 						bind:this={descriptionTextArea}
-						on:focus={(e) => setAutoHeight(e.currentTarget)}
 						on:input={(e) => {
 							$commitMessage = concatMessage(title, e.currentTarget.value);
 						}}
@@ -200,7 +191,6 @@
 							if (e.key == 'Backspace' && value.length == 0) {
 								e.preventDefault();
 								titleTextArea.focus();
-								setAutoHeight(e.currentTarget);
 							} else if (e.key == 'a' && (e.metaKey || e.ctrlKey) && value.length == 0) {
 								// select previous textarea on cmd+a if this textarea is empty
 								e.preventDefault();
