@@ -1,16 +1,23 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import { goto } from '$app/navigation';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Card from '$lib/components/ui/card';
+	import ThemeSelector from './ThemeSelector.svelte';
+	import { SETTINGS_CONTEXT, type SettingsStore } from '$lib/settings/userSettings';
+	import { getContext } from 'svelte';
 
 	// export let user: User | undefined;
 	export let pop = false;
 	export let isNavCollapsed = false;
+	let dialogOpen = false;
+
+	const userSettings = getContext(SETTINGS_CONTEXT) as SettingsStore;
 </script>
 
 <button
 	class="btn"
 	class:pop
-	on:mousedown={() => goto('/settings/')}
+	on:mousedown={() => (dialogOpen = true)}
 	class:collapsed={isNavCollapsed}
 >
 	{#if !isNavCollapsed}
@@ -36,6 +43,23 @@
 	</div>
 	<!-- {/if} -->
 </button>
+
+<Dialog.Root bind:open={dialogOpen}>
+	<Dialog.Content size="lg">
+		<Dialog.Header>
+			<Dialog.Title>Settings</Dialog.Title>
+		</Dialog.Header>
+
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>Appearance</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				<ThemeSelector {userSettings} />
+			</Card.Content>
+		</Card.Root>
+	</Dialog.Content>
+</Dialog.Root>
 
 <style lang="postcss">
 	.btn {

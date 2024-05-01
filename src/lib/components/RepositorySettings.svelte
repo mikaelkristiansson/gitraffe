@@ -41,7 +41,7 @@
 		<div class="flex flex-col gap-4">
 			<Alert.Root>
 				<Alert.Title>Remove repository</Alert.Title>
-				<Alert.Description>
+				<Alert.Description class="flex flex-col gap-4">
 					<span
 						>You can remove repositories from Gitraffe, your code remains safe as this only clears
 						configuration.</span
@@ -49,7 +49,6 @@
 					<Button
 						variant="destructive"
 						icon="warning-small"
-						class="mt-2"
 						on:click={onDeleteClicked}
 						loading={isDeleting}>Remove {repository.name}</Button
 					>
