@@ -1,10 +1,9 @@
 <script lang="ts">
 	// import { AIService } from '$lib/backend/aiService';
-	import Button from '$lib/components/Button.svelte';
 	// import Checkbox from '$lib/components/Checkbox.svelte';
 	// import DropDownButton from '$lib/components/DropDownButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
+	// import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
 	// import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
 	// import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
 	import {
@@ -28,6 +27,8 @@
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
+	import { Button } from './ui/button';
+	import type { SetSelected } from '$lib/types';
 
 	// const aiService = getContextByClass(AIService);
 
@@ -40,7 +41,7 @@
 	// export let user: User | undefined;
 	export let selectedFiles: Writable<ChangedFile[]>;
 	export let expanded: Writable<boolean>;
-	export let setSelected: (file: ChangedFile | undefined) => ChangedFile | undefined;
+	export let setSelected: SetSelected;
 
 	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
@@ -152,12 +153,12 @@
 <div class="commit-box" class:commit-box__expanded={$expanded}>
 	{#if $expanded}
 		<div class="commit-box__expander" transition:slide={{ duration: 150, easing: quintOut }}>
-			<div class="commit-box__textarea-wrapper text-input">
+			<div class="commit-box__textarea-wrapper bg-input/30 rounded-sm border border-input">
 				<textarea
 					value={title}
 					placeholder="Commit summary"
 					disabled={aiLoading}
-					class="text-base-body-13 text-semibold commit-box__textarea commit-box__textarea__title"
+					class="text-base-body-13 text-foreground text-semibold commit-box__textarea commit-box__textarea__title"
 					spellcheck="false"
 					rows="1"
 					bind:this={titleTextArea}
@@ -179,7 +180,7 @@
 						value={description}
 						disabled={aiLoading}
 						placeholder="Commit description (optional)"
-						class="text-base-body-13 commit-box__textarea commit-box__textarea__description"
+						class="text-base-body-13 text-foreground commit-box__textarea commit-box__textarea__description"
 						spellcheck="false"
 						rows="1"
 						bind:this={descriptionTextArea}
@@ -218,43 +219,14 @@
 					use:tooltip={$aiGenEnabled && aiConfigurationValid
 						? ''
 						: 'You must be logged in or have provided your own API key and have summary generation enabled to use this feature'}
-				>
-					<!-- <DropDownButton
-						kind="outlined"
-						icon="ai-small"
-						color="neutral"
-						disabled={!($aiGenEnabled && aiConfigurationValid)}
-						loading={aiLoading}
-						on:click={() => generateCommitMessage(branch.files)}
-					>
-						Generate message
-						<ContextMenu type="checklist" slot="context-menu" bind:this={contextMenu}>
-							<ContextMenuSection>
-								<ContextMenuItem
-									label="Extra concise"
-									on:click={() => ($commitGenerationExtraConcise = !$commitGenerationExtraConcise)}
-								>
-									<Checkbox small slot="control" bind:checked={$commitGenerationExtraConcise} />
-								</ContextMenuItem>
-
-								<ContextMenuItem
-									label="Use emojis 😎"
-									on:click={() => ($commitGenerationUseEmojis = !$commitGenerationUseEmojis)}
-								>
-									<Checkbox small slot="control" bind:checked={$commitGenerationUseEmojis} />
-								</ContextMenuItem>
-							</ContextMenuSection>
-						</ContextMenu>
-					</DropDownButton> -->
-				</div>
+				></div>
 			</div>
 		</div>
 	{/if}
 	<div class="actions">
 		{#if $expanded && !isCommitting}
 			<Button
-				color="neutral"
-				kind="outlined"
+				variant="secondary"
 				id="commit-to-branch"
 				on:click={() => {
 					$expanded = false;
@@ -264,11 +236,10 @@
 			</Button>
 		{/if}
 		<Button
-			grow
-			color="primary"
-			kind="filled"
-			loading={isCommitting}
+			class="flex-grow"
+			variant="default"
 			disabled={(isCommitting || !title) && $expanded}
+			loading={isCommitting}
 			id="commit-to-branch"
 			on:click={() => {
 				if ($expanded) {
@@ -288,10 +259,6 @@
 		display: flex;
 		flex-direction: column;
 		padding: var(--size-14);
-		background: var(--clr-theme-container-light);
-		border-top: 1px solid var(--clr-theme-container-outline-light);
-		transition: background-color var(--transition-medium);
-		border-radius: 0 0 var(--radius-m) var(--radius-m);
 	}
 
 	.commit-box__expander {
@@ -328,8 +295,6 @@
 		left: var(--size-12);
 		padding: var(--size-2);
 		border-radius: 100%;
-		background: var(--clr-theme-container-pale);
-		color: var(--clr-theme-scale-ntrl-40);
 	}
 
 	.commit-box__textarea__title {
@@ -351,9 +316,5 @@
 		display: flex;
 		justify-content: right;
 		gap: var(--size-6);
-	}
-
-	.commit-box__expanded {
-		background-color: var(--clr-theme-container-pale);
 	}
 </style>

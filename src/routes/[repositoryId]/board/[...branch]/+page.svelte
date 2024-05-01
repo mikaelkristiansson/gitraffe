@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
 	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
@@ -37,7 +38,7 @@
 
 	function setSelected(file: ChangedFile | undefined) {
 		selected = file;
-		return file;
+		return;
 	}
 
 	const unsubscribeCommitStore = commitStore.subscribe((store) => {
@@ -102,7 +103,6 @@
 		true,
 		'commitBoxExpanded_' + $activeRepository?.id || '' + '_' + branch$?.currentTip || ''
 	);
-	let isUnapplied = false;
 
 	$: isLaneCollapsed = projectLaneCollapsed($activeRepository?.id || '');
 	$: if ($isLaneCollapsed) {
@@ -118,14 +118,15 @@
 	<FullviewLoading />
 {:else}
 	<div class="flex h-full w-full max-w-full flex-grow flex-col overflow-hidden">
-		<div class="board-drag-region" data-tauri-drag-region />
-		<div class="board-wrapper">
-			<div class="board p-3">
-				<div class="wrapper">
-					<div class={`branch-card ${$isLaneCollapsed ? 'h-full' : 'min-w-80'}`}>
+		<div class="z-10 absolute top-0 left-0 w-full h-5" data-tauri-drag-region />
+		<div class="relative flex flex-col flex-grow h-full">
+			<div class="flex flex-grow flex-shrink items-start h-full p-3">
+				<div class="flex h-full w-full items-start flex-shrink-0 relative gap-3">
+					<div
+						class={`relative select-none flex flex-col gap-2 max-w-80 overflow-x-hidden overflow-y-scroll ${$isLaneCollapsed ? 'h-full' : 'min-w-80'}`}
+					>
 						<BranchHeader
 							branch={branch$}
-							{isUnapplied}
 							bind:isLaneCollapsed
 							repository={$activeRepository}
 							{isPushing}
@@ -133,7 +134,7 @@
 						{#if !$isLaneCollapsed}
 							<div>
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
-									<div class="card">
+									<Card.Root class="flex flex-col">
 										<BranchFiles
 											files={branch$.workingDirectory.files}
 											repository={$activeRepository}
@@ -157,16 +158,21 @@
 												</InfoMessage>
 											</div>
 										{/if}
-										<CommitDialog
-											repositoryId={$activeRepository.id}
-											branch={branch$}
-											expanded={commitBoxOpen}
-											{setSelected}
-											{selectedFiles}
-										/>
-									</div>
+										<div class="bg-muted/40">
+											<CommitDialog
+												repositoryId={$activeRepository.id}
+												branch={branch$}
+												expanded={commitBoxOpen}
+												{setSelected}
+												{selectedFiles}
+											/>
+										</div>
+									</Card.Root>
 								{:else}
-									<div class="no-changes card" data-dnd-ignore>
+									<Card.Root
+										class="flex flex-col items-center flex-grow select-none justify-center py-14 px-0"
+										data-dnd-ignore
+									>
 										<div class="new-branch__content">
 											<div class="new-branch__image">
 												{@html noChangesSvg}
@@ -175,7 +181,7 @@
 												No uncommitted changes<br />on this branch
 											</h2>
 										</div>
-									</div>
+									</Card.Root>
 								{/if}
 							</div>
 						{/if}
@@ -192,7 +198,6 @@
 								file={selected}
 								repository={$activeRepository}
 								readonly={selected.status.kind !== 'Conflicted'}
-								selectable={$commitBoxOpen && !isUnapplied}
 								on:close={() => {
 									selected = undefined;
 								}}
@@ -206,53 +211,6 @@
 {/if}
 
 <style lang="postcss">
-	/* BOARD */
-	.board-wrapper {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		flex-grow: 1;
-		height: 100%;
-	}
-	.board-drag-region {
-		z-index: 1;
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: var(--size-20);
-		background: var(--target-branch-background);
-	}
-	.board {
-		display: flex;
-		flex-grow: 1;
-		flex-shrink: 1;
-		align-items: flex-start;
-		height: 100%;
-	}
-	.wrapper {
-		display: flex;
-		height: 100%;
-		width: 100%;
-		align-items: self-start;
-		flex-shrink: 0;
-		user-select: none; /* here because of user-select draggable interference in board */
-		position: relative;
-		--target-branch-background: var(--clr-theme-container-pale);
-		background-color: var(--target-branch-background);
-		gap: var(--size-12);
-	}
-	.branch-card {
-		position: relative;
-		user-select: none;
-		display: flex;
-		flex-direction: column;
-		gap: var(--size-10);
-		max-width: 300px;
-		overflow-x: hidden;
-		overflow-y: scroll;
-	}
-
 	.divider-line {
 		z-index: 30;
 		position: absolute;

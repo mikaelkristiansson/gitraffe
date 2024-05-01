@@ -15,10 +15,12 @@
 		type IBranchListItem
 	} from '$lib/utils/branch';
 	import { getRecentBranches } from '$lib/git/branch';
-	import TextBox from './TextBox.svelte';
 	import type { Branch } from '$lib/models/branch';
+	import { Input, type FormInputEvent } from './ui/input';
+	import { cn } from '$lib/utils';
 
 	export let repository: Repository;
+	export let isNavCollapsed: boolean;
 
 	let viewport: HTMLDivElement;
 	const dispatch = createEventDispatcher<{ scrollbarDragging: boolean }>();
@@ -29,6 +31,14 @@
 	let isSearching = false;
 	let recentBranches: string[] = [];
 	const RecentBranchesLimit = 5;
+
+	let timer: number;
+	const debounce = (callback: Function) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			callback();
+		}, 600);
+	};
 
 	const unsubscribeAllBranches = allBranches.subscribe((branches) => {
 		setGroups(branches);
@@ -70,6 +80,11 @@
 		filteredGroups$ = updated;
 	}
 
+	const onInputChange = (event: FormInputEvent) => {
+		const value = (event.target as HTMLInputElement).value;
+		debounce(() => filterBranches(value));
+	};
+
 	$: ({ path } = repository);
 	$: path && $defaultBranch && setBranches();
 	$: countFiltered = filteredGroups$.flatMap((group) => [...group.items])?.length;
@@ -80,7 +95,12 @@
 	});
 </script>
 
-<div class="branch-list">
+<div
+	class={cn(
+		'flex flex-1 relative overflow-hidden flex-col border-t w-full',
+		isNavCollapsed && 'w-0'
+	)}
+>
 	<BranchesHeader
 		{repository}
 		count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0}
@@ -92,14 +112,15 @@
 			on:dragging={(e) => dispatch('scrollbarDragging', e.detail)}
 			fillViewport={groups$?.length == 0}
 		>
-			<div class="scroll-container">
-				<TextBox
+			<div class="flex flex-col gap-4 w-full h-full px-4 pt-2 pb-4">
+				<Input
+					type="search"
 					value={filterValue}
 					icon="search"
 					placeholder="Search"
-					on:input={(e) => filterBranches(e.detail)}
+					on:input={onInputChange}
 				/>
-				<div class="content">
+				<div class=" flex flex-col justify-center gap-0.5">
 					{#if $fetchingBranches && $updatingRepositories}
 						<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 					{:else}
@@ -122,61 +143,13 @@
 			</div>
 		</ScrollableContainer>
 	{:else}
-		<div class="branch-list__empty-state">
-			<div class="branch-list__empty-state__image">
+		<div class="flex flex-1 flex-col justify-center items-center gap-2">
+			<div class="w-32">
 				{@html noBranchesSvg}
 			</div>
-			<span class="branch-list__empty-state__caption text-base-body-14 text-semibold"
+			<span class="text-center text-base-body-14 text-semibold text-gray-400 dark:text-gray-600"
 				>You have no branches</span
 			>
 		</div>
 	{/if}
 </div>
-
-<style lang="postcss">
-	.scroll-container {
-		display: flex;
-		flex-direction: column;
-		gap: var(--size-12);
-		width: 100%;
-		height: 100%;
-		padding-top: var(--size-6);
-		padding-bottom: var(--size-16);
-		padding-left: var(--size-14);
-		padding-right: var(--size-14);
-	}
-	.branch-list {
-		flex: 1;
-		position: relative;
-		overflow: hidden;
-		display: flex;
-		flex-direction: column;
-		border-top: 1px solid var(--clr-theme-container-outline-light);
-	}
-	.content {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: var(--size-2);
-	}
-
-	/* EMPTY STATE */
-	.branch-list__empty-state {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: var(--size-10);
-	}
-
-	.branch-list__empty-state__image {
-		width: 8.125rem;
-	}
-
-	.branch-list__empty-state__caption {
-		color: var(--clr-theme-scale-ntrl-60);
-		text-align: center;
-		max-width: 10rem;
-	}
-</style>

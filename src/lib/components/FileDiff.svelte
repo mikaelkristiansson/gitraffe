@@ -1,13 +1,11 @@
 <script lang="ts">
-	import Button from './Button.svelte';
 	import HunkViewer from './HunkViewer.svelte';
 	import { type DiffHunk, DiffType, type IDiff, DiffLineType } from '$lib/models/diff';
 	import InfoMessage from './InfoMessage.svelte';
+	import { Button } from './ui/button';
 
 	export let filePath: string;
 	export let diff: IDiff;
-	// export let isUnapplied: boolean;
-	export let selectable = false;
 	export let readonly: boolean = false;
 
 	function getGutterMinWidth(max: number) {
@@ -45,9 +43,7 @@
 	{:else if diff.kind === DiffType.Text && diff.hunks.length > 50 && !alwaysShow}
 		<div class="flex flex-col p-1">
 			Change hidden as large numbers of diffs may slow down the UI
-			<Button kind="outlined" color="neutral" on:click={() => (alwaysShow = true)}
-				>show anyways</Button
-			>
+			<Button variant="outline" on:click={() => (alwaysShow = true)}>show anyways</Button>
 		</div>
 	{:else}
 		{#if diff.kind === DiffType.Text && diff.hunks.length === 0}
@@ -60,14 +56,7 @@
 					<span class="added">+{added}</span>
 					<span class="removed">-{removed}</span>
 				</div>
-				<HunkViewer
-					{filePath}
-					{section}
-					{selectable}
-					{readonly}
-					{minWidth}
-					linesModified={added + removed}
-				/>
+				<HunkViewer {filePath} {section} {readonly} {minWidth} linesModified={added + removed} />
 			</div>
 		{/each}
 	{/if}

@@ -1,37 +1,16 @@
 <script lang="ts">
 	import type { DiffHunk } from '$lib/models/diff';
 	import Button from './Button.svelte';
-	// import HunkContextMenu from './HunkContextMenu.svelte';
 	import HunkLine from './HunkLine.svelte';
 	import Scrollbar from './Scrollbar.svelte';
-	import { onDestroy } from 'svelte';
 
 	export let viewport: HTMLDivElement | undefined = undefined;
 	export let contents: HTMLDivElement | undefined = undefined;
 	export let filePath: string;
 	export let section: DiffHunk;
 	export let minWidth: number;
-	export let selectable = false;
-	// export let isUnapplied: boolean;
 	export let readonly: boolean = false;
 	export let linesModified: number;
-
-	function updateContextMenu(filePath: string) {
-		// if (popupMenu) popupMenu.$destroy();
-		// return new HunkContextMenu({
-		// 	target: document.body,
-		// 	props: { projectPath, filePath }
-		// });
-		return null;
-	}
-
-	$: popupMenu = updateContextMenu(filePath);
-
-	onDestroy(() => {
-		if (popupMenu) {
-			// popupMenu.$destroy();
-		}
-	});
 
 	let alwaysShow = false;
 </script>
@@ -42,7 +21,7 @@
 		tabindex="0"
 		role="cell"
 		on:contextmenu|preventDefault
-		class="hunk hide-native-scrollbar"
+		class="hunk bg-muted/40 border hide-native-scrollbar"
 		class:readonly
 	>
 		<div bind:this={contents} class="hunk__bg-stretch">
@@ -56,14 +35,7 @@
 			{:else}
 				{@const hunk = section}
 				{#each hunk.lines as line}
-					<!-- on:selected={(e) => onHunkSelected(hunk, e.detail)} -->
-					<!-- on:contextmenu={(e) =>
-								popupMenu.openByMouse(e, {
-									hunk,
-									section: subsection,
-									lineNumber: line.afterLineNumber ? line.afterLineNumber : line.beforeLineNumber
-								})} -->
-					<HunkLine {line} sectionType={line.type} {filePath} {readonly} {minWidth} {selectable} />
+					<HunkLine {line} sectionType={line.type} {filePath} {readonly} {minWidth} />
 				{/each}
 			{/if}
 		</div>
@@ -86,10 +58,10 @@
 		overflow-x: auto;
 		user-select: text;
 
-		background: var(--clr-theme-container-light);
+		/* background: var(--clr-theme-container-light); */
 		border-radius: var(--radius-s);
-		border: 1px solid var(--clr-theme-container-outline-light);
-		transition: border-color var(--transition-fast);
+		/* border: 1px solid var(--clr-theme-container-outline-light); */
+		/* transition: border-color var(--transition-fast); */
 	}
 
 	.hunk__bg-stretch {

@@ -103,17 +103,9 @@
 {:else if $baseError}
 	<p>Error in base</p>
 {:else}
-	<div class="view-wrap" role="group" on:dragover|preventDefault>
+	<div class="flex relative w-full" role="group" on:dragover|preventDefault>
 		<!-- user={$user$} -->
 		<Navigation repository={repository$} />
 		<slot />
 	</div>
 {/if}
-
-<style>
-	.view-wrap {
-		position: relative;
-		display: flex;
-		width: 100%;
-	}
-</style>

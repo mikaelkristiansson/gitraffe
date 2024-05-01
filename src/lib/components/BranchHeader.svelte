@@ -1,10 +1,8 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import ActiveBranchStatus from './ActiveBranchStatus.svelte';
-	import BranchLanePopupMenu from './BranchLanePopupMenu.svelte';
 	import Tag from './Tag.svelte';
-	import { clickOutside } from '$lib/utils/clickOutside';
-	import Button from '$lib/components/Button.svelte';
-	import * as toasts from '$lib/utils/toasts';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
@@ -17,19 +15,21 @@
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
 	import type { IRemote } from '$lib/models/remote';
-	import { commitStore } from '$lib/stores/commits';
 	import PullRequestCard from './PullRequestCard.svelte';
 	import Icon from './Icon.svelte';
-	import { pushActiveBranch } from '$lib/utils/branch';
+	import { mergeBranch, pushActiveBranch } from '$lib/utils/branch';
+	import { Button } from './ui/button';
+	import { fetchRemote } from '$lib/utils/remote';
+	import { toast } from 'svelte-sonner';
+	import { MergeResult } from '$lib/git/merge';
+	import DeleteBranch from './DeleteBranch.svelte';
 
-	export let isUnapplied = false;
 	export let branch: IStatusResult;
 	export let repository: Repository;
 	export let isLaneCollapsed: Persisted<boolean>;
 	export let isPushing = false;
 
-	let meatballButton: HTMLDivElement;
-	let visible = false;
+	let dialogDeleteOpen = false;
 	let isPublishing = false;
 	let isPulling = false;
 
@@ -54,9 +54,9 @@
 				}
 			}
 			workingBranch.setWorking(repository);
-			toasts.success('Branch published');
+			toast.success('Branch published');
 		} catch (e) {
-			toasts.error('Failed to publish branch');
+			toast.error('Failed to publish branch');
 			console.error('Failed to publish branch', e);
 		} finally {
 			isPublishing = false;
@@ -65,7 +65,7 @@
 
 	const pullBranch = async () => {
 		if (branch.workingDirectory?.files && branch.workingDirectory?.files.length > 0) {
-			toasts.error('Cannot pull while there are uncommitted changes');
+			toast.error('Cannot pull while there are uncommitted changes');
 			return;
 		}
 		isPulling = true;
@@ -84,7 +84,7 @@
 				allBranches.updateBranch(newBranch);
 				await defaultBranch.setDefault(repository);
 				await workingBranch.setWorking(repository);
-				toasts.success('Pulled from origin');
+				toast.success('Pulled from origin');
 			}
 		} finally {
 			isPulling = false;
@@ -99,21 +99,10 @@
 </script>
 
 {#if $isLaneCollapsed}
-	<div
-		class="card collapsed-lane"
-		on:mousedown={expandLane}
-		on:keydown={(e) => e.key === 'Enter' && expandLane()}
-		tabindex="0"
-		role="button"
-	>
+	<Card.Root class="flex flex-col h-full gap-2 px-2 py-4 collapsed-lane">
 		<div class="collapsed-lane__actions">
-			<Button
-				icon="unfold-lane"
-				kind="outlined"
-				color="neutral"
-				help="Collapse lane"
-				on:mousedown={expandLane}
-			/>
+			<!-- help="Collapse lane" -->
+			<Button icon="unfold-lane" size="icon" variant="outline" on:click={expandLane} />
 		</div>
 
 		<div class="collapsed-lane__info">
@@ -125,149 +114,153 @@
 				<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
 			</div>
 		</div>
-	</div>
+	</Card.Root>
 {:else}
-	<div class="header__wrapper">
-		<div class="header card" class:isUnapplied>
-			<div class="header__info">
-				<div class="flex">
-					<div class="header__label text-base-13 text-bold">
-						{branch.currentBranch}
-					</div>
-				</div>
-				<div class="header__remote-branch">
-					<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
-					{#if branch.doConflictedFilesExist}
-						<Tag
-							icon="locked-small"
-							color="warning"
-							help="Applying this branch will add merge conflict markers that you will have to resolve"
-						>
-							Conflict
-						</Tag>
-					{/if}
-				</div>
-				<div class="flex flex-1 justify-evenly">
-					<div class="flex w-full" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
-						<Button
-							kind="outlined"
-							color="neutral"
-							wide
-							class="!rounded-r-none !border-r-0"
-							disabled={!branch.branchAheadBehind?.behind}
-							loading={isPulling}
-							on:click={pullBranch}
-						>
-							Pull <Badge class="ml-1" count={branch.branchAheadBehind?.behind || 0} />
-							<Icon name="pull-small" size={14} />
-						</Button>
-					</div>
-					<div class="flex w-full" use:tooltip={{ text: 'Push origin', delay: 300 }}>
-						<Button
-							kind="outlined"
-							color="neutral"
-							wide
-							class="!rounded-l-none"
-							disabled={!branch.branchAheadBehind?.ahead}
-							loading={isPushing}
-							on:click={pushBranch}
-						>
-							<kbd
-								class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-base-10 font-medium opacity-60"
-							>
-								<span>⌘</span>P
-							</kbd>
-							Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
-							<Icon name="push-small" size={14} />
-						</Button>
-					</div>
+	<Card.Root>
+		<div class="header__info">
+			<div class="flex">
+				<div class="header__label text-base-13 text-bold">
+					{branch.currentBranch}
 				</div>
 			</div>
-			<div class="header__actions">
-				<div>
-					{#if branch && branch.branchAheadBehind !== undefined}
-						<PullRequestCard {repository} />
-					{:else}
-						<Button
-							icon="merged-pr-small"
-							loading={isPublishing}
-							color="pop"
-							on:click={publishBranch}>Publish Branch</Button
-						>
-					{/if}
-				</div>
-				<div class="header__buttons">
-					<Button
-						icon="fold-lane"
-						on:mousedown={collapseLane}
-						kind="outlined"
-						color="neutral"
-						help="Collapse lane"
-					/>
-					<Button
-						icon="kebab"
-						kind="outlined"
-						color="neutral"
-						on:mousedown={() => {
-							visible = !visible;
-						}}
-					/>
-					<div
-						class="branch-popup-menu"
-						use:clickOutside={{
-							trigger: meatballButton,
-							handler: () => (visible = false)
-						}}
+			<div class="header__remote-branch">
+				<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
+				{#if branch.doConflictedFilesExist}
+					<Tag
+						icon="locked-small"
+						color="warning"
+						help="Applying this branch will add merge conflict markers that you will have to resolve"
 					>
-						{#if branch && $commitStore.localCommits}
-							<BranchLanePopupMenu
-								{branch}
-								commits={$commitStore.localCommits}
-								bind:visible
-								on:action
-							/>
-						{/if}
-					</div>
+						Conflict
+					</Tag>
+				{/if}
+			</div>
+			<div class="flex flex-1 justify-evenly">
+				<div class="flex w-full" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
+					<Button
+						variant="outline"
+						class="!rounded-r-none !border-r-0 w-full"
+						disabled={!branch.branchAheadBehind?.behind}
+						loading={isPulling}
+						on:click={pullBranch}
+					>
+						Pull <Badge class="ml-1" count={branch.branchAheadBehind?.behind || 0} />
+						<Icon name="pull-small" size={14} />
+					</Button>
+				</div>
+				<div class="flex w-full" use:tooltip={{ text: 'Push origin', delay: 300 }}>
+					<Button
+						variant="outline"
+						class="!rounded-l-none w-full"
+						disabled={!branch.branchAheadBehind?.ahead}
+						loading={isPushing}
+						on:click={pushBranch}
+					>
+						<kbd
+							class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-base-10 font-medium opacity-60"
+						>
+							<span>⌘</span>P
+						</kbd>
+						Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
+						<Icon name="push-small" size={14} />
+					</Button>
 				</div>
 			</div>
 		</div>
-	</div>
+		<Card.Footer class="flex justify-between py-2 px-3 bg-muted/40">
+			<div>
+				{#if branch && branch.branchAheadBehind !== undefined}
+					<PullRequestCard {repository} />
+				{:else}
+					<Button icon="merged-pr-small" loading={isPublishing} color="pop" on:click={publishBranch}
+						>Publish Branch</Button
+					>
+				{/if}
+			</div>
+			<div class="header__buttons">
+				<!-- help="Collapse lane" -->
+				<Button icon="fold-lane" on:click={collapseLane} size="icon" variant="outline" />
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="outline" size="icon" icon="kebab" />
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end">
+						<DropdownMenu.Group>
+							<DropdownMenu.Item
+								class="cursor-pointer"
+								on:click={async () => {
+									let fetchCurrentRemote = null;
+									const remotes = await getRemotes(repository);
+									const remote = findDefaultRemote(remotes);
+									const remoteName = branch.currentUpstreamBranch || remote?.name;
+									if (remoteName && remote) {
+										const safeRemote = { name: remoteName, url: remote.url };
+										fetchCurrentRemote = fetchRemote(null, repository, safeRemote, false);
+									}
+									const allPromises = Promise.all([remotes, fetchCurrentRemote]);
+									toast.promise(allPromises, {
+										success: 'Fetched from remote',
+										loading: 'Fetching',
+										error: 'Failed to fetch from remote'
+									});
+								}}
+							>
+								<Icon name="remote" />
+								<span class="pl-2">Fetch from remote</span>
+								<DropdownMenu.Shortcut>⌘⇧F</DropdownMenu.Shortcut>
+							</DropdownMenu.Item>
+							{#if branch.currentBranch !== $defaultBranch.name}
+								<DropdownMenu.Item
+									class="cursor-pointer"
+									on:click={async () => {
+										if (repository) {
+											const mergeStatus = await mergeBranch(repository, $defaultBranch);
+											if (mergeStatus === MergeResult.Success) {
+												toast.success('Branch updated');
+											} else if (mergeStatus === MergeResult.AlreadyUpToDate) {
+												toast.success('Branch is already up to date');
+											} else {
+												toast.error('Failed to update branch');
+											}
+										}
+									}}
+								>
+									<Icon name="rebase-small" />
+									<span class="pl-2">Update from {$defaultBranch.nameWithoutRemote}</span>
+									<DropdownMenu.Shortcut>⌘⇧U</DropdownMenu.Shortcut>
+								</DropdownMenu.Item>
+							{/if}
+						</DropdownMenu.Group>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Group>
+							{#if branch.currentBranch !== $defaultBranch.name}
+								<DropdownMenu.Item
+									class="cursor-pointer"
+									on:click={async () => {
+										dialogDeleteOpen = true;
+									}}
+								>
+									<Icon name="bin-small" />
+									<span class="pl-2">Delete branch</span>
+								</DropdownMenu.Item>
+							{/if}
+						</DropdownMenu.Group>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</div>
+		</Card.Footer>
+	</Card.Root>
 {/if}
 
-<style lang="postcss">
-	/* .header__wrapper {
-		z-index: 10;
-		position: sticky;
-		top: var(--size-12);
-	} */
-	.header {
-		z-index: 2;
-		position: relative;
-		flex-direction: column;
-		gap: var(--size-2);
+<DeleteBranch {repository} branch={$activeBranch} {dialogDeleteOpen} />
 
-		&.isUnapplied {
-			background: var(--clr-theme-container-pale);
-		}
-	}
+<style lang="postcss">
 	.header__info {
 		display: flex;
 		flex-direction: column;
 		transition: margin var(--transition-slow);
 		padding: var(--size-12);
 		gap: var(--size-10);
-	}
-	.header__actions {
-		display: flex;
-		gap: var(--size-4);
-		background: var(--clr-theme-container-pale);
-		padding: var(--size-14);
-		justify-content: space-between;
-		border-radius: 0 0 var(--radius-m) var(--radius-m);
-		user-select: none;
-	}
-	.isUnapplied .header__actions {
-		background: var(--clr-theme-container-sub);
 	}
 	.header__buttons {
 		display: flex;
@@ -281,13 +274,6 @@
 		gap: var(--size-4);
 	}
 
-	.branch-popup-menu {
-		position: absolute;
-		top: calc(100% + var(--size-4));
-		right: 0;
-		z-index: 10;
-	}
-
 	.header__remote-branch {
 		color: var(--clr-theme-scale-ntrl-50);
 		display: flex;
@@ -299,19 +285,6 @@
 	}
 
 	/*  COLLAPSABLE LANE */
-
-	.collapsed-lane {
-		cursor: default;
-		user-select: none;
-		align-items: center;
-		height: 100%;
-		gap: var(--size-8);
-		padding: var(--size-8) var(--size-8) var(--size-20);
-
-		&:focus-within {
-			outline: none;
-		}
-	}
 
 	.collapsed-lane__actions {
 		display: flex;

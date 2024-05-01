@@ -2,8 +2,9 @@
 	import { activeBranch, defaultBranch } from '$lib/stores/branch';
 	import Tag from './Tag.svelte';
 	import type { Repository } from '$lib/models/repository';
-	import Button from './Button.svelte';
+	// import Button from './Button.svelte';
 	import { createRequestUrl } from '$lib/utils/url';
+	import { Button } from './ui/button';
 
 	export let isLaneCollapsed: boolean = false;
 	export let type: 'tag' | 'button' = 'button';

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from './ui/dialog';
+	import * as Select from '$lib/components/ui/select';
+	import * as Alert from '$lib/components/ui/alert';
 	import { undoCommit } from '$lib/git/commit';
 	import type { Commit } from '$lib/models/commit';
 	import type { Repository } from '$lib/models/repository';
@@ -6,17 +10,15 @@
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { error, success } from '$lib/utils/toasts';
 	import AuthorIcon from './AuthorIcon.svelte';
-	import Button from './Button.svelte';
-	import Modal from './Modal.svelte';
-	import Tag from './Tag.svelte';
 	import TimeAgo from './TimeAgo.svelte';
 	import { activeRepository } from '$lib/stores/repository';
 	import type { ChangedFile, CommittedFileChange } from '$lib/models/status';
 	import { getChangedFiles } from '$lib/git/log';
-	import Select from './Select.svelte';
-	import SelectItem from './SelectItem.svelte';
 	import FilePreview from './FilePreview.svelte';
 	import BranchFiles from './BranchFiles/BranchFiles.svelte';
+	import { Button } from './ui/button';
+	import Icon from './Icon.svelte';
+	import { Label } from './ui/label';
 
 	export let commits: Commit[];
 	export let repository: Repository;
@@ -28,7 +30,7 @@
 	let files: CommittedFileChange[] = [];
 	let selected: ChangedFile | undefined = undefined;
 	let selectedCommit: Commit | undefined = commits[0];
-	let commitsModal: Modal;
+	let dialogCommitFilesOpen = false;
 
 	const setFilesForCommit = (sha: Commit['sha']) => {
 		selectedCommit = commits.find((commit) => commit.sha === sha);
@@ -42,7 +44,7 @@
 		if (selectedCommit) {
 			setFilesForCommit(selectedCommit.sha);
 		}
-		commitsModal.show();
+		dialogCommitFilesOpen = true;
 	};
 </script>
 
@@ -60,7 +62,7 @@
 			style:z-index={commits.length - index}
 			class="relative w-full"
 		>
-			<div class="commit absolute w-full h-20">
+			<Card.Root class="absolute w-full h-20 hover:bg-accent overflow-hidden">
 				<div class="commit__header">
 					<div class="commit__message">
 						<div class="commit__row">
@@ -68,11 +70,10 @@
 								{commit.summary}
 							</span>
 							{#if index === 0}
-								<Tag
-									color="ghost"
+								<Button
+									size="sm"
+									variant="outline"
 									icon="undo-small"
-									border
-									clickable
 									on:click={async (e) => {
 										e.stopPropagation();
 										if (commit) {
@@ -87,7 +88,7 @@
 												error('Failed to undo commit');
 											}
 										}
-									}}>Undo</Tag
+									}}>Undo</Button
 								>
 							{/if}
 						</div>
@@ -105,61 +106,72 @@
 						</span>
 					</div>
 				</div>
-			</div>
+			</Card.Root>
 		</div>
 	{/each}
 </button>
 
-<Modal width="full" height="full" title="Commited Files" bind:this={commitsModal}>
-	<div class="h-full flex flex-col gap-4 divide-y divide-light-200 dark:divide-dark-400">
-		<div class="flex">
-			<Select
-				label="Select a commit"
-				items={commits.map((commit) => ({ name: commit.summary, value: commit.sha }))}
-				itemId="value"
-				labelId="name"
-				on:select={(e) => setFilesForCommit(e.detail.item.value)}
-				selectedItemId={selectedCommit?.sha}
-			>
-				<SelectItem slot="template" selected={selectedCommit?.sha === item.value} let:item>
-					{item.name}
-				</SelectItem>
-			</Select>
+<Dialog.Root bind:open={dialogCommitFilesOpen}>
+	<Dialog.Content size="full">
+		<Dialog.Header>
+			<Dialog.Title>Commited Files</Dialog.Title>
+		</Dialog.Header>
+		<div class="h-[520px] flex flex-col gap-4 divide-y">
+			<div class="flex flex-row gap-8">
+				<div class="flex gap-2 flex-col">
+					<Label for="currentCommit" class="text-md">Select commit</Label>
+					<Select.Root
+						portal={null}
+						selected={{ value: selectedCommit?.sha, label: selectedCommit?.summary }}
+						onSelectedChange={(sel) => sel?.value && setFilesForCommit(sel?.value)}
+					>
+						<Select.Trigger class="w-[296px]">
+							<div class="flex flex-row items-center gap-2">
+								<Icon name="commit" />
+								<Select.Value placeholder="Select a commit" />
+							</div>
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Group>
+								{#each commits.map( (commit) => ({ label: commit.summary, value: commit.sha }) ) as commit}
+									<Select.Item value={commit.value} label={commit.label}>{commit.label}</Select.Item
+									>
+								{/each}
+							</Select.Group>
+						</Select.Content>
+						<Select.Input name="currentCommit" />
+					</Select.Root>
+				</div>
+				{#if selectedCommit}
+					<Alert.Root>
+						<Alert.Title>{selectedCommit.summary}</Alert.Title>
+						<Alert.Description>
+							<div class="commit__row">
+								<div class="commit__author">
+									<AuthorIcon email={selectedCommit.author.email} />
+									<span class="commit__author-name text-base-12 truncate"
+										>{selectedCommit.author.name}</span
+									>
+								</div>
+								<span class="commit__time text-base-11">
+									<TimeAgo date={selectedCommit.author.date} />
+								</span>
+							</div>
+						</Alert.Description>
+					</Alert.Root>
+				{/if}
+			</div>
+			<div class="grid grid-cols-2 divide-x h-full pt-4">
+				<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
+				{#if $activeRepository}
+					<FilePreview {selected} {repository} setSelected={(file) => (selected = file)} />
+				{/if}
+			</div>
 		</div>
-		<div class="grid grid-cols-2 divide-x divide-light-200 dark:divide-dark-400 h-full py-4">
-			<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
-			{#if $activeRepository}
-				<FilePreview {selected} {repository} />
-			{/if}
-		</div>
-	</div>
-	<svelte:fragment slot="controls" let:close>
-		<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
-	</svelte:fragment>
-</Modal>
+	</Dialog.Content>
+</Dialog.Root>
 
 <style lang="postcss">
-	.commit {
-		display: flex;
-		flex-direction: column;
-
-		border-radius: var(--size-6);
-		background-color: var(--clr-theme-container-light);
-		border: 1px dashed var(--clr-theme-container-outline-light);
-		overflow: hidden;
-		transition: background-color var(--transition-fast);
-
-		&:not(.is-commit-open):hover {
-			border: 1px dashed
-				color-mix(in srgb, var(--clr-theme-container-outline-light), var(--darken-tint-mid));
-			background-color: color-mix(
-				in srgb,
-				var(--clr-theme-container-light),
-				var(--darken-tint-extralight)
-			);
-		}
-	}
-
 	.commit__header {
 		display: flex;
 		flex-direction: column;

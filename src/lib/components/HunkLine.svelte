@@ -1,17 +1,12 @@
 <script lang="ts">
 	import { type DiffLine, DiffLineType } from '$lib/models/diff';
 	import { create } from '$lib/components/Differ/CodeHighlighter';
-	// import { createEventDispatcher } from 'svelte';
 
 	export let line: DiffLine;
 	export let sectionType: DiffLineType;
 	export let filePath: string;
 	export let minWidth = 1.75;
-	export let selectable: boolean = false;
-	// export let selected: boolean = true;
 	export let readonly: boolean = false;
-
-	// const dispatch = createEventDispatcher<{ selected: boolean }>();
 
 	function toTokens(codeString: string): string[] {
 		function sanitize(text: string) {
@@ -31,24 +26,18 @@
 		});
 		return tokens;
 	}
-
-	$: bgColor = selectable
-		? 'bg-blue-400 border-blue-500 text-white dark:border-blue-700 dark:bg-blue-800'
-		: 'bg-light-50 border-light-300 dark:bg-dark-700 dark:border-dark-400';
 </script>
 
-<div class="code-line text-sm" role="group" on:contextmenu|preventDefault>
-	<div class="code-line__numbers-line">
-		<!-- on:click={() => selectable && dispatch('selected', !selected)} -->
+<div class="code-line text-xs" role="group" on:contextmenu|preventDefault>
+	<div class="code-line__numbers-line bg-muted">
 		<button
-			class="text-color-4 border-color-4 shrink-0 select-none border-r px-0.5 text-right text-xs {bgColor}"
+			class="text-color-4 border-color-4 shrink-0 select-none border-r px-0.5 text-right text-xs"
 			style:min-width={minWidth + 'rem'}
 		>
 			{line.oldLineNumber || ''}
 		</button>
-		<!-- on:click={() => selectable && dispatch('selected', !selected)} -->
 		<button
-			class="text-color-4 border-color-4 shrink-0 select-none border-r px-0.5 text-right text-xs {bgColor}"
+			class="text-color-4 border-color-4 shrink-0 select-none border-r px-0.5 text-right text-xs"
 			style:min-width={minWidth + 'rem'}
 		>
 			{line.newLineNumber || ''}
@@ -72,7 +61,6 @@
 		width: 100%;
 		min-width: max-content;
 		font-family: monospace;
-		background-color: var(----clr-theme-container-light);
 		white-space: pre;
 	}
 

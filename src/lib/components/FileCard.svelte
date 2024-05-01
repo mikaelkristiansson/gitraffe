@@ -1,16 +1,17 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
 	import FileCardHeader from './FileCardHeader.svelte';
 	import FileDiff from './FileDiff.svelte';
 	import ScrollableContainer from '$lib/components/ScrollableContainer.svelte';
 	import type { ChangedFile, CommittedFileChange } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
-	import { type IDiff } from '$lib/models/diff';
+	import { DiffType, type IDiff } from '$lib/models/diff';
 	import { getCommitDiff, getWorkingDirectoryDiff } from '$lib/git/diff';
+	import { computeAddedRemovedByDiff } from '$lib/utils/metrics';
 
 	export let file: ChangedFile;
 	export let isCommitedFile: boolean = false;
 	export let repository: Repository;
-	export let selectable = false;
 	export let readonly = false;
 	let diff: IDiff | null = null;
 
@@ -27,67 +28,17 @@
 	$: file && setWorkingDirectoryDiff();
 </script>
 
-<div id={`file-${file.id}`} class="file-card card">
-	<FileCardHeader {file} on:close />
+<Card.Root id={`file-${file.id}`} class="overflow-hidden flex flex-col max-h-full flex-grow">
+	<FileCardHeader
+		{file}
+		fileStats={diff?.kind === DiffType.Text
+			? computeAddedRemovedByDiff(diff)
+			: { added: 0, removed: 0 }}
+		on:close
+	/>
 	<ScrollableContainer wide>
 		{#if diff}
-			<FileDiff filePath={file.path} {readonly} {diff} {selectable} />
+			<FileDiff filePath={file.path} {readonly} {diff} />
 		{/if}
 	</ScrollableContainer>
-</div>
-
-<div class="divider-line"></div>
-
-<style lang="postcss">
-	.divider-line {
-		position: absolute;
-		top: 0;
-		right: 0;
-		width: 1px;
-		height: 100%;
-
-		/* background-color: red; */
-		/* background-color: var(--clr-theme-container-outline-light); */
-
-		&:after {
-			pointer-events: none;
-			content: '';
-			position: absolute;
-			top: 0;
-			right: 50%;
-			transform: translateX(50%);
-			width: 1px;
-			height: 100%;
-		}
-	}
-
-	.file-card {
-		background: var(--clr-theme-container-light);
-		overflow: hidden;
-		display: flex;
-		flex-direction: column;
-		max-height: 100%;
-		flex-grow: 1;
-	}
-
-	@keyframes wiggle {
-		0% {
-			transform: rotate(0deg);
-		}
-		40% {
-			transform: rotate(0deg);
-		}
-		60% {
-			transform: rotate(2deg);
-		}
-		80% {
-			transform: rotate(-2deg);
-		}
-		100% {
-			transform: rotate(0deg);
-		}
-	}
-	:global(.wiggle) {
-		animation: wiggle 0.5s infinite;
-	}
-</style>
+</Card.Root>

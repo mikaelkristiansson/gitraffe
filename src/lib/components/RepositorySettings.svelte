@@ -53,7 +53,6 @@
 {:else}
 	<section class="content-wrapper">
 		<div class="content">
-			<h1 class="title text-head-24">Repository settings</h1>
 			<!-- <KeysForm project={project$} /> -->
 			<SectionCard>
 				<svelte:fragment slot="title">Remove repository</svelte:fragment>

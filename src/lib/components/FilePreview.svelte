@@ -5,8 +5,10 @@
 	import { slide } from 'svelte/transition';
 	import FileCard from './FileCard.svelte';
 	import { quintOut } from 'svelte/easing';
+	import type { SetSelected } from '$lib/types';
 
 	export let selected: ChangedFile | undefined;
+	export let setSelected: SetSelected;
 	export let repository: Repository;
 </script>
 
@@ -18,14 +20,14 @@
 				isCommitedFile={true}
 				{repository}
 				readonly={selected.status.kind !== 'Conflicted'}
-				selectable={false}
 				on:close={() => {
 					selected = undefined;
+					setSelected(undefined);
 				}}
 			/>
 		</div>
 	{:else}
-		<div class="no-selected">
+		<div class="no-selected text-card-foreground/30">
 			{@html noSelectSvg}
 			<h2 class="text-base-body-13">No selected file</h2>
 		</div>
@@ -43,7 +45,6 @@
 		flex-grow: 1;
 		flex-direction: column;
 		align-items: center;
-		color: var(--clr-theme-scale-ntrl-60);
 		text-align: center;
 		justify-content: center;
 		height: 100%;

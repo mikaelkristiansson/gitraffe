@@ -23,7 +23,8 @@ function createBranches() {
 				if (
 					prevBranches &&
 					branches.length === prevBranches.length &&
-					JSON.stringify(branches) === JSON.stringify(prevBranches)
+					prevBranches.every((branch, index) => branch.name === branches[index].name)
+					// JSON.stringify(branches) === JSON.stringify(prevBranches)
 				) {
 					return prevBranches;
 				}
