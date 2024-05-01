@@ -36,6 +36,7 @@ type Props = ButtonPrimitive.Props & {
 	size?: Size;
 	icon?: keyof typeof iconsJson;
 	loading?: boolean;
+	vertical?: boolean;
 };
 
 type Events = ButtonPrimitive.Events;

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Badge } from '$lib/components/ui/badge';
 	import ActiveBranchStatus from './ActiveBranchStatus.svelte';
-	import Tag from './Tag.svelte';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
@@ -10,7 +10,6 @@
 	import type { Persisted } from '$lib/persisted';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Repository } from '$lib/models/repository';
-	import Badge from './Badge.svelte';
 	import { Branch } from '$lib/models/branch';
 	import { getRemotes } from '$lib/git/remote';
 	import { findDefaultRemote } from '$lib/utils/find-default-remote';
@@ -126,13 +125,8 @@
 			<div class="header__remote-branch">
 				<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
 				{#if branch.doConflictedFilesExist}
-					<Tag
-						icon="locked-small"
-						color="warning"
-						help="Applying this branch will add merge conflict markers that you will have to resolve"
-					>
-						Conflict
-					</Tag>
+					<!-- help="Applying this branch will add merge conflict markers that you will have to resolve" -->
+					<Badge icon="locked-small" variant="destructive">Conflict</Badge>
 				{/if}
 			</div>
 			<div class="flex flex-1 justify-evenly">
@@ -144,7 +138,9 @@
 						loading={isPulling}
 						on:click={pullBranch}
 					>
-						Pull <Badge class="ml-1" count={branch.branchAheadBehind?.behind || 0} />
+						Pull <Badge size="sm" variant="secondary" class="ml-1"
+							>{branch.branchAheadBehind?.behind || 0}</Badge
+						>
 						<Icon name="pull-small" size={14} />
 					</Button>
 				</div>
@@ -161,7 +157,9 @@
 						>
 							<span>⌘</span>P
 						</kbd>
-						Push <Badge class="ml-1" count={branch.branchAheadBehind?.ahead || 0} />
+						Push <Badge size="sm" variant="secondary" class="ml-1"
+							>{branch.branchAheadBehind?.ahead || 0}</Badge
+						>
 						<Icon name="push-small" size={14} />
 					</Button>
 				</div>
@@ -275,7 +273,7 @@
 	}
 
 	.header__remote-branch {
-		color: var(--clr-theme-scale-ntrl-50);
+		/* color: var(--clr-theme-scale-ntrl-50); */
 		display: flex;
 		gap: var(--size-4);
 		justify-content: start;

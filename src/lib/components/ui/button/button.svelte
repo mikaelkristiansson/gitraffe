@@ -13,21 +13,27 @@
 	export let builders: $$Props['builders'] = [];
 	export let icon: $$Props['icon'] = undefined;
 	export let loading = false;
+	export let vertical = false;
 	export { className as class };
 </script>
 
 <ButtonPrimitive.Root
 	{builders}
-	class={cn(buttonVariants({ variant, size, className }))}
+	class={cn(
+		buttonVariants({ variant, size, className }),
+		vertical && 'flex flex-col gap-1 rotate-180 h-max w-2 px-3 py-2'
+	)}
 	type="button"
 	{...$$restProps}
 	on:click
 	on:keydown
 >
-	<slot />
+	<span class={cn(vertical && '[writing-mode:vertical-lr]')}>
+		<slot />
+	</span>
 	{#if icon && !loading}
-		<Icon name={icon} />
+		<Icon name={icon} class={cn(vertical && 'rotate-90')} />
 	{:else if loading}
-		<Icon name="spinner" />
+		<Icon name="spinner" class={cn(vertical && 'rotate-90')} />
 	{/if}
 </ButtonPrimitive.Root>
