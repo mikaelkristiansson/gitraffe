@@ -13,7 +13,7 @@ export const badgeVariants = tv({
 		},
 		size: {
 			default: 'text-xs',
-			sm: 'text-[0.66rem] px-1.5 py-0',
+			sm: 'text-[0.66rem] px-1.5 py-0 h-4',
 			lg: 'text-sm'
 		}
 	},

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Dialog from './ui/dialog';
-	import { dropGitfoxStashEntry, getStashedFiles, popStashEntry } from '$lib/git/stash';
+	import { dropGitraffeStashEntry, getStashedFiles, popStashEntry } from '$lib/git/stash';
 	import { StashedChangesLoadStates, type IStashEntry } from '$lib/models/stash-entry';
 	import { activeRepository } from '$lib/stores/repository';
 	import { onMount } from 'svelte';
@@ -51,7 +51,7 @@
 	const onDiscardClick = async () => {
 		try {
 			if ($activeRepository) {
-				await dropGitfoxStashEntry($activeRepository, $persistedStash.stashSha);
+				await dropGitraffeStashEntry($activeRepository, $persistedStash.stashSha);
 				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
 				dialogStashFilesOpen = false;
 				success('Stash discarded');

@@ -35,8 +35,5 @@
 			<Dialog.Title>Repository settings</Dialog.Title>
 		</Dialog.Header>
 		<RepositorySettings {repository} />
-		<Dialog.Footer>
-			<Button variant="outline" on:click={() => (dialogSettingsOpen = false)}>Cancel</Button>
-		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

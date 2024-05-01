@@ -8,6 +8,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import HandleBranchName from './HandleBranchName.svelte';
 
 	export let count: number | string | undefined;
 	export let repository: Repository;
@@ -15,10 +16,7 @@
 	let dialogOpen = false;
 	let form: HTMLFormElement;
 
-	const createNewBranch = async (e: Event) => {
-		e?.preventDefault();
-		const formData = new FormData(form as HTMLFormElement);
-		const branchName = formData.get('name') as string;
+	const createNewBranch = async (branchName: string) => {
 		const promise = createBranch(repository, branchName, null)
 			.then(async () => {
 				await allBranches.fetch(repository, {
@@ -50,22 +48,7 @@
 		<Button variant="outline" icon="plus-small" on:click={() => (dialogOpen = true)}
 			>Create branch</Button
 		>
-		<Dialog.Root bind:open={dialogOpen}>
-			<Dialog.Content size="sm">
-				<form bind:this={form} on:submit={createNewBranch} class="grid gap-6">
-					<Dialog.Header>
-						<Dialog.Title>Create New Branch</Dialog.Title>
-					</Dialog.Header>
-					<div class="flex w-full flex-col gap-1.5">
-						<Label for="name">Branch name</Label>
-						<Input type="text" initialFocus id="name" name="name" placeholder="Enter branch name" />
-					</div>
-					<Dialog.Footer>
-						<Button variant="outline" on:click={() => (dialogOpen = false)}>Cancel</Button>
-						<Button type="submit">Create</Button>
-					</Dialog.Footer>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
 	</div>
 </div>
+
+<HandleBranchName bind:dialogOpen onSubmit={createNewBranch} submitText="Create" />

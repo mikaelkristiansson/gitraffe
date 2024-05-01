@@ -1,6 +1,6 @@
 <script lang="ts">
 	import SyncButton from './SyncButton.svelte';
-	import Badge from './Badge.svelte';
+	import { Badge } from '$lib/components/ui/badge';
 	import Icon from '$lib/components/Icon.svelte';
 	import { tooltip } from '$lib/utils/tooltip';
 	import { defaultBranch } from '$lib/stores/branch';
@@ -22,12 +22,12 @@
 	});
 </script>
 
-<div use:tooltip={isNavCollapsed ? 'Base' : ''} class="base-branch-card">
+<div use:tooltip={isNavCollapsed ? 'Base' : ''} class="relative flex rounded-md gap-2 p-2 pr-0">
 	{#if isNavCollapsed}
 		{#if (base?.aheadBehind.behind || 0) > 0}
-			<div class="small-count-badge">
-				<span class="text-base-9 text-bold">{base?.aheadBehind.behind || 0}</span>
-			</div>
+			<Badge size="sm" variant="secondary"
+				><span class="text-bold">{base?.aheadBehind.behind || 0}</span></Badge
+			>
 		{/if}
 	{/if}
 	<img class="icon" src="/images/domain-icons/trunk.svg" alt="" />
@@ -38,7 +38,9 @@
 				<div class="flex gap-1">
 					<span class="text-base-14 text-semibold trunk-label">Base</span>
 					{#if (base?.aheadBehind.behind || 0) > 0}
-						<Badge count={base?.aheadBehind.behind || 0} help="Unmerged upstream commits" />
+						<Badge size="sm" variant="secondary"
+							><span class="text-bold">{base?.aheadBehind.behind || 0}</span></Badge
+						>
 					{/if}
 				</div>
 				<SyncButton {repository} />
@@ -52,15 +54,6 @@
 </div>
 
 <style lang="postcss">
-	.base-branch-card {
-		position: relative;
-		display: flex;
-		gap: var(--size-10);
-		padding: var(--size-10);
-		border-radius: var(--radius-m);
-		transition: background-color var(--transition-fast);
-	}
-
 	.icon {
 		border-radius: var(--radius-s);
 		height: var(--size-20);
@@ -73,34 +66,16 @@
 		gap: var(--size-8);
 		flex-grow: 1;
 	}
-	.trunk-label {
-		color: var(--clr-theme-scale-ntrl-0);
-	}
+
 	.row_1 {
 		display: flex;
 		gap: var(--size-6);
 		align-items: center;
 		justify-content: space-between;
-		color: var(--clr-theme-scale-ntrl-10);
 	}
 	.row_2 {
 		display: flex;
 		align-items: center;
 		gap: var(--size-4);
-		color: var(--clr-theme-scale-ntrl-40);
-	}
-	.small-count-badge {
-		position: absolute;
-		top: 10%;
-		right: 10%;
-
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: var(--size-2);
-		min-width: var(--size-14);
-		background-color: var(--clr-theme-err-element);
-		color: var(--clr-theme-scale-ntrl-100);
-		border-radius: var(--radius-m);
 	}
 </style>

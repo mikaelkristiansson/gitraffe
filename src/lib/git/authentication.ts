@@ -16,8 +16,8 @@ export function envForAuthentication(auth: IGitAccount | null): object {
 
 	return {
 		...env,
-		GITFOX_USERNAME: auth.login,
-		GITFOX_ENDPOINT: auth.endpoint
+		GITRAFFE_USERNAME: auth.login,
+		GITRAFFE_ENDPOINT: auth.endpoint
 	};
 }
 

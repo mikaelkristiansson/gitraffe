@@ -12,6 +12,7 @@
 	export let size: $$Props['size'] = 'default';
 	export let builders: $$Props['builders'] = [];
 	export let icon: $$Props['icon'] = undefined;
+	export let iconPosition: $$Props['iconPosition'] = 'right';
 	export let loading = false;
 	export let vertical = false;
 	export { className as class };
@@ -21,7 +22,8 @@
 	{builders}
 	class={cn(
 		buttonVariants({ variant, size, className }),
-		vertical && 'flex flex-col gap-1 rotate-180 h-max w-2 px-3 py-2'
+		vertical && 'flex flex-col gap-1 rotate-180 h-max w-2 px-3 py-2',
+		iconPosition === 'left' && 'flex-row-reverse gap-1'
 	)}
 	type="button"
 	{...$$restProps}

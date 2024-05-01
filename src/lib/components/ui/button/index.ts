@@ -35,6 +35,7 @@ type Props = ButtonPrimitive.Props & {
 	variant?: Variant;
 	size?: Size;
 	icon?: keyof typeof iconsJson;
+	iconPosition?: 'left' | 'right';
 	loading?: boolean;
 	vertical?: boolean;
 };
