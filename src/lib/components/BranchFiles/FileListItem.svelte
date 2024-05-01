@@ -52,7 +52,7 @@
 		/>
 	{/if}
 	<ContextMenu.Root>
-		<ContextMenu.Trigger class="w-full">
+		<ContextMenu.Trigger class="max-w-full flex flex-1 overflow-hidden">
 			<div
 				class={cn(
 					'file-list-item hover:bg-muted/80',
@@ -164,16 +164,6 @@
 		user-select: none;
 		outline: none;
 		margin-bottom: var(--size-2);
-		/* transition: background-color var(--transition-fast);
-		background: var(--clr-theme-container-light); */
-		/* &:hover {
-			transition: none;
-			background-color: color-mix(
-				in srgb,
-				var(--clr-theme-container-light),
-				var(--darken-tint-light)
-			);
-		} */
 	}
 
 	.info-wrap {
@@ -197,7 +187,6 @@
 		width: var(--size-12);
 	}
 	.name {
-		/* color: var(--clr-theme-scale-ntrl-0); */
 		white-space: nowrap;
 		flex-shrink: 0;
 		text-overflow: ellipsis;
@@ -205,7 +194,6 @@
 		line-height: 120%;
 	}
 	.path {
-		/* color: var(--clr-theme-scale-ntrl-0); */
 		line-height: 120%;
 		flex-shrink: 1;
 		white-space: nowrap;

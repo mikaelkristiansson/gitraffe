@@ -14,7 +14,6 @@
 		persistedCommitMessage
 	} from '$lib/config/config';
 	// import { getContextByClass } from '$lib/utils/context';
-	import * as toasts from '$lib/utils/toasts';
 	import { tooltip } from '$lib/utils/tooltip';
 	// import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
@@ -29,6 +28,7 @@
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { Button } from './ui/button';
 	import type { SetSelected } from '$lib/types';
+	import { toast } from 'svelte-sonner';
 
 	// const aiService = getContextByClass(AIService);
 
@@ -90,11 +90,11 @@
 					commitStore.set(commits);
 				}
 				setSelected(undefined);
-				toasts.success('Changes committed');
+				toast.success('Changes committed');
 			}
 			$commitMessage = '';
 		} catch (e) {
-			toasts.error('Failed to commit changes');
+			toast.error('Failed to commit changes');
 		} finally {
 			isCommitting = false;
 		}
