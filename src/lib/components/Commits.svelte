@@ -128,7 +128,10 @@
 						<Select.Trigger class="w-[296px]">
 							<div class="flex flex-row items-center gap-2">
 								<Icon name="commit" />
-								<Select.Value placeholder="Select a commit" />
+								<Select.Value
+									placeholder="Select a commit"
+									class="text-left max-w-[90%] whitespace-nowrap flex-shrink-0 text-ellipsis overflow-hidden leading-[120%]"
+								/>
 							</div>
 						</Select.Trigger>
 						<Select.Content>

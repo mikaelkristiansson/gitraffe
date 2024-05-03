@@ -13,7 +13,6 @@
 	export let repository: Repository;
 	export let branch: BranchModel;
 	export let dialogDeleteOpen = false;
-	console.log('🚀 ~ dialogDeleteOpen:', dialogDeleteOpen);
 </script>
 
 <Dialog.Root bind:open={dialogDeleteOpen}>
