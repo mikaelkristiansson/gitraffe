@@ -6,7 +6,6 @@
 	import { onMount } from 'svelte';
 	import Icon from './Icon.svelte';
 	import type { ChangedFile } from '$lib/models/status';
-	import { error, success } from '$lib/utils/toasts';
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { activeBranch } from '$lib/stores/branch';
 	import { writable } from 'svelte/store';
@@ -15,6 +14,7 @@
 	import BranchFiles from './BranchFiles/BranchFiles.svelte';
 	import Tag from './Tag.svelte';
 	import { Button } from './ui/button';
+	import { toast } from 'svelte-sonner';
 
 	export let stash: IStashEntry;
 
@@ -54,13 +54,13 @@
 				await dropGitraffeStashEntry($activeRepository, $persistedStash.stashSha);
 				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
 				dialogStashFilesOpen = false;
-				success('Stash discarded');
+				toast.success('Stash discarded');
 				await updateCurrentBranch($activeRepository, $activeBranch);
 			}
 		} catch (e) {
 			console.error(e);
 			dialogStashFilesOpen = false;
-			error('Stash could not be discarded');
+			toast.error('Stash could not be discarded');
 		}
 	};
 
@@ -70,13 +70,13 @@
 				await popStashEntry($activeRepository, $persistedStash.stashSha);
 				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
 				dialogStashFilesOpen = false;
-				success('Stash restored');
+				toast.success('Stash restored');
 				await updateCurrentBranch($activeRepository, $activeBranch);
 			}
 		} catch (e) {
 			console.error(e);
 			dialogStashFilesOpen = false;
-			error('Stash could not be restored');
+			toast.error('Stash could not be restored');
 		}
 	};
 
@@ -86,7 +86,7 @@
 </script>
 
 <Tag color="warning" size="medium" wide clickable on:click={() => (dialogStashFilesOpen = true)}>
-	<span class="text-base-12 text-semibold">Stashed changes</span>
+	<span class="text-sm font-semibold">Stashed changes</span>
 	<Icon name="pr-draft" />
 </Tag>
 
@@ -113,6 +113,7 @@
 			{#if $activeRepository}
 				<FilePreview
 					{selected}
+					isCommitedFile={true}
 					repository={$activeRepository}
 					setSelected={(file) => (selected = file)}
 				/>

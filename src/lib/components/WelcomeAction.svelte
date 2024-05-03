@@ -18,7 +18,7 @@
 		<slot name="icon" />
 	</div>
 	<div class="action__content">
-		<div class="text-lg text-bold">{title}</div>
+		<div class="text-lg font-bold">{title}</div>
 		<div class="text-base max-w-[80%]">
 			<slot name="message" />
 		</div>

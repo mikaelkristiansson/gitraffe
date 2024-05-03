@@ -4,7 +4,6 @@
 	import type { Repository } from '$lib/models/repository';
 	import * as ContextMenu from './ui/context-menu';
 	import Icon from './Icon.svelte';
-	import { Button } from './ui/button';
 	import Branch from './Branch.svelte';
 	import DeleteBranch from './DeleteBranch.svelte';
 	import HandleBranchName from './HandleBranchName.svelte';

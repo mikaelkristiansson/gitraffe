@@ -127,7 +127,7 @@
 						{#each filteredGroups$ as group}
 							{#if group.items.length > 0}
 								<div class="group__header">
-									<span class="capitalize text-base-12 text-semibold">{group.identifier}</span>
+									<span class="capitalize text-sm font-semibold">{group.identifier}</span>
 								</div>
 								{#each group.items as item}
 									<BranchItem
@@ -147,7 +147,7 @@
 			<div class="w-32">
 				{@html noBranchesSvg}
 			</div>
-			<span class="text-center text-base-body-14 text-semibold text-gray-400 dark:text-gray-600"
+			<span class="text-center text-base font-semibold text-gray-400 dark:text-gray-600"
 				>You have no branches</span
 			>
 		</div>

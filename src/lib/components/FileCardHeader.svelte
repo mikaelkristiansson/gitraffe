@@ -30,9 +30,9 @@
 	<div class="header__inner">
 		<img src={getVSIFileIcon(file.path)} alt="js" width="13" height="13" class="icon" />
 		<div class="header__info truncate">
-			<div class="header__filetitle text-base-13 truncate">
-				<span class="header__filename">{fileTitle.filename}</span>
-				<span class="header__filepath">{fileTitle.path}</span>
+			<div class="header__filetitle text-xs truncate">
+				<span class="leading-[120%]">{fileTitle.filename}</span>
+				<span class="text-muted-foreground/60">{fileTitle.path}</span>
 			</div>
 			<div class="header__tags">
 				{#if file.status.kind === 'Conflicted'}
@@ -72,38 +72,36 @@
 	.header__inner {
 		display: flex;
 		flex-grow: 1;
-		gap: var(--size-6);
+		/* gap: var(--size-6); */
+		@apply gap-2;
 		overflow: hidden;
 	}
 	.header__info {
 		display: flex;
 		flex-direction: column;
-		gap: var(--size-8);
+		/* gap: var(--size-8); */
+		@apply gap-2;
 		width: 100%;
 	}
 	.header__tags {
 		display: flex;
-		gap: var(--size-6);
+		/* gap: var(--size-6); */
+		@apply gap-1;
 	}
 	.header__tag-group {
 		display: flex;
-		gap: var(--size-2);
+		/* gap: var(--size-2); */
+		@apply gap-1;
 	}
 	.header__filetitle {
 		width: 100%;
 		user-select: text;
 	}
-	.header__filename {
-		/* color: var(--clr-theme-scale-ntrl-0); */
-		line-height: 120%;
-	}
-	.header__filepath {
-		/* color: var(--clr-theme-scale-ntrl-50); */
-	}
 	.icon {
 		flex-shrink: 0;
-		width: var(--size-14);
-		height: var(--size-14);
-		margin-top: calc(var(--size-2) / 2);
+		@apply w-3 h-3 mt-0.5;
+		/* width: var(--size-14);
+		height: var(--size-14); */
+		/* margin-top: calc(var(--size-2) / 2); */
 	}
 </style>

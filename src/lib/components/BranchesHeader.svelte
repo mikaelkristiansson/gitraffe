@@ -1,20 +1,16 @@
 <script lang="ts">
-	import Badge from '$lib/components/Badge.svelte';
 	import { createBranch } from '$lib/git/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { allBranches, defaultBranch } from '$lib/stores/branch';
 	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import HandleBranchName from './HandleBranchName.svelte';
+	import { Badge } from './ui/badge';
 
 	export let count: number | string | undefined;
 	export let repository: Repository;
 
 	let dialogOpen = false;
-	let form: HTMLFormElement;
 
 	const createNewBranch = async (branchName: string) => {
 		const promise = createBranch(repository, branchName, null)
@@ -38,10 +34,10 @@
 
 <div class="header flex items-center justify-between w-full gap-2 px-4 pt-4 pb-3">
 	<div class="flex items-center gap-1">
-		<span class="text-base-14 text-semibold">Branches</span>
+		<span class="text-base font-semibold">Branches</span>
 
 		{#if count !== undefined}
-			<Badge {count} />
+			<Badge size="sm" variant="secondary">{count}</Badge>
 		{/if}
 	</div>
 	<div class="relative">

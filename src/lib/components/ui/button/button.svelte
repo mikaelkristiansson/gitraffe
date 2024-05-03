@@ -16,6 +16,7 @@
 	export let loading = false;
 	export let vertical = false;
 	export { className as class };
+	const SLOTS = $$props.$$slots;
 </script>
 
 <ButtonPrimitive.Root
@@ -23,16 +24,20 @@
 	class={cn(
 		buttonVariants({ variant, size, className }),
 		vertical && 'flex flex-col gap-1 rotate-180 h-max w-2 px-3 py-2',
-		iconPosition === 'left' && 'flex-row-reverse gap-1'
+		iconPosition === 'left' && 'flex-row-reverse gap-1',
+		icon && SLOTS && 'gap-1',
+		'overflow-hidden'
 	)}
 	type="button"
 	{...$$restProps}
 	on:click
 	on:keydown
 >
-	<span class={cn(vertical && '[writing-mode:vertical-lr]')}>
-		<slot />
-	</span>
+	{#if SLOTS}
+		<span class={cn('overflow-hidden text-ellipsis', vertical && '[writing-mode:vertical-lr]')}>
+			<slot />
+		</span>
+	{/if}
 	{#if icon && !loading}
 		<Icon name={icon} class={cn(vertical && 'rotate-90')} />
 	{:else if loading}

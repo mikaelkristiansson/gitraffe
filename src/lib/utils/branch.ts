@@ -21,9 +21,9 @@ import type { WorkingDirectoryStatus } from '$lib/models/status';
 import { updateCurrentBranch } from '$lib/store-updater';
 import { allBranches } from '$lib/stores/branch';
 import { stashStore } from '$lib/stores/stash';
+import { toast } from 'svelte-sonner';
 import { performFailableOperation } from './failable-operation';
 import { getUntrackedFiles } from './status';
-import { error, success } from './toasts';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -505,7 +505,7 @@ export const pushActiveBranch = async (
 	activeBranch: Branch
 ) => {
 	if (status.branchAheadBehind?.behind) {
-		error('Cannot push while branch is behind origin');
+		toast.error('Cannot push while branch is behind origin');
 		return;
 	}
 	if (status.branchAheadBehind?.ahead === 0) {
@@ -526,10 +526,10 @@ export const pushActiveBranch = async (
 			allBranches.updateBranch(newBranch);
 			updateCurrentBranch(repository, newBranch);
 		}
-		success('Pushed to origin');
+		toast.success('Pushed to origin');
 		return true;
 	} catch (e) {
-		error('Failed to push to origin');
+		toast.error('Failed to push to origin');
 		return false;
 	}
 };

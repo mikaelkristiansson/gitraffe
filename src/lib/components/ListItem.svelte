@@ -11,7 +11,7 @@
 </script>
 
 <button disabled={selected} class="button" class:selected on:click={() => dispatch('click')}>
-	<div class="label text-base-14 text-bold">
+	<div class="text-ellipsis overflow-hidden text-sm font-semibold">
 		<slot />
 	</div>
 	{#if icon || selected}
@@ -29,33 +29,26 @@
 	.button {
 		display: flex;
 		align-items: center;
-		color: var(--clr-theme-scale-ntrl-10);
 		font-weight: 700;
-		padding: var(--size-10) var(--size-10);
+		@apply p-2 rounded-md;
 		justify-content: space-between;
-		border-radius: var(--radius-m);
 		width: 100%;
-		transition: background-color var(--transition-fast);
+		transition: background-color 0.3s;
 
 		&:hover:enabled,
 		&:focus:enabled {
-			background-color: color-mix(in srgb, transparent, var(--darken-tint-light));
+			@apply bg-muted;
 			& .icon {
-				color: var(--clr-theme-scale-ntrl-40);
+				@apply text-secondary-foreground;
 			}
 		}
 		&:disabled {
-			background-color: color-mix(in srgb, transparent, var(--darken-tint-light));
-			color: var(--clr-theme-scale-ntrl-50);
+			@apply bg-muted;
+			@apply text-muted-foreground;
 		}
 		& .icon {
 			display: flex;
-			color: var(--clr-theme-scale-ntrl-50);
-		}
-		& .label {
-			height: var(--size-16);
-			text-overflow: ellipsis;
-			overflow: hidden;
+			@apply text-muted-foreground;
 		}
 	}
 </style>

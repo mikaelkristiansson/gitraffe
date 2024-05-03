@@ -5,8 +5,8 @@
 	import type { Repository } from '$lib/models/repository';
 	import Icon from './Icon.svelte';
 	import * as Dialog from './ui/dialog';
+	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from './ui/button';
-	import InfoMessage from './InfoMessage.svelte';
 	import { deleteBranch } from '$lib/utils/branch';
 	import { toast } from 'svelte-sonner';
 
@@ -33,19 +33,22 @@
 				</div>
 			</div>
 			{#if branch?.name === $workingBranch?.currentBranch && $workingBranch?.workingDirectory.files.length !== 0}
-				<InfoMessage>
-					You have changes on the branch that are not committed. Deleting this branch will bring
-					these changes to next branch.
-					<ul class="file-list">
-						{#if $workingBranch?.workingDirectory}
-							{#each $workingBranch?.workingDirectory.files as file}
-								<li>
-									<code class="whitespace-pre-wrap break-words">{file.path}</code>
-								</li>
-							{/each}
-						{/if}
-					</ul>
-				</InfoMessage>
+				<Alert.Root>
+					<Alert.Title>Uncommitted changes</Alert.Title>
+					<Alert.Description
+						>You have changes on the branch that are not committed. Deleting this branch will bring
+						these changes to next branch.
+						<ul class="file-list">
+							{#if $workingBranch?.workingDirectory}
+								{#each $workingBranch?.workingDirectory.files as file}
+									<li>
+										<code class="whitespace-pre-wrap break-words">{file.path}</code>
+									</li>
+								{/each}
+							{/if}
+						</ul></Alert.Description
+					>
+				</Alert.Root>
 			{/if}
 		</div>
 		<Dialog.Footer>

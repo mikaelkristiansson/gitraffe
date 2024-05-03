@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { DiffHunk } from '$lib/models/diff';
-	import Button from './Button.svelte';
 	import HunkLine from './HunkLine.svelte';
 	import Scrollbar from './Scrollbar.svelte';
+	import { Button } from './ui/button';
 
 	export let viewport: HTMLDivElement | undefined = undefined;
 	export let contents: HTMLDivElement | undefined = undefined;
@@ -26,11 +26,9 @@
 	>
 		<div bind:this={contents} class="hunk__bg-stretch">
 			{#if linesModified > 1000 && !alwaysShow}
-				<div class="flex flex-col p-1">
+				<div class="flex flex-col p-1 text-sm gap-2">
 					Change hidden as large diffs may slow down the UI
-					<Button kind="outlined" color="neutral" on:click={() => (alwaysShow = true)}
-						>show anyways</Button
-					>
+					<Button variant="outline" on:click={() => (alwaysShow = true)}>show anyways</Button>
 				</div>
 			{:else}
 				{@const hunk = section}
@@ -48,7 +46,8 @@
 		display: flex;
 		flex-direction: column;
 		position: relative;
-		border-radius: var(--radius-s);
+		/* border-radius: var(--radius-s); */
+		@apply rounded-sm;
 		overflow: hidden;
 	}
 
@@ -57,9 +56,9 @@
 		flex-direction: column;
 		overflow-x: auto;
 		user-select: text;
-
+		@apply rounded-sm border bg-card;
 		/* background: var(--clr-theme-container-light); */
-		border-radius: var(--radius-s);
+		/* border-radius: var(--radius-s); */
 		/* border: 1px solid var(--clr-theme-container-outline-light); */
 		/* transition: border-color var(--transition-fast); */
 	}

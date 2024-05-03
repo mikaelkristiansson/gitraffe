@@ -75,22 +75,17 @@
 		top: 100%;
 		z-index: 50;
 		width: 100%;
-		margin-top: var(--size-6);
-		border-radius: var(--m, 6px);
-		border: 1px solid var(--clr-theme-container-outline-light);
-		background: var(--clr-theme-container-light);
+		@apply bg-card border border-border mt-1 rounded-md;
 		/* shadow/s */
 		box-shadow: 0px 7px 14px 0px rgba(0, 0, 0, 0.1);
 	}
 	.popup__actions {
-		padding: var(--size-8);
-		border-top: 1px solid var(--clr-theme-scale-ntrl-70);
+		@apply border-t p-2;
 	}
 	.popup__projects {
 		display: flex;
 		flex-direction: column;
-		gap: var(--size-2);
-		padding: var(--size-8);
+		@apply p-2 gap-1;
 	}
 
 	/* MODIFIERS */

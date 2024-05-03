@@ -17,7 +17,6 @@
 	<FileListItem
 		{file}
 		{selectedFiles}
-		{files}
 		{repository}
 		showCheckbox={showCheckboxes}
 		selected={selected === file}

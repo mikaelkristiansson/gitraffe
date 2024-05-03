@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Button from './Button.svelte';
 	import RadioButton from './RadioButton.svelte';
 	import SectionCard from './SectionCard.svelte';
 	import type { Branch } from '$lib/models/branch';
@@ -9,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { activeRepository } from '$lib/stores/repository';
+	import { Button } from './ui/button';
 
 	export let branch: Branch;
 	export let href: string;
@@ -72,9 +72,11 @@
 			</form>
 		</div>
 		<Dialog.Footer>
-			<Button kind="outlined" color="neutral" on:click={close}>Cancel</Button>
+			<Button variant="outline" color="neutral" on:click={() => (dialogSwitchOpen = false)}
+				>Cancel</Button
+			>
 			<Button
-				color="error"
+				variant="destructive"
 				on:click={async () => {
 					if ($activeRepository && $workingBranch?.workingDirectory) {
 						if (selectedChangeBranchType === 'stashed') {
@@ -96,7 +98,7 @@
 						await updateCurrentBranch($activeRepository, branch$);
 						if (href) goto(href);
 					}
-					// untrackedModal.close();
+					dialogSwitchOpen = false;
 				}}
 			>
 				Confirm

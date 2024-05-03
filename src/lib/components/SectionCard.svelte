@@ -46,12 +46,12 @@
 	{#if SLOTS.title || SLOTS.caption}
 		<div class="section-card__content">
 			{#if SLOTS.title}
-				<h3 class="text-base-15 text-bold section-card__title">
+				<h3 class="text-base font-bold section-card__title">
 					<slot name="title" />
 				</h3>
 			{/if}
 			{#if SLOTS.caption}
-				<p class="text-base-body-12 section-card__text">
+				<p class="text-xs section-card__text">
 					<slot name="caption" />
 				</p>
 			{/if}

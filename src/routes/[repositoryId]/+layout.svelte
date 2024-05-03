@@ -5,9 +5,9 @@
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, updatingRepositories } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
-	import { error } from '$lib/utils/toasts';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	let repository$: Repository | null = null;
 	const unsubscribeActiveRepository = activeRepository.subscribe(async (repo) => {
@@ -66,7 +66,7 @@
 				}
 			} catch (e) {
 				console.error(e);
-				error('Failed to fetch branches');
+				toast.error('Failed to fetch branches');
 			} finally {
 				updatingRepositories.set(false);
 			}

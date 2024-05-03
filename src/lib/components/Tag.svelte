@@ -13,10 +13,8 @@
 
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import { tooltip } from '$lib/utils/tooltip';
 	import type iconsJson from '$lib/icons/icons.json';
 
-	export let help = '';
 	export let icon: keyof typeof iconsJson | undefined = undefined;
 	export let reversedDirection = false;
 	export let color: TagColor = 'light';
@@ -32,7 +30,7 @@
 </script>
 
 <div
-	class="tag text-base-11 text-semibold"
+	class="tag text-xs font-semibold"
 	class:ghost={color == 'ghost'}
 	class:neutral={color == 'neutral'}
 	class:light={color == 'light'}
@@ -56,7 +54,6 @@
 	on:contextmenu
 	role={clickable ? 'button' : undefined}
 	class:clickable
-	use:tooltip={help}
 >
 	<span class="label" class:verticalLabel={verticalOrientation} class:wide>
 		<slot />
@@ -76,18 +73,21 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		@apply py-1 px-2 rounded-md;
 		height: var(--size-control-s);
-		padding: var(--size-2) var(--size-4);
-		border-radius: var(--radius-m);
-		transition: background-color var(--transition-fast);
+		/* padding: var(--size-2) var(--size-4);
+		border-radius: var(--radius-m); */
+		transition: background-color 0.3s;
 	}
 	.tag.medium {
 		height: var(--size-control-m);
-		padding: var(--size-4) var(--size-6);
+		/* padding: var(--size-4) var(--size-6); */
+		@apply px-1 py-2;
 	}
 	.tag.large {
 		height: var(--size-control-l);
-		padding: var(--size-6) var(--size-8);
+		/* padding: var(--size-6) var(--size-8); */
+		@apply px-2 py-3;
 	}
 	.icon {
 		flex-shrink: 0;
@@ -95,7 +95,8 @@
 	.label {
 		white-space: nowrap;
 		display: inline-block;
-		padding: 0 var(--size-2);
+		/* padding: 0 var(--size-2); */
+		@apply px-0.5 py-0;
 	}
 	.clickable {
 		cursor: pointer;
@@ -142,8 +143,9 @@
 	}
 
 	.success {
-		color: var(--clr-theme-scale-succ-20);
-		background: color-mix(in srgb, var(--clr-core-succ-50), transparent 80%);
+		/* color: var(--clr-theme-scale-succ-20); */
+		@apply bg-green-200/80 text-green-700;
+		/* background: color-mix(in srgb, var(--clr-core-succ-50), transparent 80%); */
 		&:not(.not-button):hover {
 			background: color-mix(in srgb, var(--clr-core-succ-50), transparent 70%);
 		}
@@ -160,8 +162,9 @@
 	}
 
 	.error {
-		color: var(--clr-theme-scale-err-20);
-		background: color-mix(in srgb, var(--clr-core-err-50), transparent 80%);
+		@apply bg-red-200/80 text-red-700;
+		/* color: var(--clr-theme-scale-err-20);
+		background: color-mix(in srgb, var(--clr-core-err-50), transparent 80%); */
 		&:not(.not-button):hover {
 			background: color-mix(in srgb, var(--clr-core-err-50), transparent 70%);
 		}
@@ -178,8 +181,9 @@
 	}
 
 	.warning {
-		color: var(--clr-theme-scale-warn-20);
-		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%);
+		@apply bg-orange-200/80 text-orange-600;
+		/* color: var(--clr-theme-scale-warn-20);
+		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%); */
 		&:not(.not-button):hover {
 			background: color-mix(in srgb, var(--clr-core-warn-50), transparent 70%);
 		}
@@ -196,8 +200,9 @@
 	}
 
 	.purple {
-		color: var(--clr-theme-scale-purple-20);
-		background: color-mix(in srgb, var(--clr-core-purple-50), transparent 80%);
+		@apply bg-purple-200/80 text-purple-700;
+		/* color: var(--clr-theme-scale-purple-20);
+		background: color-mix(in srgb, var(--clr-core-purple-50), transparent 80%); */
 		&:not(.not-button):hover {
 			background: color-mix(in srgb, var(--clr-core-purple-50), transparent 70%);
 		}
@@ -214,8 +219,9 @@
 	}
 
 	.pop {
-		color: var(--clr-theme-scale-pop-20);
-		background: color-mix(in srgb, var(--clr-core-pop-50), transparent 80%);
+		@apply bg-cyan-200/80 text-cyan-700;
+		/* color: var(--clr-theme-scale-pop-20);
+		background: color-mix(in srgb, var(--clr-core-pop-50), transparent 80%); */
 		&:not(.not-button):hover {
 			background: color-mix(in srgb, var(--clr-core-pop-50), transparent 70%);
 		}

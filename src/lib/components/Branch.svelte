@@ -4,13 +4,13 @@
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { workingBranch } from '$lib/stores/branch';
 	import { toast } from 'svelte-sonner';
-	import BranchIcon from './BranchIcon.svelte';
 	import AheadBehind from './AheadBehind.svelte';
 	import TimeAgo from './TimeAgo.svelte';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import type { Branch } from '$lib/models/branch';
 	import type { Repository } from '$lib/models/repository';
 	import SwitchBranch from './SwitchBranch.svelte';
+	import Icon from './Icon.svelte';
 
 	export let selected = false;
 	export let repository: Repository;
@@ -20,7 +20,8 @@
 </script>
 
 <button
-	class={'flex w-full rounded-md py-3 px-2 gap-2' + (selected ? ' bg-muted/90 cursor-default' : '')}
+	class={'flex w-full rounded-md py-3 px-2 gap-2 hover:bg-muted/90' +
+		(selected ? ' bg-muted/90 cursor-default' : '')}
 	on:click={async () => {
 		if (selected) return;
 		if ($workingBranch?.workingDirectory.files.length === 0) {
@@ -37,16 +38,16 @@
 		}
 	}}
 >
-	<BranchIcon name={branch.remoteExists ? 'remote-branch' : 'local-branch'} />
-	<div class="branch__info flex flex-col gap-2">
-		<div class="branch__details">
-			<p class="text-base-13 branch__name">
+	<Icon name={branch.remoteExists ? 'remote' : 'local'} />
+	<div class="flex flex-col flex-grow overflow-hidden gap-1">
+		<div class="flex items-center justify-between gap-1">
+			<p class="text-sm whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]">
 				{branch.name}
 			</p>
 			<AheadBehind ahead={branch.aheadBehind.ahead} behind={branch.aheadBehind.behind} />
 		</div>
-		<div class="branch__details">
-			<span class="branch__author text-base-11 details truncate">
+		<div class="flex items-center justify-between gap-1">
+			<span class="text-gray-400 text-[0.7rem] details truncate">
 				<TimeAgo date={branch.tip.author.date} />
 				{#if branch.tip.author}
 					by {branch.tip.author?.name ?? 'unknown'}
@@ -59,31 +60,3 @@
 	</div>
 </button>
 <SwitchBranch {href} {branch} bind:dialogSwitchOpen />
-
-<style lang="postcss">
-	.branch__info {
-		display: flex;
-		flex-grow: 1;
-		flex-direction: column;
-		gap: var(--size-6);
-		overflow: hidden;
-	}
-
-	.branch__details {
-		display: flex;
-		align-items: center;
-		gap: var(--size-6);
-		justify-content: space-between;
-	}
-
-	.branch__name {
-		white-space: nowrap;
-		overflow-x: hidden;
-		text-overflow: ellipsis;
-		line-height: 120%;
-	}
-
-	.branch__author {
-		color: var(--clr-theme-scale-ntrl-50);
-	}
-</style>

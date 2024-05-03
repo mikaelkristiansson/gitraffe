@@ -3,7 +3,7 @@
 	import ProjectsPopup from './ProjectsPopup.svelte';
 	import { clickOutside } from '$lib/utils/clickOutside';
 	import Icon from '$lib/components/Icon.svelte';
-	import { tooltip } from '$lib/utils/tooltip';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { Repository } from '$lib/models/repository';
 
 	export let repository: Repository;
@@ -25,40 +25,46 @@
 		enabled: visible
 	}}
 >
-	<button
-		use:tooltip={isNavCollapsed ? name : ''}
-		class="button"
-		on:mousedown={(e) => {
-			visible = popup.toggle();
-			e.preventDefault();
-		}}
-	>
-		<ProjectAvatar {name} />
-		{#if !isNavCollapsed}
-			<span class="button__label text-base-14 text-bold">{name}</span>
-			<div class="button__icon">
-				<Icon name="select-chevron" />
-			</div>
-		{/if}
-	</button>
+	<Tooltip.Root>
+		<Tooltip.Trigger asChild={!isNavCollapsed} class="cursor-auto w-full">
+			<button
+				class="button"
+				on:mousedown={(e) => {
+					visible = popup.toggle();
+					e.preventDefault();
+				}}
+			>
+				<ProjectAvatar {name} />
+				{#if !isNavCollapsed}
+					<span class="button__label text-sm font-bold">{name}</span>
+					<div class="button__icon">
+						<Icon name="select-chevron" />
+					</div>
+				{/if}
+			</button>
+		</Tooltip.Trigger>
+		<Tooltip.Content>
+			{isNavCollapsed ? name : ''}
+		</Tooltip.Content>
+	</Tooltip.Root>
 	<ProjectsPopup bind:this={popup} {isNavCollapsed} />
 </div>
 
 <style lang="postcss">
 	.wrapper {
 		position: relative;
-		margin-bottom: var(--size-16);
+		/* margin-bottom: var(--size-16); */
+		@apply mb-4;
 		height: fit-content;
 	}
 
 	.button {
 		display: flex;
-		gap: var(--size-10);
+		/* gap: var(--size-10); */
 		width: 100%;
-		padding: var(--size-10);
-		border-radius: var(--radius-m);
-
-		background-color: var(--clr-theme-container-pale);
+		/* padding: var(--size-10); */
+		/* border-radius: var(--radius-m); */
+		@apply bg-muted/60 rounded-md p-2 gap-2;
 
 		align-items: center;
 		justify-content: space-between;
@@ -67,11 +73,7 @@
 
 		&:focus,
 		&:hover {
-			background-color: color-mix(
-				in srgb,
-				var(--clr-theme-container-light),
-				var(--clr-core-ntrl-50) 20%
-			);
+			@apply bg-muted;
 
 			& .button__icon {
 				opacity: 0.4;
@@ -81,7 +83,6 @@
 
 	.button__label {
 		flex-grow: 1;
-		color: var(--clr-theme-scale-ntrl-0);
 		text-align: left;
 		white-space: nowrap;
 		overflow: hidden;
@@ -89,7 +90,6 @@
 	}
 
 	.button__icon {
-		color: var(--clr-theme-scale-ntrl-0);
 		opacity: 0.3;
 		display: flex;
 	}

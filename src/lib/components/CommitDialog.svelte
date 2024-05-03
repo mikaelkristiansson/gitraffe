@@ -14,7 +14,6 @@
 		persistedCommitMessage
 	} from '$lib/config/config';
 	// import { getContextByClass } from '$lib/utils/context';
-	import { tooltip } from '$lib/utils/tooltip';
 	// import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
@@ -27,6 +26,7 @@
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { Button } from './ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { SetSelected } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 
@@ -129,10 +129,10 @@
 	// 		if (generatedMessage) {
 	// 			$commitMessage = generatedMessage;
 	// 		} else {
-	// 			toasts.error('Failed to generate commit message');
+	// 			toast.error('Failed to generate commit message');
 	// 		}
 	// 	} catch {
-	// 		toasts.error('Failed to generate commit message');
+	// 		toast.error('Failed to generate commit message');
 	// 	} finally {
 	// 		aiLoading = false;
 	// 	}
@@ -150,15 +150,17 @@
 	// });
 </script>
 
-<div class="commit-box" class:commit-box__expanded={$expanded}>
+<div class="flex flex-col p-3" class:commit-box__expanded={$expanded}>
 	{#if $expanded}
-		<div class="commit-box__expander" transition:slide={{ duration: 150, easing: quintOut }}>
-			<div class="commit-box__textarea-wrapper bg-input/30 rounded-sm border border-input">
+		<div class="flex flex-col mb-3" transition:slide={{ duration: 150, easing: quintOut }}>
+			<div
+				class="flex flex-col relative p-0 pb-10 gap-1 bg-input/30 rounded-sm border border-input"
+			>
 				<textarea
 					value={title}
 					placeholder="Commit summary"
 					disabled={aiLoading}
-					class="text-base-body-13 text-foreground text-semibold commit-box__textarea commit-box__textarea__title"
+					class="text-xs text-foreground font-semibold commit-box__textarea commit-box__textarea__title"
 					spellcheck="false"
 					rows="1"
 					bind:this={titleTextArea}
@@ -180,7 +182,7 @@
 						value={description}
 						disabled={aiLoading}
 						placeholder="Commit description (optional)"
-						class="text-base-body-13 text-foreground commit-box__textarea commit-box__textarea__description"
+						class="text-xs text-foreground commit-box__textarea commit-box__textarea__description"
 						spellcheck="false"
 						rows="1"
 						bind:this={descriptionTextArea}
@@ -202,24 +204,20 @@
 				{/if}
 
 				{#if title.length > 50}
-					<div
-						transition:fly={{ y: 2, duration: 150 }}
-						class="commit-box__textarea-tooltip"
-						use:tooltip={{
-							text: '50 characters or less is best. Extra info can be added in the description.',
-							delay: 200
-						}}
-					>
-						<Icon name="blitz" />
-					</div>
+					<Tooltip.Root>
+						<Tooltip.Trigger class="cursor-auto">
+							<div
+								transition:fly={{ y: 2, duration: 150 }}
+								class="absolute flex bottom-3 left-3 rounded-full p-1"
+							>
+								<Icon name="blitz" />
+							</div>
+						</Tooltip.Trigger>
+						<Tooltip.Content
+							>50 characters or less is best. Extra info can be added in the description.</Tooltip.Content
+						>
+					</Tooltip.Root>
 				{/if}
-
-				<div
-					class="commit-box__texarea-actions"
-					use:tooltip={$aiGenEnabled && aiConfigurationValid
-						? ''
-						: 'You must be logged in or have provided your own API key and have summary generation enabled to use this feature'}
-				></div>
 			</div>
 		</div>
 	{/if}
@@ -255,24 +253,12 @@
 </div>
 
 <style lang="postcss">
-	.commit-box {
-		display: flex;
-		flex-direction: column;
-		padding: var(--size-14);
-	}
-
-	.commit-box__expander {
-		display: flex;
-		flex-direction: column;
-		margin-bottom: var(--size-12);
-	}
-
 	.commit-box__textarea-wrapper {
 		display: flex;
 		position: relative;
-		padding: 0 0 var(--size-48);
+		@apply pb-10;
 		flex-direction: column;
-		gap: var(--size-4);
+		@apply gap-1;
 	}
 
 	.commit-box__textarea {
@@ -280,7 +266,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		gap: var(--size-16);
+		@apply gap-4;
 		background: none;
 		resize: none;
 		&:focus {
@@ -288,33 +274,23 @@
 		}
 	}
 
-	.commit-box__textarea-tooltip {
-		position: absolute;
-		display: flex;
-		bottom: var(--size-12);
-		left: var(--size-12);
-		padding: var(--size-2);
-		border-radius: 100%;
-	}
-
 	.commit-box__textarea__title {
-		padding: var(--size-12) var(--size-12) 0 var(--size-12);
+		@apply pt-3 px-3 pb-0;
 	}
 
 	.commit-box__textarea__description {
-		padding: 0 var(--size-12) 0 var(--size-12);
+		@apply py-0 px-3;
 	}
 
 	.commit-box__texarea-actions {
 		position: absolute;
 		display: flex;
-		right: var(--size-12);
-		bottom: var(--size-12);
+		@apply right-3 bottom-3;
 	}
 
 	.actions {
 		display: flex;
 		justify-content: right;
-		gap: var(--size-6);
+		@apply gap-2;
 	}
 </style>

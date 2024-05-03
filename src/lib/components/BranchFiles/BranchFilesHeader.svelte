@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Badge from '$lib/components/Badge.svelte';
-	import Checkbox from '$lib/components/Checkbox.svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import type { ChangedFile } from '$lib/models/status';
 	import type { Writable } from 'svelte/store';
+	import { Badge } from '../ui/badge';
 
 	export let files: ChangedFile[];
 	export let showCheckboxes = false;
@@ -15,14 +15,14 @@
 	$: checked = isAllChecked($selectedFiles);
 </script>
 
-<div class="header">
-	<div class="header__left">
+<div class="flex items-center justify-between">
+	<div class="flex gap-2 items-center">
 		{#if showCheckboxes && files.length > 1}
 			<Checkbox
-				small
+				size="sm"
 				{checked}
-				on:change={(e) => {
-					if (e.detail) {
+				onCheckedChange={(v) => {
+					if (v) {
 						selectedFiles.set(files);
 					} else {
 						selectedFiles.set([]);
@@ -30,27 +30,9 @@
 				}}
 			/>
 		{/if}
-		<div class="header__title text-base-13 text-semibold">
+		<div class="flex items-center gap-1 text-sm font-semibold">
 			<span>Changes</span>
-			<Badge count={files.length} />
+			<Badge size="sm" variant="secondary">{files.length}</Badge>
 		</div>
 	</div>
 </div>
-
-<style lang="postcss">
-	.header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.header__title {
-		display: flex;
-		align-items: center;
-		gap: var(--size-4);
-		color: var(--clr-theme-scale-ntrl-0);
-	}
-	.header__left {
-		display: flex;
-		gap: var(--size-10);
-	}
-</style>

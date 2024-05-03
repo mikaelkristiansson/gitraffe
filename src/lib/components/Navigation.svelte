@@ -1,7 +1,6 @@
 <script lang="ts">
 	import BaseBranchCard from './BaseBranchCard.svelte';
 	import Branches from './Branches.svelte';
-	import DomainButton from './DomainButton.svelte';
 	import Footer from './Footer.svelte';
 	import ProjectSelector from './ProjectSelector.svelte';
 	import type { Repository } from '$lib/models/repository';
@@ -44,19 +43,10 @@
 		role="menu"
 		tabindex="0"
 	>
-		<div class="flex flex-col px-4 pb-6">
+		<div class="flex flex-col px-4 pb-4">
 			<div class="shrink-0 h-8" data-tauri-drag-region />
 			<ProjectSelector {repository} {isNavCollapsed} />
-			<div class="domains flex flex-col gap-1">
-				<BaseBranchCard {repository} {isNavCollapsed} />
-				<DomainButton
-					href={`/${repository.id}/board`}
-					domain="workspace"
-					label="Workspace"
-					iconSrc="/images/domain-icons/working-branches.svg"
-					{isNavCollapsed}
-				/>
-			</div>
+			<BaseBranchCard {repository} {isNavCollapsed} />
 		</div>
 		<Branches {repository} {isNavCollapsed} />
 		<Footer {repository} {isNavCollapsed} />

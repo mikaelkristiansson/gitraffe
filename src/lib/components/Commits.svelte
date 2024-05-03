@@ -8,7 +8,6 @@
 	import type { Repository } from '$lib/models/repository';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
-	import { error, success } from '$lib/utils/toasts';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
 	import { activeRepository } from '$lib/stores/repository';
@@ -19,6 +18,7 @@
 	import { Button } from './ui/button';
 	import Icon from './Icon.svelte';
 	import { Label } from './ui/label';
+	import { toast } from 'svelte-sonner';
 
 	export let commits: Commit[];
 	export let repository: Repository;
@@ -66,7 +66,7 @@
 				<div class="commit__header">
 					<div class="commit__message">
 						<div class="commit__row">
-							<span class="commit__title text-semibold text-base-12">
+							<span class="commit__title font-semibold text-xs">
 								{commit.summary}
 							</span>
 							{#if index === 0}
@@ -82,26 +82,26 @@
 												await workingBranch.setWorking(repository);
 												const commits = await loadLocalCommits(repository, $activeBranch);
 												commitStore.set(commits);
-												success(`Commit ${message?.summary} undone`);
+												toast.success(`Commit ${message?.summary} undone`);
 											} catch (e) {
 												console.error('Failed to undo commit', e);
-												error('Failed to undo commit');
+												toast.error('Failed to undo commit');
 											}
 										}
 									}}>Undo</Button
 								>
 							{/if}
 						</div>
-						<span class="commit__body text-base-body-12 max-h-20 overflow-x-scroll">
+						<span class="commit__body text-xs max-h-20 overflow-x-scroll">
 							{commit.body}
 						</span>
 					</div>
 					<div class="commit__row">
 						<div class="commit__author">
 							<AuthorIcon email={commit.author.email} />
-							<span class="commit__author-name text-base-12 truncate">{commit.author.name}</span>
+							<span class="commit__author-name text-xs truncate">{commit.author.name}</span>
 						</div>
-						<span class="commit__time text-base-11">
+						<span class="commit__time text-[0.6rem]">
 							<TimeAgo date={commit.author.date} />
 						</span>
 					</div>
@@ -149,11 +149,11 @@
 							<div class="commit__row">
 								<div class="commit__author">
 									<AuthorIcon email={selectedCommit.author.email} />
-									<span class="commit__author-name text-base-12 truncate"
+									<span class="commit__author-name text-xs truncate"
 										>{selectedCommit.author.name}</span
 									>
 								</div>
-								<span class="commit__time text-base-11">
+								<span class="commit__time text-[0.6rem]">
 									<TimeAgo date={selectedCommit.author.date} />
 								</span>
 							</div>
@@ -164,7 +164,12 @@
 			<div class="grid grid-cols-2 divide-x h-full pt-4">
 				<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
 				{#if $activeRepository}
-					<FilePreview {selected} {repository} setSelected={(file) => (selected = file)} />
+					<FilePreview
+						isCommitedFile={true}
+						{selected}
+						{repository}
+						setSelected={(file) => (selected = file)}
+					/>
 				{/if}
 			</div>
 		</div>
@@ -175,20 +180,22 @@
 	.commit__header {
 		display: flex;
 		flex-direction: column;
-		gap: var(--size-10);
-		padding: var(--size-14);
+		@apply p-4 gap-2;
+		/* gap: var(--size-10);
+		padding: var(--size-14); */
 	}
 
 	.commit__message {
 		display: flex;
 		flex-direction: column;
-		gap: var(--size-6);
+		/* gap: var(--size-6); */
+		@apply gap-1;
 	}
 
 	.commit__title {
 		flex: 1;
 		display: block;
-		color: var(--clr-theme-scale-ntrl-0);
+		/* color: var(--clr-theme-scale-ntrl-0); */
 		width: 100%;
 	}
 
@@ -196,7 +203,7 @@
 		flex: 1;
 		display: block;
 		width: 100%;
-		color: var(--clr-theme-scale-ntrl-40);
+		/* color: var(--clr-theme-scale-ntrl-40); */
 		white-space: pre-line;
 		word-wrap: anywhere;
 	}
@@ -204,7 +211,8 @@
 	.commit__row {
 		display: flex;
 		align-items: center;
-		gap: var(--size-8);
+		/* gap: var(--size-8); */
+		@apply gap-2;
 	}
 
 	.commit__author {
@@ -212,15 +220,17 @@
 		flex: 1;
 		display: flex;
 		align-items: center;
-		gap: var(--size-6);
+		/* gap: var(--size-6); */
+		@apply gap-1;
 	}
 
 	.commit__author-name {
-		max-width: calc(100% - var(--size-16));
+		max-width: calc(100% - 0.5rem);
 	}
 
 	.commit__time,
 	.commit__author-name {
-		color: var(--clr-theme-scale-ntrl-50);
+		@apply text-muted-foreground;
+		/* color: var(--clr-theme-scale-ntrl-50); */
 	}
 </style>

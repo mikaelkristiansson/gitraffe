@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as ContextMenu from '$lib/components/ui/context-menu';
 	import FileStatusIcons from './FileStatusIcons.svelte';
-	import Checkbox from '$lib/components/Checkbox.svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { getVSIFileIcon } from '$lib/ext-icons';
 	import type { Writable } from 'svelte/store';
 	import { AppFileStatusKind, type ChangedFile } from '$lib/models/status';
@@ -17,7 +17,6 @@
 	export let repository: Repository | undefined;
 	export let file: ChangedFile;
 	export let selected: boolean;
-	export let files: ChangedFile[];
 	export let showCheckbox: boolean = false;
 	export let selectedFiles: Writable<ChangedFile[]>;
 	export let setSelected: SetSelected;
@@ -36,16 +35,15 @@
 	}
 </script>
 
-<div class="list-item-wrapper w-full">
+<div class="flex items-center gap-2 w-full">
 	{#if showCheckbox}
 		<Checkbox
-			small
-			{checked}
-			{indeterminate}
-			on:change={(e) => {
+			size="sm"
+			checked={indeterminate ? 'indeterminate' : checked}
+			onCheckedChange={(v) => {
 				selectedFiles.update((selectedF) => {
-					if (e.detail) selectedF.push(file);
-					if (!e.detail) selectedF = selectedF.filter((f) => f.id != file.id);
+					if (v) selectedF.push(file);
+					if (!v) selectedF = selectedF.filter((f) => f.id != file.id);
 					return selectedF;
 				});
 			}}
@@ -55,8 +53,8 @@
 		<ContextMenu.Trigger class="max-w-full flex flex-1 overflow-hidden">
 			<div
 				class={cn(
-					'file-list-item hover:bg-muted/80',
-					selected && 'bg-secondary/80 hover:bg-secondary'
+					'flex flex-1 items-center rounded-sm h-7 py-1 px-2 gap-4 max-w-full overflow-hidden text-left select-none outline-none mb-[0.1rem] hover:bg-muted/80',
+					selected && 'bg-primary/10 hover:bg-secondary'
 				)}
 				id={`file-${file.id}`}
 				on:click
@@ -64,13 +62,17 @@
 				role="button"
 				tabindex="0"
 			>
-				<div class="info-wrap">
-					<div class="info">
-						<img draggable="false" class="file-icon" src={getVSIFileIcon(file.path)} alt="js" />
-						<span class="text-base-12 name">
+				<div class="flex items-center flex-grow flex-shrink overflow-hidden gap-3">
+					<div class="flex items-center flex-grow flex-shrink overflow-hidden gap-[0.4rem]">
+						<img draggable="false" class="w-3" src={getVSIFileIcon(file.path)} alt="js" />
+						<span
+							class="text-xs whitespace-nowrap flex-shrink-0 text-ellipsis overflow-hidden leading-[120%]"
+						>
 							{file.path.split('/').pop()}
 						</span>
-						<span class="text-base-12 path">
+						<span
+							class="text-xs leading-[120%] flex-shrink whitespace-nowrap text-ellipsis overflow-hidden opacity-30"
+						>
 							{file.path}
 						</span>
 					</div>
@@ -142,63 +144,3 @@
 {#if repository}
 	<DiscardChanges {file} {repository} {setSelected} bind:dialogDiscardOpen />
 {/if}
-
-<style lang="postcss">
-	.list-item-wrapper {
-		display: flex;
-		align-items: center;
-		gap: var(--size-8);
-	}
-
-	.file-list-item {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		height: var(--size-28);
-		padding: var(--size-4) var(--size-8);
-		gap: var(--size-16);
-		border-radius: var(--radius-s);
-		max-width: 100%;
-		overflow: hidden;
-		text-align: left;
-		user-select: none;
-		outline: none;
-		margin-bottom: var(--size-2);
-	}
-
-	.info-wrap {
-		display: flex;
-		align-items: center;
-		flex-grow: 1;
-		flex-shrink: 1;
-		gap: var(--size-10);
-		overflow: hidden;
-	}
-	.info {
-		display: flex;
-		align-items: center;
-		flex-grow: 1;
-		flex-shrink: 1;
-		gap: var(--size-6);
-		overflow: hidden;
-	}
-
-	.file-icon {
-		width: var(--size-12);
-	}
-	.name {
-		white-space: nowrap;
-		flex-shrink: 0;
-		text-overflow: ellipsis;
-		overflow: hidden;
-		line-height: 120%;
-	}
-	.path {
-		line-height: 120%;
-		flex-shrink: 1;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
-		opacity: 0.3;
-	}
-</style>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { tooltip } from '$lib/utils/tooltip';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { cn } from '$lib/utils';
 
 	export let ahead: number | undefined;
 	export let behind: number | undefined;
@@ -10,44 +11,29 @@
 
 {#if ahead !== undefined && behind !== undefined}
 	<div class="flex items-center">
-		<div class="ahead-behind text-base-9 text-bold">
-			<div
-				use:tooltip={{ text: behindMessage, delay: 1000 }}
-				class="behind"
-				class:neutral={behind == 0}
-			>
-				{behind}
-			</div>
-			<div
-				use:tooltip={{ text: aheadMessage, delay: 1000 }}
-				class="ahead"
-				class:neutral={ahead == 0}
-			>
-				{ahead}
-			</div>
+		<div
+			class="flex overflow-hidden flex-shrink-0 rounded-sm bg-muted font-semibold text-primary text-[0.6rem] leading-tight"
+		>
+			<Tooltip.Root>
+				<Tooltip.Trigger class="cursor-auto">
+					<div class={cn('p-1 min-w-3 border-r', behind === 0 && 'text-muted-foreground/60')}>
+						{behind}
+					</div>
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					{behindMessage}
+				</Tooltip.Content>
+			</Tooltip.Root>
+			<Tooltip.Root>
+				<Tooltip.Trigger class="cursor-auto">
+					<div class={cn('p-1 min-w-3', ahead === 0 && 'text-muted-foreground/60')}>
+						{ahead}
+					</div>
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					{aheadMessage}
+				</Tooltip.Content>
+			</Tooltip.Root>
 		</div>
 	</div>
 {/if}
-
-<style lang="postcss">
-	.ahead-behind {
-		display: flex;
-		overflow: hidden;
-		flex-shrink: 0;
-		line-height: 120%;
-		border-radius: var(--radius-s);
-		color: var(--clr-theme-scale-ntrl-40);
-		background: color-mix(in srgb, var(--clr-theme-scale-ntrl-60) 30%, transparent);
-	}
-	.ahead,
-	.behind {
-		padding: var(--size-2);
-		min-width: var(--size-12);
-	}
-	.behind {
-		border-right: 1px solid var(--clr-theme-container-outline-light);
-	}
-	.neutral {
-		color: var(--clr-theme-scale-ntrl-50);
-	}
-</style>

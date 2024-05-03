@@ -77,7 +77,8 @@
 	.selectable-wrapper {
 		cursor: text;
 		display: inline-block;
-		text-indent: var(--size-4);
-		margin-right: var(--size-4);
+		@apply indent-1 mr-1;
+		/* text-indent: var(--size-4);
+		margin-right: var(--size-4); */
 	}
 </style>

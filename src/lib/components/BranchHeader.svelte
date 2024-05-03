@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Badge } from '$lib/components/ui/badge';
 	import ActiveBranchStatus from './ActiveBranchStatus.svelte';
-	import { tooltip } from '$lib/utils/tooltip';
 	import { pullOrigin } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
@@ -100,12 +100,11 @@
 {#if $isLaneCollapsed}
 	<Card.Root class="flex flex-col h-full gap-2 px-2 py-4 collapsed-lane">
 		<div class="collapsed-lane__actions">
-			<!-- help="Collapse lane" -->
 			<Button icon="unfold-lane" size="icon" variant="outline" on:click={expandLane} />
 		</div>
 
 		<div class="collapsed-lane__info">
-			<h3 class="collapsed-lane__label text-base-13 text-bold">
+			<h3 class="collapsed-lane__label text-xs font-bold">
 				{branch.currentBranch}
 			</h3>
 
@@ -118,51 +117,63 @@
 	<Card.Root>
 		<div class="header__info">
 			<div class="flex">
-				<div class="header__label text-base-13 text-bold">
+				<div class="header__label text-xs font-bold overflow-hidden text-ellipsis">
 					{branch.currentBranch}
 				</div>
 			</div>
 			<div class="header__remote-branch">
 				<ActiveBranchStatus {repository} {branch} isLaneCollapsed={$isLaneCollapsed} />
 				{#if branch.doConflictedFilesExist}
-					<!-- help="Applying this branch will add merge conflict markers that you will have to resolve" -->
-					<Badge icon="locked-small" variant="destructive">Conflict</Badge>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<Badge icon="locked-small" variant="destructive">Conflict</Badge>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							Applying this branch will add merge conflict markers that you will have to resolve
+						</Tooltip.Content>
+					</Tooltip.Root>
 				{/if}
 			</div>
 			<div class="flex flex-1 justify-evenly">
-				<div class="flex w-full" use:tooltip={{ text: 'Pull origin', delay: 300 }}>
-					<Button
-						variant="outline"
-						class="!rounded-r-none !border-r-0 w-full"
-						disabled={!branch.branchAheadBehind?.behind}
-						loading={isPulling}
-						on:click={pullBranch}
-					>
-						Pull <Badge size="sm" variant="secondary" class="ml-1"
-							>{branch.branchAheadBehind?.behind || 0}</Badge
+				<Tooltip.Root>
+					<Tooltip.Trigger class="cursor-auto flex w-full">
+						<Button
+							variant="outline"
+							class="!rounded-r-none !border-r-0 w-full"
+							disabled={!branch.branchAheadBehind?.behind}
+							loading={isPulling}
+							on:click={pullBranch}
 						>
-						<Icon name="pull-small" size={14} />
-					</Button>
-				</div>
-				<div class="flex w-full" use:tooltip={{ text: 'Push origin', delay: 300 }}>
-					<Button
-						variant="outline"
-						class="!rounded-l-none w-full"
-						disabled={!branch.branchAheadBehind?.ahead}
-						loading={isPushing}
-						on:click={pushBranch}
-					>
-						<kbd
-							class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-base-10 font-medium opacity-60"
+							Pull <Badge size="sm" variant="secondary" class="ml-1"
+								>{branch.branchAheadBehind?.behind || 0}</Badge
+							>
+							<Icon name="pull-small" size={14} />
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content>Pull origin</Tooltip.Content>
+				</Tooltip.Root>
+				<Tooltip.Root>
+					<Tooltip.Trigger class="cursor-auto flex w-full">
+						<Button
+							variant="outline"
+							class="!rounded-l-none w-full"
+							disabled={!branch.branchAheadBehind?.ahead}
+							loading={isPushing}
+							on:click={pushBranch}
 						>
-							<span>⌘</span>P
-						</kbd>
-						Push <Badge size="sm" variant="secondary" class="ml-1"
-							>{branch.branchAheadBehind?.ahead || 0}</Badge
-						>
-						<Icon name="push-small" size={14} />
-					</Button>
-				</div>
+							<kbd
+								class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-xs font-medium opacity-60"
+							>
+								<span>⌘</span>P
+							</kbd>
+							Push <Badge size="sm" variant="secondary" class="ml-1"
+								>{branch.branchAheadBehind?.ahead || 0}</Badge
+							>
+							<Icon name="push-small" size={14} />
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content>Push origin</Tooltip.Content>
+				</Tooltip.Root>
 			</div>
 		</div>
 		<Card.Footer class="flex justify-between py-2 px-3 bg-muted/40">
@@ -256,26 +267,30 @@
 	.header__info {
 		display: flex;
 		flex-direction: column;
-		transition: margin var(--transition-slow);
-		padding: var(--size-12);
-		gap: var(--size-10);
+		/* transition: margin var(--transition-slow); */
+		/* padding: var(--size-12); */
+		/* gap: var(--size-10); */
+		@apply p-3 gap-2;
 	}
 	.header__buttons {
 		display: flex;
 		position: relative;
-		gap: var(--size-4);
+		/* gap: var(--size-4); */
+		@apply gap-1;
 	}
 	.header__label {
 		display: flex;
 		flex-grow: 1;
 		align-items: center;
-		gap: var(--size-4);
+		/* gap: var(--size-4); */
+		@apply gap-1;
 	}
 
 	.header__remote-branch {
 		/* color: var(--clr-theme-scale-ntrl-50); */
 		display: flex;
-		gap: var(--size-4);
+		/* gap: var(--size-4); */
+		@apply gap-1;
 		justify-content: start;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -288,7 +303,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: var(--size-2);
+		/* gap: var(--size-2); */
+		@apply gap-1;
 	}
 
 	.collapsed-lane__info {
@@ -300,18 +316,20 @@
 		height: 100%;
 
 		writing-mode: vertical-rl;
-		gap: var(--size-8);
+		/* gap: var(--size-8); */
+		@apply gap-2;
 	}
 
 	.collapsed-lane__info__details {
 		display: flex;
 		flex-direction: row-reverse;
 		align-items: center;
-		gap: var(--size-4);
+		/* gap: var(--size-4); */
+		@apply gap-1;
 	}
 
 	.collapsed-lane__label {
-		color: var(--clr-theme-scale-ntrl-0);
+		/* color: var(--clr-theme-scale-ntrl-0); */
 		transform: rotate(180deg);
 		white-space: nowrap;
 		overflow: hidden;

@@ -1,6 +1,14 @@
+@import './syntax-highlighting.css';
+@import './diff.postcss';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--svg-gray: hsl(var(--muted-foreground));
+	--svg-pop: #41b4ae;
+}
 
 @layer base {
 	:root {
@@ -77,5 +85,9 @@
 		font-feature-settings:
 			'rlig' 1,
 			'calt' 1;
+		height: 100vh;
+		width: 100vw;
+		overflow-y: hidden;
+		padding: 0;
 	}
 }
