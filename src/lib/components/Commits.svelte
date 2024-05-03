@@ -62,7 +62,7 @@
 			style:z-index={commits.length - index}
 			class="relative w-full"
 		>
-			<Card.Root class="absolute w-full h-20 hover:bg-accent overflow-hidden">
+			<Card.Root class="absolute w-full h-20 hover:bg-gray-100 dark:hover:bg-muted overflow-hidden">
 				<div class="commit__header">
 					<div class="commit__message">
 						<div class="commit__row">

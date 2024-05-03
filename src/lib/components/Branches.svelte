@@ -120,7 +120,7 @@
 					placeholder="Search"
 					on:input={onInputChange}
 				/>
-				<div class=" flex flex-col justify-center gap-0.5">
+				<div class="flex flex-col justify-center gap-0.5">
 					{#if $fetchingBranches && $updatingRepositories}
 						<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 					{:else}

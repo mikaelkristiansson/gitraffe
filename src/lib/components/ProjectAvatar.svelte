@@ -34,7 +34,7 @@
 <div class="flex-shrink-0 h-5 w-5 rounded-md" style:background-color={nameToColor(name)}>
 	<svg class="w-full h-full" viewBox="0 0 24 24">
 		<text
-			class="leading-none text-base font-extrabold fill-primary-foreground"
+			class="leading-none text-base font-extrabold fill-white"
 			x="50%"
 			y="54%"
 			text-anchor="middle"

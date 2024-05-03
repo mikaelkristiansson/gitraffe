@@ -12,7 +12,7 @@
 {#if ahead !== undefined && behind !== undefined}
 	<div class="flex items-center">
 		<div
-			class="flex overflow-hidden flex-shrink-0 rounded-sm bg-muted font-semibold text-primary text-[0.6rem] leading-tight"
+			class="flex overflow-hidden flex-shrink-0 rounded-sm bg-muted font-semibold text-muted-foreground dark:text-primary text-[0.6rem] leading-tight"
 		>
 			<Tooltip.Root>
 				<Tooltip.Trigger class="cursor-auto">

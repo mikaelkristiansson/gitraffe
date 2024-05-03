@@ -54,7 +54,7 @@
 			<div
 				class={cn(
 					'flex flex-1 items-center rounded-sm h-7 py-1 px-2 gap-4 max-w-full overflow-hidden text-left select-none outline-none mb-[0.1rem] hover:bg-muted/80',
-					selected && 'bg-primary/10 hover:bg-secondary'
+					selected && 'bg-muted hover:bg-muted/80'
 				)}
 				id={`file-${file.id}`}
 				on:click
