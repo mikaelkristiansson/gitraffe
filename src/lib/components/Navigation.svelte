@@ -25,7 +25,10 @@
 				viewBox="0 0 7 23"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
-				class={cn('w-[45%] stroke-border', isNavCollapsed && 'transform rotate-180')}
+				class={cn(
+					'w-[45%] stroke-gray-600 dark:stroke-gray-200',
+					isNavCollapsed && 'transform rotate-180'
+				)}
 			>
 				<path
 					d="M6 1L1.81892 9.78026C1.30084 10.8682 1.30084 12.1318 1.81892 13.2197L6 22"
