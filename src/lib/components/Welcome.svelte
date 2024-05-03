@@ -33,8 +33,6 @@
 					Verify valid Git repository in selected folder before importing.
 				</svelte:fragment>
 			</WelcomeAction>
-			<!-- Using instance of user here to not hide after login -->
-			<!-- <WelcomeSigninAction /> -->
 		</div>
 	</div>
 </div>
@@ -52,22 +50,15 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: var(--size-40);
 		align-items: center;
-		padding: var(--size-40) calc(var(--size-40) * 2);
+		@apply gap-10 py-10 px-20;
 		flex: 1.3;
 		overflow-y: auto;
-	}
-
-	.welcome-title {
-		text-align: center;
-		text-transform: uppercase;
-		line-height: 1;
 	}
 
 	.welcome__actions {
 		display: flex;
 		flex-direction: row;
-		gap: var(--size-8);
+		@apply gap-2;
 	}
 </style>

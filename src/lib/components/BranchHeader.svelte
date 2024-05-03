@@ -261,35 +261,28 @@
 	</Card.Root>
 {/if}
 
-<DeleteBranch {repository} branch={$activeBranch} {dialogDeleteOpen} />
+<DeleteBranch {repository} branch={$activeBranch} bind:dialogDeleteOpen />
 
 <style lang="postcss">
 	.header__info {
 		display: flex;
 		flex-direction: column;
-		/* transition: margin var(--transition-slow); */
-		/* padding: var(--size-12); */
-		/* gap: var(--size-10); */
 		@apply p-3 gap-2;
 	}
 	.header__buttons {
 		display: flex;
 		position: relative;
-		/* gap: var(--size-4); */
 		@apply gap-1;
 	}
 	.header__label {
 		display: flex;
 		flex-grow: 1;
 		align-items: center;
-		/* gap: var(--size-4); */
 		@apply gap-1;
 	}
 
 	.header__remote-branch {
-		/* color: var(--clr-theme-scale-ntrl-50); */
 		display: flex;
-		/* gap: var(--size-4); */
 		@apply gap-1;
 		justify-content: start;
 		text-overflow: ellipsis;
@@ -303,8 +296,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* gap: var(--size-2); */
-		@apply gap-1;
+		@apply gap-0.5;
 	}
 
 	.collapsed-lane__info {
@@ -316,7 +308,6 @@
 		height: 100%;
 
 		writing-mode: vertical-rl;
-		/* gap: var(--size-8); */
 		@apply gap-2;
 	}
 
@@ -324,12 +315,10 @@
 		display: flex;
 		flex-direction: row-reverse;
 		align-items: center;
-		/* gap: var(--size-4); */
 		@apply gap-1;
 	}
 
 	.collapsed-lane__label {
-		/* color: var(--clr-theme-scale-ntrl-0); */
 		transform: rotate(180deg);
 		white-space: nowrap;
 		overflow: hidden;

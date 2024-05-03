@@ -1,20 +1,6 @@
 <script lang="ts">
-	// import { AIService } from '$lib/backend/aiService';
-	// import Checkbox from '$lib/components/Checkbox.svelte';
-	// import DropDownButton from '$lib/components/DropDownButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	// import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
-	// import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
-	// import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
-	import {
-		projectAiGenEnabled,
-		projectCommitGenerationExtraConcise,
-		projectCommitGenerationUseEmojis,
-		projectRunCommitHooks,
-		persistedCommitMessage
-	} from '$lib/config/config';
-	// import { getContextByClass } from '$lib/utils/context';
-	// import { createEventDispatcher, onMount } from 'svelte';
+	import { persistedCommitMessage } from '$lib/config/config';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
@@ -30,29 +16,16 @@
 	import type { SetSelected } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 
-	// const aiService = getContextByClass(AIService);
-
-	// const dispatch = createEventDispatcher<{
-	// 	action: 'generate-branch-name';
-	// }>();
-
 	export let repositoryId: Repository['id'];
 	export let branch: IStatusResult;
-	// export let user: User | undefined;
 	export let selectedFiles: Writable<ChangedFile[]>;
 	export let expanded: Writable<boolean>;
 	export let setSelected: SetSelected;
 
-	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
-	// const runCommitHooks = projectRunCommitHooks(repositoryId);
-	// const commitGenerationExtraConcise = projectCommitGenerationExtraConcise(repositoryId);
-	// const commitGenerationUseEmojis = projectCommitGenerationUseEmojis(repositoryId);
 
 	let isCommitting = false;
 	let aiLoading = false;
-
-	// let contextMenu: ContextMenu;
 
 	let titleTextArea: HTMLTextAreaElement;
 	let descriptionTextArea: HTMLTextAreaElement;
@@ -99,55 +72,6 @@
 			isCommitting = false;
 		}
 	}
-
-	// async function generateCommitMessage(files: LocalFile[]) {
-	// 	const diff = files
-	// 		.map((f) => f.hunks.filter((h) => $selectedOwnership.containsHunk(f.id, h.id)))
-	// 		.flat()
-	// 		.map((h) => h.diff)
-	// 		.flat()
-	// 		.join('\n')
-	// 		.slice(0, 5000);
-
-	// 	// Branches get their names generated only if there are at least 4 lines of code
-	// 	// If the change is a 'one-liner', the branch name is either left as "virtual branch"
-	// 	// or the user has to manually trigger the name generation from the meatball menu
-	// 	// This saves people this extra click
-	// 	if (branch.name.toLowerCase().includes('virtual branch')) {
-	// 		dispatch('action', 'generate-branch-name');
-	// 	}
-
-	// 	aiLoading = true;
-	// 	try {
-	// 		const generatedMessage = await aiService.summarizeCommit({
-	// 			diff,
-	// 			useEmojiStyle: $commitGenerationUseEmojis,
-	// 			useBriefStyle: $commitGenerationExtraConcise,
-	// 			userToken: user?.access_token
-	// 		});
-
-	// 		if (generatedMessage) {
-	// 			$commitMessage = generatedMessage;
-	// 		} else {
-	// 			toast.error('Failed to generate commit message');
-	// 		}
-	// 	} catch {
-	// 		toast.error('Failed to generate commit message');
-	// 	} finally {
-	// 		aiLoading = false;
-	// 	}
-
-	// 	setTimeout(() => {
-	// 		updateHeights();
-	// 		descriptionTextArea.focus();
-	// 	}, 0);
-	// }
-
-	let aiConfigurationValid = false;
-
-	// onMount(async () => {
-	// 	aiConfigurationValid = await aiService.validateConfiguration(user?.access_token);
-	// });
 </script>
 
 <div class="flex flex-col p-3" class:commit-box__expanded={$expanded}>
@@ -224,7 +148,7 @@
 	<div class="actions">
 		{#if $expanded && !isCommitting}
 			<Button
-				variant="secondary"
+				variant="outline"
 				id="commit-to-branch"
 				on:click={() => {
 					$expanded = false;
@@ -253,14 +177,6 @@
 </div>
 
 <style lang="postcss">
-	.commit-box__textarea-wrapper {
-		display: flex;
-		position: relative;
-		@apply pb-10;
-		flex-direction: column;
-		@apply gap-1;
-	}
-
 	.commit-box__textarea {
 		overflow: hidden;
 		display: flex;
@@ -280,12 +196,6 @@
 
 	.commit-box__textarea__description {
 		@apply py-0 px-3;
-	}
-
-	.commit-box__texarea-actions {
-		position: absolute;
-		display: flex;
-		@apply right-3 bottom-3;
 	}
 
 	.actions {

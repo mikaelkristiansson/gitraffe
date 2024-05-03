@@ -13,6 +13,7 @@
 	export let repository: Repository;
 	export let branch: BranchModel;
 	export let dialogDeleteOpen = false;
+	console.log('🚀 ~ dialogDeleteOpen:', dialogDeleteOpen);
 </script>
 
 <Dialog.Root bind:open={dialogDeleteOpen}>
@@ -54,7 +55,7 @@
 		<Dialog.Footer>
 			<Button variant="outline" on:click={() => (dialogDeleteOpen = false)}>Cancel</Button>
 			<Button
-				variant="secondary"
+				variant="default"
 				on:click={async () => {
 					if (repository) {
 						try {

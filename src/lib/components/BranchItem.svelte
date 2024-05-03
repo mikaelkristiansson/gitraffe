@@ -57,7 +57,7 @@
 	</ContextMenu.Root>
 {/if}
 
-<DeleteBranch {repository} {branch} {dialogDeleteOpen} />
+<DeleteBranch {repository} {branch} bind:dialogDeleteOpen />
 <HandleBranchName
 	bind:dialogOpen={dialogChangeNameOpen}
 	onSubmit={changeName}
