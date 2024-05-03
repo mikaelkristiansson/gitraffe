@@ -216,7 +216,7 @@
 							>
 								<Icon name="remote" />
 								<span class="pl-2">Fetch from remote</span>
-								<DropdownMenu.Shortcut>⌘⇧F</DropdownMenu.Shortcut>
+								<!-- <DropdownMenu.Shortcut>⌘⇧F</DropdownMenu.Shortcut> -->
 							</DropdownMenu.Item>
 							{#if branch.currentBranch !== $defaultBranch.name}
 								<DropdownMenu.Item
@@ -236,7 +236,7 @@
 								>
 									<Icon name="rebase-small" />
 									<span class="pl-2">Update from {$defaultBranch.nameWithoutRemote}</span>
-									<DropdownMenu.Shortcut>⌘⇧U</DropdownMenu.Shortcut>
+									<!-- <DropdownMenu.Shortcut>⌘⇧U</DropdownMenu.Shortcut> -->
 								</DropdownMenu.Item>
 							{/if}
 						</DropdownMenu.Group>

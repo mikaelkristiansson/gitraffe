@@ -14,21 +14,23 @@
 </script>
 
 {#if selected}
-	<div
-		class="flex relative w-full h-full overflow-hidden items-start"
-		in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
-	>
-		<FileCard
-			file={selected}
-			{isCommitedFile}
-			{repository}
-			readonly={selected.status.kind !== 'Conflicted'}
-			on:close={() => {
-				selected = undefined;
-				setSelected(undefined);
-			}}
-		/>
-	</div>
+	{#key selected.id}
+		<div
+			class="flex relative w-full h-full overflow-hidden items-start"
+			in:slide={{ duration: 180, easing: quintOut, axis: 'x' }}
+		>
+			<FileCard
+				file={selected}
+				{isCommitedFile}
+				{repository}
+				readonly={selected.status.kind !== 'Conflicted'}
+				on:close={() => {
+					selected = undefined;
+					setSelected(undefined);
+				}}
+			/>
+		</div>
+	{/key}
 {:else}
 	<div
 		class="flex flex-grow flex-col items-center text-center justify-center h-full cursor-default select-none text-card-foreground/30"

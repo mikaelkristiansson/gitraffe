@@ -7,7 +7,7 @@
 		"distDir": "../build"
 	},
 	"package": {
-		"productName": "gitraffe",
+		"productName": "Gitraffe",
 		"version": "0.1.0"
 	},
 	"tauri": {

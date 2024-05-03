@@ -73,21 +73,14 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		@apply py-1 px-2 rounded-md;
-		height: var(--size-control-s);
-		/* padding: var(--size-2) var(--size-4);
-		border-radius: var(--radius-m); */
+		@apply py-1 px-2 rounded-md h-5;
 		transition: background-color 0.3s;
 	}
 	.tag.medium {
-		height: var(--size-control-m);
-		/* padding: var(--size-4) var(--size-6); */
-		@apply px-1 py-2;
+		@apply px-1 py-2 h-7;
 	}
 	.tag.large {
-		height: var(--size-control-l);
-		/* padding: var(--size-6) var(--size-8); */
-		@apply px-2 py-3;
+		@apply px-2 py-3 h-8;
 	}
 	.icon {
 		flex-shrink: 0;
@@ -95,7 +88,6 @@
 	.label {
 		white-space: nowrap;
 		display: inline-block;
-		/* padding: 0 var(--size-2); */
 		@apply px-0.5 py-0;
 	}
 	.clickable {
@@ -105,12 +97,15 @@
 	/* colors */
 
 	.ghost {
-		color: var(--clr-theme-scale-ntrl-40);
+		@apply text-muted-foreground bg-transparent;
+		/* color: var(--clr-theme-scale-ntrl-40); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-ntrl-50), transparent 90%);
+			/* background: color-mix(in srgb, var(--clr-core-ntrl-50), transparent 90%); */
+			@apply bg-muted/90;
 		}
 		&.tag-border {
-			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-ntrl-60);
+			/* box-shadow: inset 0 0 0 1px var(--clr-theme-scale-ntrl-60); */
+			@apply shadow-inner;
 		}
 	}
 	.neutral {
@@ -144,10 +139,11 @@
 
 	.success {
 		/* color: var(--clr-theme-scale-succ-20); */
-		@apply bg-green-200/80 text-green-700;
+		@apply bg-green-200/80 text-green-900;
 		/* background: color-mix(in srgb, var(--clr-core-succ-50), transparent 80%); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-succ-50), transparent 70%);
+			@apply bg-green-200/70;
+			/* background: color-mix(in srgb, var(--clr-core-succ-50), transparent 70%); */
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-succ-60);
@@ -162,11 +158,12 @@
 	}
 
 	.error {
-		@apply bg-red-200/80 text-red-700;
+		@apply bg-red-200/80 text-red-900;
 		/* color: var(--clr-theme-scale-err-20);
 		background: color-mix(in srgb, var(--clr-core-err-50), transparent 80%); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-err-50), transparent 70%);
+			@apply bg-red-200/70;
+			/* background: color-mix(in srgb, var(--clr-core-err-50), transparent 70%); */
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-err-60);
@@ -181,11 +178,12 @@
 	}
 
 	.warning {
-		@apply bg-orange-200/80 text-orange-600;
+		@apply bg-orange-200/80 text-orange-900;
 		/* color: var(--clr-theme-scale-warn-20);
 		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 80%); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-warn-50), transparent 70%);
+			@apply bg-orange-200/70;
+			/* background: color-mix(in srgb, var(--clr-core-warn-50), transparent 70%); */
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-warn-60);
@@ -200,11 +198,12 @@
 	}
 
 	.purple {
-		@apply bg-purple-200/80 text-purple-700;
+		@apply bg-purple-200/80 text-purple-900;
 		/* color: var(--clr-theme-scale-purple-20);
 		background: color-mix(in srgb, var(--clr-core-purple-50), transparent 80%); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-purple-50), transparent 70%);
+			@apply bg-purple-200/70;
+			/* background: color-mix(in srgb, var(--clr-core-purple-50), transparent 70%); */
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-purple-60);
@@ -219,11 +218,12 @@
 	}
 
 	.pop {
-		@apply bg-cyan-200/80 text-cyan-700;
+		@apply bg-cyan-200/80 text-cyan-900;
 		/* color: var(--clr-theme-scale-pop-20);
 		background: color-mix(in srgb, var(--clr-core-pop-50), transparent 80%); */
 		&:not(.not-button):hover {
-			background: color-mix(in srgb, var(--clr-core-pop-50), transparent 70%);
+			@apply bg-cyan-200/70;
+			/* background: color-mix(in srgb, var(--clr-core-pop-50), transparent 70%); */
 		}
 		&.tag-border {
 			box-shadow: inset 0 0 0 1px var(--clr-theme-scale-pop-60);
@@ -244,8 +244,9 @@
 	}
 
 	.disabled {
-		background-color: color-mix(in srgb, var(--clr-theme-scale-ntrl-50) 10%, transparent);
-		color: var(--clr-core-ntrl-50);
+		@apply bg-muted/10 text-muted-foreground;
+		/* background-color: color-mix(in srgb, var(--clr-theme-scale-ntrl-50) 10%, transparent); */
+		/* color: var(--clr-core-ntrl-50); */
 	}
 
 	.iconLeft {
@@ -270,8 +271,9 @@
 	.verticalOrientation {
 		writing-mode: vertical-rl;
 		height: max-content;
-		width: var(--size-control-s);
-		padding: var(--size-4) var(--size-2);
+		@apply w-5 px-0.5 py-1;
+		/* width: var(--size-control-s); */
+		/* padding: var(--size-4) var(--size-2); */
 		transform: rotate(180deg);
 	}
 

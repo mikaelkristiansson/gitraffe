@@ -16,7 +16,6 @@ import {
 } from '$lib/models/status';
 import { getCaptures } from '$lib/utils/regex';
 import { extname, join } from '@tauri-apps/api/path';
-import { invoke } from '@tauri-apps/api/tauri';
 import { getConfigValue } from './config';
 import { forceUnwrap } from '$lib/fatal-error';
 import { DiffParser } from './diff-parser';
@@ -109,7 +108,7 @@ export async function getCommitDiff(
 	//   repository.path,
 	//   'getCommitDiff'
 	// )
-	const { stdout }: GitResponse = await invoke('git', { path: repository.path, args });
+	const { stdout }: GitResponse = await git(repository.path, args);
 
 	return buildDiff(stdout, repository, file, commitish);
 }
@@ -193,7 +192,7 @@ export async function getWorkingDirectoryDiff(
 	//   'getWorkingDirectoryDiff',
 	//   successExitCodes
 	// )
-	const { stdout }: GitResponse = await invoke('git', { path: repository.path, args });
+	const { stdout }: GitResponse = await git(repository.path, args, { successExitCodes });
 	// const lineEndingsChange = parseLineEndingsWarning(error)
 
 	return buildDiff(stdout, repository, file, 'HEAD');
@@ -340,9 +339,9 @@ export async function convertDiff(
 	oldestCommitish: string,
 	lineEndingsChange?: LineEndingsChange
 ): Promise<IDiff> {
-	const extension = (await extname(file.path)).toLowerCase();
-
 	if (diff.isBinary) {
+		const extensionName = await extname(file.path);
+		const extension = extensionName?.toLowerCase();
 		// some extension we don't know how to parse, never mind
 		if (!imageFileExtensions.has(extension)) {
 			return {
