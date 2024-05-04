@@ -7,7 +7,7 @@
 	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
 	import type { ChangedFile, WorkingDirectoryFileChange } from '$lib/models/status';
-	import { allBranches, workingBranch } from '$lib/stores/branch';
+	import { activeBranch, allBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
@@ -50,20 +50,22 @@
 		isCommitting = true;
 		try {
 			if ($activeRepository) {
-				await createCommit(
+				const createPromise = await createCommit(
 					$activeRepository,
 					message.trim(),
 					$selectedFiles as WorkingDirectoryFileChange[]
 				);
-				await workingBranch.setWorking($activeRepository);
-				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
-				if (updateBranch) {
-					allBranches.updateBranch(updateBranch);
-					const commits = await loadLocalCommits($activeRepository, updateBranch);
-					commitStore.set(commits);
-				}
+				const updatePromise = await workingBranch.setWorking($activeRepository);
+				allBranches.updateBranch($activeBranch);
+				const commits = await loadLocalCommits($activeRepository, $activeBranch);
+				commitStore.set(commits);
+				const allPromises = Promise.all([createPromise, updatePromise, commits]);
+				toast.promise(allPromises, {
+					loading: 'Committing...',
+					success: 'Changes committed',
+					error: 'Failed to commit changes'
+				});
 				setSelected(undefined);
-				toast.success('Changes committed');
 			}
 			$commitMessage = '';
 		} catch (e) {

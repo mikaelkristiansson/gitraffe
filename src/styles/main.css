@@ -14,8 +14,10 @@
 	:root {
 		--background: 207 48% 99%;
 		--foreground: 207 69% 0%;
-		--muted: 327 26% 92%;
-		--muted-foreground: 327 14% 31%;
+		--muted: 161 37% 94%;
+		--muted-foreground: 161 15% 39%;
+		/* --muted: 327 26% 92%;
+		--muted-foreground: 327 14% 31%; */
 		--popover: 207 48% 99%;
 		--popover-foreground: 207 69% 0%;
 		--card: 207 48% 99%;

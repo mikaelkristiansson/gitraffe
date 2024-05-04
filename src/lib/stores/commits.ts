@@ -44,7 +44,7 @@ export async function loadLocalCommits(
 	}
 
 	let localCommits: Array<Commit> | undefined;
-	if (branch.upstream) {
+	if (branch.remoteExists && branch.upstream) {
 		const range = revRange(branch.upstream, branch.name);
 		localCommits = await getCommits(repository, range, CommitBatchSize);
 	} else {
