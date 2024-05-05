@@ -1,10 +1,9 @@
 <script lang="ts">
-	import '../styles/main.postcss';
+	import '../styles/main.css';
 	import { SETTINGS_CONTEXT, loadUserSettings } from '$lib/settings/userSettings';
 	import { initTheme } from '$lib/utils/theme';
 	import { onMount, setContext } from 'svelte';
-	import { Toaster } from 'svelte-french-toast';
-	import ToastController from '$lib/notifications/ToastController.svelte';
+	import { Toaster as Sonner } from '$lib/components/ui/sonner';
 	import * as hotkeys from '$lib/utils/hotkeys';
 	import { unsubscribe } from '$lib/utils/unsubscribe';
 
@@ -28,19 +27,9 @@
 	});
 </script>
 
-<div data-tauri-drag-region class="app-root">
+<div data-tauri-drag-region class="flex h-full select-none cursor-default">
 	<slot />
 </div>
-<Toaster />
-<ToastController />
+<Sonner />
 
 <!-- <AppUpdater /> -->
-
-<style lang="postcss">
-	.app-root {
-		display: flex;
-		height: 100%;
-		user-select: none;
-		cursor: default;
-	}
-</style>

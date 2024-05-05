@@ -1,10 +1,12 @@
 <script lang="ts">
-	import Tag from '$lib/components/Tag.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { IStatusResult } from '$lib/git/status';
 	import type { Repository } from '$lib/models/repository';
 	import { setRepositoryURL } from '$lib/utils/remote';
 	import { openExternalUrl } from '$lib/utils/url';
 	import PullRequestCard from './PullRequestCard.svelte';
+	import { Button } from './ui/button';
 
 	export let branch: IStatusResult;
 	export let repository: Repository;
@@ -12,40 +14,40 @@
 </script>
 
 {#if !branch.currentUpstreamBranch || branch.branchAheadBehind === undefined}
-	<Tag
-		icon="local"
-		color="light"
-		help="These changes are in your working directory."
-		reversedDirection
-		verticalOrientation={isLaneCollapsed}>Local</Tag
-	>
+	<Tooltip.Root>
+		<Tooltip.Trigger class="cursor-auto"
+			><Badge variant="secondary" icon="local" vertical={isLaneCollapsed}>Local</Badge
+			></Tooltip.Trigger
+		>
+		<Tooltip.Content>
+			<p>These changes are in your working directory.</p>
+		</Tooltip.Content>
+	</Tooltip.Root>
 {:else}
-	<Tag
-		color="pop"
-		icon="remote"
-		help="At least some of your changes have been pushed"
-		verticalOrientation={isLaneCollapsed}
-		reversedDirection>Remote</Tag
-	>
+	<Tooltip.Root>
+		<Tooltip.Trigger class="cursor-auto"
+			><Badge variant="default" icon="remote" vertical={isLaneCollapsed}>Remote</Badge
+			></Tooltip.Trigger
+		>
+		<Tooltip.Content>
+			<p>At least some of your changes have been pushed</p>
+		</Tooltip.Content>
+	</Tooltip.Root>
 
-	<Tag
+	<Button
+		variant="outline"
 		icon="open-link"
-		color="ghost"
-		border
-		clickable
-		shrinkable
-		verticalOrientation={isLaneCollapsed}
+		size="sm"
+		vertical={isLaneCollapsed}
 		on:click={async (e) => {
 			const baseUrl = await setRepositoryURL(repository);
 			const url = `${baseUrl?.link}/tree/${branch?.currentBranch}`;
 			if (baseUrl) openExternalUrl(url);
 			e.preventDefault();
 			e.stopPropagation();
-		}}
+		}}>{isLaneCollapsed ? 'View branch' : `origin/${branch.currentBranch}`}</Button
 	>
-		{isLaneCollapsed ? 'View branch' : `origin/${branch.currentBranch}`}
-	</Tag>
 	{#if isLaneCollapsed}
-		<PullRequestCard type="tag" {repository} {isLaneCollapsed} />
+		<PullRequestCard {repository} {isLaneCollapsed} />
 	{/if}
 {/if}

@@ -4,9 +4,9 @@ import { getStorageItem, setStorageItem } from '../persisted';
 import { Repository } from '../models/repository';
 import { getRepositoryType, type RepositoryType } from '../git/repository';
 import { matchExistingRepository } from '../utils/repository-matching';
-import { error } from '../utils/toasts';
 import { invoke } from '@tauri-apps/api/tauri';
 import { emit } from '@tauri-apps/api/event';
+import { toast } from 'svelte-sonner';
 
 export interface Project {
 	id: string;
@@ -86,7 +86,7 @@ export async function addRepository() {
 		const repository = await addNewRepository(path, id, repos);
 		//TODO: show error message if repository is null
 		if (!repository) {
-			error(`${title} is not an existing git repository.`);
+			toast.error(`${title} is not an existing git repository.`);
 			return;
 		}
 		repositories.add(repository);

@@ -1,28 +1,14 @@
 <script lang="ts">
+	import * as Alert from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
-	// import KeysForm from '$lib/components/KeysForm.svelte';
-	import RemoveRepositoryButton from '$lib/components/RemoveRepositoryButton.svelte';
-	import SectionCard from '$lib/components/SectionCard.svelte';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, repositories } from '$lib/stores/repository';
-	//   import { UserService } from "$lib/stores/user";
-	//   import { getContextByClass } from "$lib/utils/context";
-	import * as toasts from '$lib/utils/toasts';
-	// import type { PageData } from './$types';
+	import { toast } from 'svelte-sonner';
 
-	// export let data: PageData;
-	export let repository: Repository | null;
-	// $: repository = $activeRepository;
+	export let repository: Repository;
 
-	// $: projectService = data.projectService;
-	// $: project$ = data.project$;
-	// $: authService = data.authService;
-
-	//   const userService = getContextByClass(UserService);
-	//   const user = userService.user;
-
-	let deleteConfirmationModal: RemoveRepositoryButton;
 	let isDeleting = false;
 
 	async function onDeleteClicked() {
@@ -38,10 +24,10 @@
 				activeRepository.removeActive();
 				goto('/');
 			}
-			toasts.success('Project deleted');
+			toast.success('Project deleted');
 		} catch (err: any) {
 			console.error(err);
-			toasts.error('Failed to delete project');
+			toast.error('Failed to delete project');
 		} finally {
 			isDeleting = false;
 		}
@@ -51,48 +37,23 @@
 {#if !repository}
 	<FullviewLoading />
 {:else}
-	<section class="content-wrapper">
-		<div class="content">
-			<h1 class="title text-head-24">Repository settings</h1>
-			<!-- <KeysForm project={project$} /> -->
-			<SectionCard>
-				<svelte:fragment slot="title">Remove repository</svelte:fragment>
-				<svelte:fragment slot="caption">
-					You can remove repositories from Gitfox, your code remains safe as this only clears
-					configuration.
-				</svelte:fragment>
-				<div>
-					<RemoveRepositoryButton
-						bind:this={deleteConfirmationModal}
-						repositoryTitle={repository?.name}
-						{isDeleting}
-						{onDeleteClicked}
-					/>
-				</div>
-			</SectionCard>
+	<section class="flex-1 select-none w-full h-full">
+		<div class="flex flex-col gap-4">
+			<Alert.Root>
+				<Alert.Title>Remove repository</Alert.Title>
+				<Alert.Description class="flex flex-col gap-4">
+					<span
+						>You can remove repositories from Gitraffe, your code remains safe as this only clears
+						configuration.</span
+					>
+					<Button
+						variant="destructive"
+						icon="warning-small"
+						on:click={onDeleteClicked}
+						loading={isDeleting}>Remove {repository.name}</Button
+					>
+				</Alert.Description>
+			</Alert.Root>
 		</div>
 	</section>
 {/if}
-
-<style lang="postcss">
-	.content-wrapper {
-		user-select: none;
-		width: 100%;
-		height: 100%;
-		flex: 1;
-	}
-	.content {
-		padding: var(--size-48) var(--size-32);
-		display: flex;
-		flex-direction: column;
-		gap: var(--size-16);
-		max-width: 40rem;
-		width: 100%;
-		margin: auto;
-	}
-
-	.title {
-		color: var(--clr-theme-scale-ntrl-0);
-		align-self: flex-start;
-	}
-</style>

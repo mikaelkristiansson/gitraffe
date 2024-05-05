@@ -1,8 +1,7 @@
 import type { Repository } from '$lib/models/repository';
-import { showToast } from '$lib/notifications/toasts';
 import { open } from '@tauri-apps/api/shell';
 import { setRepositoryURL } from './remote';
-import { error } from './toasts';
+import { toast } from 'svelte-sonner';
 
 export function openExternalUrl(href: string) {
 	try {
@@ -14,7 +13,7 @@ export function openExternalUrl(href: string) {
 
                 ${href}
             `;
-			showToast({ title: 'External URL error', message, style: 'error' });
+			toast.error(message);
 		}
 		throw e;
 	}
@@ -39,6 +38,6 @@ export const createRequestUrl = async (repository: Repository, currentBranchName
 	if (url) {
 		await open(url);
 	} else {
-		error('Failed to create pull request');
+		toast.error('Failed to create pull request');
 	}
 };

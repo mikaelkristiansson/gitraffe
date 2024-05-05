@@ -6,15 +6,17 @@
 <script lang="ts">
 	import iconsJson from '../icons/icons.json';
 
+	let className: string | undefined | null = undefined;
 	export let name: keyof typeof iconsJson;
 	export let color: IconColor = undefined;
 	export let opacity: number | undefined = 1;
 	export let spinnerRadius: number | undefined = 5;
 	export let size = 16;
+	export { className as class };
 </script>
 
 <svg
-	class="icon-wrapper"
+	class="icon-wrapper {className}"
 	viewBox="0 0 16 16"
 	fill-rule="evenodd"
 	class:success={color == 'success'}

@@ -150,6 +150,15 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 	return [...names];
 }
 
+/** Rename the given branch to a new name. */
+export async function renameBranch(
+	repository: Repository,
+	branch: Branch,
+	newName: string
+): Promise<void> {
+	await git(repository.path, ['branch', '-m', branch.nameWithoutRemote, newName]);
+}
+
 /**
  * Delete the branch locally.
  */

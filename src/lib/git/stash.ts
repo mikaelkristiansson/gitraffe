@@ -12,29 +12,29 @@ import type { CommittedFileChange, WorkingDirectoryFileChange } from '$lib/model
 import { parseRawLogWithNumstat } from './log';
 import { IGitError } from '$lib/models/git-errors';
 
-export const GitfoxStashEntryMarker = '!!gitfox';
+export const GitraffeStashEntryMarker = '!!gitraffe';
 
 /**
- * RegEx for determining if a stash entry is created by Gitfox
+ * RegEx for determining if a stash entry is created by Gitraffe
  *
  * This is done by looking for a magic string with the following
- * format: `!!gitfox<branch>`
+ * format: `!!gitraffe<branch>`
  */
-const gitfoxStashEntryMessageRe = /!!gitfox<(.+)>$/;
+const gitraffeStashEntryMessageRe = /!!gitraffe<(.+)>$/;
 
 type StashResult = {
-	/** The stash entries created by Gitfox */
-	readonly gitfoxEntries: ReadonlyArray<IStashEntry>;
+	/** The stash entries created by Gitraffe */
+	readonly gitraffeEntries: ReadonlyArray<IStashEntry>;
 
 	/**
 	 * The total amount of stash entries,
-	 * i.e. stash entries created both by Gitfox and outside of Gitfox
+	 * i.e. stash entries created both by Gitraffe and outside of Gitraffe
 	 */
 	readonly stashEntryCount: number;
 };
 
 /**
- * Get the list of stash entries created by Gitfox in the current repository
+ * Get the list of stash entries created by Gitraffe in the current repository
  * using the default ordering of refs (which is LIFO ordering),
  * as well as the total amount of stash entries.
  */
@@ -54,10 +54,10 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
 	// There's no refs/stashes reflog in the repository or it's not
 	// even a repository. In either case we don't care
 	if (result.exitCode === 128) {
-		return { gitfoxEntries: [], stashEntryCount: 0 };
+		return { gitraffeEntries: [], stashEntryCount: 0 };
 	}
 
-	const gitfoxEntries: Array<IStashEntry> = [];
+	const gitraffeEntries: Array<IStashEntry> = [];
 	const files: StashedFileChanges = { kind: StashedChangesLoadStates.NotLoaded };
 
 	const entries = parse(result.stdout);
@@ -66,7 +66,7 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
 		const branchName = extractBranchFromMessage(message);
 
 		if (branchName !== null) {
-			gitfoxEntries.push({
+			gitraffeEntries.push({
 				name,
 				stashSha,
 				branchName,
@@ -77,7 +77,7 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
 		}
 	}
 
-	return { gitfoxEntries, stashEntryCount: entries.length - 1 };
+	return { gitraffeEntries, stashEntryCount: entries.length - 1 };
 }
 
 /**
@@ -90,7 +90,7 @@ export async function moveStashEntry(
 	{ stashSha, parents, tree }: IStashEntry,
 	branchName: string
 ) {
-	const message = `On ${branchName}: ${createGitfoxStashMessage(branchName)}`;
+	const message = `On ${branchName}: ${createGitraffeStashMessage(branchName)}`;
 	const parentArgs = parents.flatMap((p) => ['-p', p]);
 
 	const { stdout: commitId } = await git(repository.path, [
@@ -104,13 +104,13 @@ export async function moveStashEntry(
 
 	await git(repository.path, ['stash', 'store', '-m', message, commitId.trim()]);
 
-	await dropGitfoxStashEntry(repository, stashSha);
+	await dropGitraffeStashEntry(repository, stashSha);
 }
 
 /**
- * Returns the last Gitfox created stash entry for the given branch
+ * Returns the last Gitraffe created stash entry for the given branch
  */
-export async function getLastGitfoxStashEntryForBranch(
+export async function getLastGitraffeStashEntryForBranch(
 	repository: Repository,
 	branch: Branch | string
 ) {
@@ -119,18 +119,18 @@ export async function getLastGitfoxStashEntryForBranch(
 
 	// Since stash objects are returned in a LIFO manner, the first
 	// entry found is guaranteed to be the last entry created
-	return stash.gitfoxEntries.find((stash) => stash.branchName === branchName) || null;
+	return stash.gitraffeEntries.find((stash) => stash.branchName === branchName) || null;
 }
 
-/** Creates a stash entry message that indicates the entry was created by Gitfox */
-export function createGitfoxStashMessage(branchName: string) {
-	return `${GitfoxStashEntryMarker}<${branchName}>`;
+/** Creates a stash entry message that indicates the entry was created by Gitraffe */
+export function createGitraffeStashMessage(branchName: string) {
+	return `${GitraffeStashEntryMarker}<${branchName}>`;
 }
 
 /**
  * Stash the working directory changes for the current branch
  */
-export async function createGitfoxStashEntry(
+export async function createGitraffeStashEntry(
 	repository: Repository,
 	branch: Branch | string,
 	untrackedFilesToStage: ReadonlyArray<WorkingDirectoryFileChange>
@@ -143,7 +143,7 @@ export async function createGitfoxStashEntry(
 	await stageFiles(repository, fullySelectedUntrackedFiles);
 
 	const branchName = typeof branch === 'string' ? branch : branch.name;
-	const message = createGitfoxStashMessage(branchName);
+	const message = createGitraffeStashMessage(branchName);
 	const args = ['stash', 'push', '-m', message];
 
 	const result = await git(repository.path, args, {
@@ -165,7 +165,7 @@ export async function createGitfoxStashEntry(
 		// a valid stash was created and this should not interfere with the checkout
 
 		console.info(
-			`[createGitfoxStashEntry] a stash was created successfully but exit code ${result.status} reported. stderr: ${result.stderr}`
+			`[createGitraffeStashEntry] a stash was created successfully but exit code ${result.status} reported. stderr: ${result.stderr}`
 		);
 	}
 
@@ -179,7 +179,7 @@ export async function createGitfoxStashEntry(
 
 async function getStashEntryMatchingSha(repository: Repository, sha: string) {
 	const stash = await getStashes(repository);
-	return stash.gitfoxEntries.find((e) => e.stashSha === sha) || null;
+	return stash.gitraffeEntries.find((e) => e.stashSha === sha) || null;
 }
 
 /**
@@ -187,7 +187,7 @@ async function getStashEntryMatchingSha(repository: Repository, sha: string) {
  *
  * @param stashSha the SHA that identifies the stash entry
  */
-export async function dropGitfoxStashEntry(repository: Repository, stashSha: string) {
+export async function dropGitraffeStashEntry(repository: Repository, stashSha: string) {
 	const entryToDelete = await getStashEntryMatchingSha(repository, stashSha);
 
 	if (entryToDelete !== null) {
@@ -230,13 +230,13 @@ export async function popStashEntry(repository: Repository, stashSha: string): P
 				`[popStashEntry] a stash was popped successfully but exit code ${result.status} reported.`
 			);
 			// bye bye
-			await dropGitfoxStashEntry(repository, stashSha);
+			await dropGitraffeStashEntry(repository, stashSha);
 		}
 	}
 }
 
 function extractBranchFromMessage(message: string): string | null {
-	const match = gitfoxStashEntryMessageRe.exec(message);
+	const match = gitraffeStashEntryMessageRe.exec(message);
 	return match === null || match[1].length === 0 ? null : match[1];
 }
 

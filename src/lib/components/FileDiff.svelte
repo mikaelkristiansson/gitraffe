@@ -1,13 +1,11 @@
 <script lang="ts">
-	import Button from './Button.svelte';
 	import HunkViewer from './HunkViewer.svelte';
 	import { type DiffHunk, DiffType, type IDiff, DiffLineType } from '$lib/models/diff';
-	import InfoMessage from './InfoMessage.svelte';
+	import { Button } from './ui/button';
+	import * as Alert from '$lib/components/ui/alert';
 
 	export let filePath: string;
 	export let diff: IDiff;
-	// export let isUnapplied: boolean;
-	export let selectable = false;
 	export let readonly: boolean = false;
 
 	function getGutterMinWidth(max: number) {
@@ -45,29 +43,23 @@
 	{:else if diff.kind === DiffType.Text && diff.hunks.length > 50 && !alwaysShow}
 		<div class="flex flex-col p-1">
 			Change hidden as large numbers of diffs may slow down the UI
-			<Button kind="outlined" color="neutral" on:click={() => (alwaysShow = true)}
-				>show anyways</Button
-			>
+			<Button variant="outline" on:click={() => (alwaysShow = true)}>show anyways</Button>
 		</div>
 	{:else}
 		{#if diff.kind === DiffType.Text && diff.hunks.length === 0}
-			<InfoMessage title="No changes">No changes in this file</InfoMessage>
+			<Alert.Root>
+				<Alert.Title>No changes</Alert.Title>
+				<Alert.Description>No changes in this file</Alert.Description>
+			</Alert.Root>
 		{/if}
 		{#each hunks as section}
 			{@const { added, removed } = computeAddedRemovedByHunk(section)}
 			<div class="hunk-wrapper">
-				<div class="indicators text-base-11">
+				<div class="indicators text-[0.6rem] leading-tight">
 					<span class="added">+{added}</span>
 					<span class="removed">-{removed}</span>
 				</div>
-				<HunkViewer
-					{filePath}
-					{section}
-					{selectable}
-					{readonly}
-					{minWidth}
-					linesModified={added + removed}
-				/>
+				<HunkViewer {filePath} {section} {readonly} {minWidth} linesModified={added + removed} />
 			</div>
 		{/each}
 	{/if}
@@ -80,18 +72,21 @@
 		position: relative;
 		max-height: 100%;
 		flex-shrink: 0;
-		padding: var(--size-16);
-		gap: var(--size-16);
+		@apply p-4 gap-4;
+		/* padding: var(--size-16);
+		gap: var(--size-16); */
 	}
 	.hunk-wrapper {
 		display: flex;
 		flex-direction: column;
-		gap: var(--size-10);
+		/* gap: var(--size-10); */
+		@apply gap-2;
 	}
 	.indicators {
 		display: flex;
 		align-items: center;
-		gap: var(--size-2);
+		/* gap: var(--size-2); */
+		@apply gap-0.5;
 	}
 	.added {
 		color: #45b156;

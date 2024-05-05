@@ -1,5 +1,5 @@
 import type { Repository } from '$lib/models/repository';
-import { AppFileStatusKind, type WorkingDirectoryFileChange } from '$lib/models/status';
+import { AppFileStatusKind, type ChangedFile } from '$lib/models/status';
 import { queueWorkHigh } from '$lib/utils/queue-work';
 import { removeFile } from '@tauri-apps/api/fs';
 import { resolve } from '@tauri-apps/api/path';
@@ -11,7 +11,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { performFailableOperation } from '$lib/utils/failable-operation';
 
 export async function discardChanges(
-	files: Array<WorkingDirectoryFileChange>,
+	files: Array<ChangedFile>,
 	repository: Repository,
 	moveToTrash: boolean = true,
 	askForConfirmationOnDiscardChangesPermanently: boolean = false

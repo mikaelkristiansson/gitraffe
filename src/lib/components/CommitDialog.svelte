@@ -1,57 +1,31 @@
 <script lang="ts">
-	// import { AIService } from '$lib/backend/aiService';
-	import Button from '$lib/components/Button.svelte';
-	// import Checkbox from '$lib/components/Checkbox.svelte';
-	// import DropDownButton from '$lib/components/DropDownButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import ContextMenu from '$lib/components/contextmenu/ContextMenu.svelte';
-	// import ContextMenuItem from '$lib/components/contextmenu/ContextMenuItem.svelte';
-	// import ContextMenuSection from '$lib/components/contextmenu/ContextMenuSection.svelte';
-	import {
-		projectAiGenEnabled,
-		projectCommitGenerationExtraConcise,
-		projectCommitGenerationUseEmojis,
-		projectRunCommitHooks,
-		persistedCommitMessage
-	} from '$lib/config/config';
-	// import { getContextByClass } from '$lib/utils/context';
-	import * as toasts from '$lib/utils/toasts';
-	import { tooltip } from '$lib/utils/tooltip';
-	// import { createEventDispatcher, onMount } from 'svelte';
+	import { persistedCommitMessage } from '$lib/config/config';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
 	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
 	import type { ChangedFile, WorkingDirectoryFileChange } from '$lib/models/status';
-	import { allBranches, workingBranch } from '$lib/stores/branch';
+	import { activeBranch, allBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
-
-	// const aiService = getContextByClass(AIService);
-
-	// const dispatch = createEventDispatcher<{
-	// 	action: 'generate-branch-name';
-	// }>();
+	import { Button } from './ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { SetSelected } from '$lib/types';
+	import { toast } from 'svelte-sonner';
 
 	export let repositoryId: Repository['id'];
 	export let branch: IStatusResult;
-	// export let user: User | undefined;
 	export let selectedFiles: Writable<ChangedFile[]>;
 	export let expanded: Writable<boolean>;
-	export let setSelected: (file: ChangedFile | undefined) => ChangedFile | undefined;
+	export let setSelected: SetSelected;
 
-	const aiGenEnabled = projectAiGenEnabled(repositoryId);
 	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
-	// const runCommitHooks = projectRunCommitHooks(repositoryId);
-	// const commitGenerationExtraConcise = projectCommitGenerationExtraConcise(repositoryId);
-	// const commitGenerationUseEmojis = projectCommitGenerationUseEmojis(repositoryId);
 
 	let isCommitting = false;
 	let aiLoading = false;
-
-	// let contextMenu: ContextMenu;
 
 	let titleTextArea: HTMLTextAreaElement;
 	let descriptionTextArea: HTMLTextAreaElement;
@@ -76,88 +50,43 @@
 		isCommitting = true;
 		try {
 			if ($activeRepository) {
-				await createCommit(
+				const createPromise = await createCommit(
 					$activeRepository,
 					message.trim(),
 					$selectedFiles as WorkingDirectoryFileChange[]
 				);
-				await workingBranch.setWorking($activeRepository);
-				const updateBranch = $allBranches.find((b) => b.tip.sha === branch.currentTip);
-				if (updateBranch) {
-					allBranches.updateBranch(updateBranch);
-					const commits = await loadLocalCommits($activeRepository, updateBranch);
-					commitStore.set(commits);
-				}
+				const updatePromise = await workingBranch.setWorking($activeRepository);
+				allBranches.updateBranch($activeBranch);
+				const commits = await loadLocalCommits($activeRepository, $activeBranch);
+				commitStore.set(commits);
+				const allPromises = Promise.all([createPromise, updatePromise, commits]);
+				toast.promise(allPromises, {
+					loading: 'Committing...',
+					success: 'Changes committed',
+					error: 'Failed to commit changes'
+				});
 				setSelected(undefined);
-				toasts.success('Changes committed');
 			}
 			$commitMessage = '';
 		} catch (e) {
-			toasts.error('Failed to commit changes');
+			toast.error('Failed to commit changes');
 		} finally {
 			isCommitting = false;
 		}
 	}
-
-	// async function generateCommitMessage(files: LocalFile[]) {
-	// 	const diff = files
-	// 		.map((f) => f.hunks.filter((h) => $selectedOwnership.containsHunk(f.id, h.id)))
-	// 		.flat()
-	// 		.map((h) => h.diff)
-	// 		.flat()
-	// 		.join('\n')
-	// 		.slice(0, 5000);
-
-	// 	// Branches get their names generated only if there are at least 4 lines of code
-	// 	// If the change is a 'one-liner', the branch name is either left as "virtual branch"
-	// 	// or the user has to manually trigger the name generation from the meatball menu
-	// 	// This saves people this extra click
-	// 	if (branch.name.toLowerCase().includes('virtual branch')) {
-	// 		dispatch('action', 'generate-branch-name');
-	// 	}
-
-	// 	aiLoading = true;
-	// 	try {
-	// 		const generatedMessage = await aiService.summarizeCommit({
-	// 			diff,
-	// 			useEmojiStyle: $commitGenerationUseEmojis,
-	// 			useBriefStyle: $commitGenerationExtraConcise,
-	// 			userToken: user?.access_token
-	// 		});
-
-	// 		if (generatedMessage) {
-	// 			$commitMessage = generatedMessage;
-	// 		} else {
-	// 			toasts.error('Failed to generate commit message');
-	// 		}
-	// 	} catch {
-	// 		toasts.error('Failed to generate commit message');
-	// 	} finally {
-	// 		aiLoading = false;
-	// 	}
-
-	// 	setTimeout(() => {
-	// 		updateHeights();
-	// 		descriptionTextArea.focus();
-	// 	}, 0);
-	// }
-
-	let aiConfigurationValid = false;
-
-	// onMount(async () => {
-	// 	aiConfigurationValid = await aiService.validateConfiguration(user?.access_token);
-	// });
 </script>
 
-<div class="commit-box" class:commit-box__expanded={$expanded}>
+<div class="flex flex-col p-3" class:commit-box__expanded={$expanded}>
 	{#if $expanded}
-		<div class="commit-box__expander" transition:slide={{ duration: 150, easing: quintOut }}>
-			<div class="commit-box__textarea-wrapper text-input">
+		<div class="flex flex-col mb-3" transition:slide={{ duration: 150, easing: quintOut }}>
+			<div
+				class="flex flex-col relative p-0 pb-10 gap-1 bg-input/30 rounded-sm border border-input"
+			>
 				<textarea
 					value={title}
 					placeholder="Commit summary"
 					disabled={aiLoading}
-					class="text-base-body-13 text-semibold commit-box__textarea commit-box__textarea__title"
+					class="text-xs text-foreground font-semibold commit-box__textarea commit-box__textarea__title"
 					spellcheck="false"
 					rows="1"
 					bind:this={titleTextArea}
@@ -179,7 +108,7 @@
 						value={description}
 						disabled={aiLoading}
 						placeholder="Commit description (optional)"
-						class="text-base-body-13 commit-box__textarea commit-box__textarea__description"
+						class="text-xs text-foreground commit-box__textarea commit-box__textarea__description"
 						spellcheck="false"
 						rows="1"
 						bind:this={descriptionTextArea}
@@ -201,60 +130,27 @@
 				{/if}
 
 				{#if title.length > 50}
-					<div
-						transition:fly={{ y: 2, duration: 150 }}
-						class="commit-box__textarea-tooltip"
-						use:tooltip={{
-							text: '50 characters or less is best. Extra info can be added in the description.',
-							delay: 200
-						}}
-					>
-						<Icon name="blitz" />
-					</div>
+					<Tooltip.Root>
+						<Tooltip.Trigger class="cursor-auto">
+							<div
+								transition:fly={{ y: 2, duration: 150 }}
+								class="absolute flex bottom-3 left-3 rounded-full p-1"
+							>
+								<Icon name="blitz" />
+							</div>
+						</Tooltip.Trigger>
+						<Tooltip.Content
+							>50 characters or less is best. Extra info can be added in the description.</Tooltip.Content
+						>
+					</Tooltip.Root>
 				{/if}
-
-				<div
-					class="commit-box__texarea-actions"
-					use:tooltip={$aiGenEnabled && aiConfigurationValid
-						? ''
-						: 'You must be logged in or have provided your own API key and have summary generation enabled to use this feature'}
-				>
-					<!-- <DropDownButton
-						kind="outlined"
-						icon="ai-small"
-						color="neutral"
-						disabled={!($aiGenEnabled && aiConfigurationValid)}
-						loading={aiLoading}
-						on:click={() => generateCommitMessage(branch.files)}
-					>
-						Generate message
-						<ContextMenu type="checklist" slot="context-menu" bind:this={contextMenu}>
-							<ContextMenuSection>
-								<ContextMenuItem
-									label="Extra concise"
-									on:click={() => ($commitGenerationExtraConcise = !$commitGenerationExtraConcise)}
-								>
-									<Checkbox small slot="control" bind:checked={$commitGenerationExtraConcise} />
-								</ContextMenuItem>
-
-								<ContextMenuItem
-									label="Use emojis 😎"
-									on:click={() => ($commitGenerationUseEmojis = !$commitGenerationUseEmojis)}
-								>
-									<Checkbox small slot="control" bind:checked={$commitGenerationUseEmojis} />
-								</ContextMenuItem>
-							</ContextMenuSection>
-						</ContextMenu>
-					</DropDownButton> -->
-				</div>
 			</div>
 		</div>
 	{/if}
 	<div class="actions">
 		{#if $expanded && !isCommitting}
 			<Button
-				color="neutral"
-				kind="outlined"
+				variant="outline"
 				id="commit-to-branch"
 				on:click={() => {
 					$expanded = false;
@@ -264,11 +160,10 @@
 			</Button>
 		{/if}
 		<Button
-			grow
-			color="primary"
-			kind="filled"
-			loading={isCommitting}
+			class="flex-grow"
+			variant="default"
 			disabled={(isCommitting || !title) && $expanded}
+			loading={isCommitting}
 			id="commit-to-branch"
 			on:click={() => {
 				if ($expanded) {
@@ -284,36 +179,12 @@
 </div>
 
 <style lang="postcss">
-	.commit-box {
-		display: flex;
-		flex-direction: column;
-		padding: var(--size-14);
-		background: var(--clr-theme-container-light);
-		border-top: 1px solid var(--clr-theme-container-outline-light);
-		transition: background-color var(--transition-medium);
-		border-radius: 0 0 var(--radius-m) var(--radius-m);
-	}
-
-	.commit-box__expander {
-		display: flex;
-		flex-direction: column;
-		margin-bottom: var(--size-12);
-	}
-
-	.commit-box__textarea-wrapper {
-		display: flex;
-		position: relative;
-		padding: 0 0 var(--size-48);
-		flex-direction: column;
-		gap: var(--size-4);
-	}
-
 	.commit-box__textarea {
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		gap: var(--size-16);
+		@apply gap-4;
 		background: none;
 		resize: none;
 		&:focus {
@@ -321,39 +192,17 @@
 		}
 	}
 
-	.commit-box__textarea-tooltip {
-		position: absolute;
-		display: flex;
-		bottom: var(--size-12);
-		left: var(--size-12);
-		padding: var(--size-2);
-		border-radius: 100%;
-		background: var(--clr-theme-container-pale);
-		color: var(--clr-theme-scale-ntrl-40);
-	}
-
 	.commit-box__textarea__title {
-		padding: var(--size-12) var(--size-12) 0 var(--size-12);
+		@apply pt-3 px-3 pb-0;
 	}
 
 	.commit-box__textarea__description {
-		padding: 0 var(--size-12) 0 var(--size-12);
-	}
-
-	.commit-box__texarea-actions {
-		position: absolute;
-		display: flex;
-		right: var(--size-12);
-		bottom: var(--size-12);
+		@apply py-0 px-3;
 	}
 
 	.actions {
 		display: flex;
 		justify-content: right;
-		gap: var(--size-6);
-	}
-
-	.commit-box__expanded {
-		background-color: var(--clr-theme-container-pale);
+		@apply gap-2;
 	}
 </style>

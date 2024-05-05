@@ -54,7 +54,7 @@
 	}}
 >
 	{#if label}
-		<span class="label text-base-12">
+		<span class="label text-xs">
 			{label}
 		</span>
 	{/if}

@@ -1,59 +1,39 @@
 <script lang="ts">
-	import Icon from './Icon.svelte';
+	import Spinner from '$lib/icons/Spinner.svelte';
 
 	export let title: string;
 	export let loading = false;
 </script>
 
-<button class="action" class:loading on:click on:mousedown disabled={loading}>
-	<div class="icon">
+<button
+	class="relative overflow-hidden flex p-2 flex-row gap-6 items-center text-left rounded-lg border bg-card hover:bg-secondary focus:outline-0"
+	class:loading
+	on:click
+	on:mousedown
+	disabled={loading}
+>
+	<div
+		class="rounded-lg border bg-accent [&>svg]:fill-primary-foreground dark:[&>svg]:fill-primary opacity-80 flex items-center justify-center flex-shrink-0 w-16 h-16 p-2"
+	>
 		<slot name="icon" />
 	</div>
 	<div class="action__content">
-		<div class="action__title text-base-18 text-bold">{title}</div>
-		<div class="action__message text-base-body-12">
+		<div class="text-lg font-bold">{title}</div>
+		<div class="text-base max-w-[80%]">
 			<slot name="message" />
 		</div>
 	</div>
 	{#if loading}
-		<div class="action__spinner">
-			<Icon name="spinner" />
+		<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+			<Spinner size={28} />
 		</div>
 	{/if}
 </button>
 
 <style lang="postcss">
-	.action {
-		position: relative;
-		overflow: hidden;
-		border-radius: var(--radius-l);
-		border: 1px solid var(--clr-theme-container-outline-light);
-		display: flex;
-		position: relative;
-		padding: var(--size-16);
-		flex-direction: row;
-		gap: var(--size-20);
-		align-items: center;
-		text-align: left;
-		transition:
-			background-color var(--transition-fast),
-			border-color var(--transition-fast);
-
-		&:hover {
-			background-color: color-mix(in srgb, var(--clr-theme-scale-pop-50) 6%, transparent);
-			border: 1px solid color-mix(in srgb, var(--clr-theme-scale-pop-50) 30%, transparent);
-		}
-
-		&:focus {
-			outline: none;
-			background-color: color-mix(in srgb, var(--clr-theme-scale-pop-50) 6%, transparent);
-			border: 1px solid color-mix(in srgb, var(--clr-theme-scale-pop-50) 60%, transparent);
-		}
-	}
-
 	.loading {
 		pointer-events: none;
-		background-color: color-mix(in srgb, var(--clr-theme-scale-ntrl-50) 8%, transparent);
+		@apply bg-muted/50;
 		border: 1px solid transparent;
 
 		& .action__content {
@@ -67,34 +47,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--size-10);
-		transition: opacity var(--transition-slow);
-	}
-
-	.action__spinner {
-		position: absolute;
-		top: var(--size-10);
-		right: var(--size-10);
-		display: flex;
-	}
-
-	.action__title {
-		color: var(--clr-theme-scale-ntrl-0);
-	}
-
-	.action__message {
-		color: var(--clr-theme-scale-ntrl-30);
-		max-width: 80%;
-	}
-
-	.icon {
-		opacity: 0.8;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 5rem;
-		height: 5rem;
-		border-radius: var(--radius-l);
-		background-color: var(--clr-theme-component-illustration-bg);
 	}
 </style>

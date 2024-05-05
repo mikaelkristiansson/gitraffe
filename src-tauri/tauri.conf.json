@@ -1,21 +1,21 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-  "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:5173",
-    "distDir": "../build"
-  },
-  "package": {
-    "productName": "gitfox",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
+	"$schema": "../node_modules/@tauri-apps/cli/schema.json",
+	"build": {
+		"beforeBuildCommand": "npm run build",
+		"beforeDevCommand": "npm run dev",
+		"devPath": "http://localhost:5173",
+		"distDir": "../build"
+	},
+	"package": {
+		"productName": "Gitraffe",
+		"version": "0.1.0"
+	},
+	"tauri": {
+		"allowlist": {
 			"fs": {
 				"readFile": true,
-        "removeFile": true,
-        "exists": true
+				"removeFile": true,
+				"exists": true
 			},
 			"dialog": {
 				"open": true
@@ -38,65 +38,63 @@
 			"path": {
 				"all": true
 			},
-      "shell": {
-        "open": "^((https://)|(http://)|(mailto:)|(vscode://)).+"
-      },
-      "http": {
-        "request": true,
-        "scope": [
-          "https://**"
-        ]
-      }
+			"shell": {
+				"open": "^((https://)|(http://)|(mailto:)|(vscode://)).+"
+			},
+			"http": {
+				"request": true,
+				"scope": ["https://**"]
+			}
 		},
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 720,
-        "resizable": false,
-        "title": "gitfox",
-        "width": 1024,
-        "hiddenTitle":true,
-        "titleBarStyle": "Overlay"
-      }
-    ]
-  }
+		"bundle": {
+			"active": true,
+			"category": "DeveloperTool",
+			"copyright": "",
+			"deb": {
+				"depends": []
+			},
+			"externalBin": [],
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			],
+			"identifier": "com.tauri.dev",
+			"longDescription": "",
+			"macOS": {
+				"entitlements": null,
+				"exceptionDomain": "",
+				"frameworks": [],
+				"providerShortName": null,
+				"signingIdentity": null
+			},
+			"resources": [],
+			"shortDescription": "",
+			"targets": "all",
+			"windows": {
+				"certificateThumbprint": null,
+				"digestAlgorithm": "sha256",
+				"timestampUrl": ""
+			}
+		},
+		"security": {
+			"csp": null
+		},
+		"updater": {
+			"active": false
+		},
+		"windows": [
+			{
+				"fullscreen": false,
+				"height": 720,
+				"resizable": false,
+				"title": "Gitraffe",
+				"width": 1024,
+				"hiddenTitle": true,
+				"titleBarStyle": "Overlay"
+			}
+		]
+	}
 }

@@ -9,7 +9,7 @@ import type { Repository } from './repository';
  * for when we add a remote on behalf of
  * the user.
  */
-export const ForkedRemotePrefix = 'gitfox-';
+export const ForkedRemotePrefix = 'gitraffe-';
 
 /** The name for a fork's upstream remote. */
 export const UpstreamRemoteName = 'upstream';

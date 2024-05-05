@@ -5,9 +5,9 @@ import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { MergeResult, merge } from '$lib/git/merge';
 import { getRemoteHEAD } from '$lib/git/remote';
 import {
-	createGitfoxStashEntry,
-	dropGitfoxStashEntry,
-	getLastGitfoxStashEntryForBranch,
+	createGitraffeStashEntry,
+	dropGitraffeStashEntry,
+	getLastGitraffeStashEntryForBranch,
 	popStashEntry
 } from '$lib/git/stash';
 import type { IStatusResult } from '$lib/git/status';
@@ -21,9 +21,9 @@ import type { WorkingDirectoryStatus } from '$lib/models/status';
 import { updateCurrentBranch } from '$lib/store-updater';
 import { allBranches } from '$lib/stores/branch';
 import { stashStore } from '$lib/stores/stash';
+import { toast } from 'svelte-sonner';
 import { performFailableOperation } from './failable-operation';
 import { getUntrackedFiles } from './status';
-import { error, success } from './toasts';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -304,7 +304,7 @@ export async function checkoutAndLeaveChanges(
 		await createStashAndDropPreviousEntry(repository, workingBranch, workingDirectory);
 	}
 
-	const lastStash = await getLastGitfoxStashEntryForBranch(repository, workingBranch);
+	const lastStash = await getLastGitraffeStashEntryForBranch(repository, workingBranch);
 	if (lastStash) {
 		stashStore.setNewStash(lastStash, repository.id + '_' + workingBranch.name);
 	}
@@ -336,7 +336,7 @@ export async function checkoutAndBringChanges(
 		}
 
 		const stash = (await createStashEntry(repository, branch, workingDirectory))
-			? await getLastGitfoxStashEntryForBranch(repository, branch)
+			? await getLastGitraffeStashEntryForBranch(repository, branch)
 			: null;
 
 		// Failing to stash the changes when we know that there are changes
@@ -367,7 +367,7 @@ async function createStashEntry(
 	workingDirectory: WorkingDirectoryStatus
 ) {
 	const untrackedFiles = getUntrackedFiles(workingDirectory);
-	return createGitfoxStashEntry(repository, branch, untrackedFiles);
+	return createGitraffeStashEntry(repository, branch, untrackedFiles);
 }
 
 function isLocalChangesOverwrittenError(error: Error): boolean {
@@ -383,14 +383,14 @@ async function createStashAndDropPreviousEntry(
 	branch: Branch,
 	workingDirectory: WorkingDirectoryStatus
 ) {
-	const entry = await getLastGitfoxStashEntryForBranch(repository, branch);
+	const entry = await getLastGitraffeStashEntryForBranch(repository, branch);
 
 	const createdStash = await createStashEntry(repository, branch, workingDirectory);
 
 	if (createdStash === true && entry !== null) {
 		const { stashSha, branchName } = entry;
 
-		await dropGitfoxStashEntry(repository, stashSha);
+		await dropGitraffeStashEntry(repository, stashSha);
 		console.info(`Dropped stash '${stashSha}' associated with ${branchName}`);
 	}
 
@@ -505,7 +505,7 @@ export const pushActiveBranch = async (
 	activeBranch: Branch
 ) => {
 	if (status.branchAheadBehind?.behind) {
-		error('Cannot push while branch is behind origin');
+		toast.error('Cannot push while branch is behind origin');
 		return;
 	}
 	if (status.branchAheadBehind?.ahead === 0) {
@@ -526,10 +526,10 @@ export const pushActiveBranch = async (
 			allBranches.updateBranch(newBranch);
 			updateCurrentBranch(repository, newBranch);
 		}
-		success('Pushed to origin');
+		toast.success('Pushed to origin');
 		return true;
 	} catch (e) {
-		error('Failed to push to origin');
+		toast.error('Failed to push to origin');
 		return false;
 	}
 };

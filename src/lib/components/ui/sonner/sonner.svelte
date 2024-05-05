@@ -1,0 +1,25 @@
+<script lang="ts">
+	import { Toaster as Sonner, type ToasterProps as SonnerProps } from 'svelte-sonner';
+	// import { mode } from 'mode-watcher';
+
+	type $$Props = SonnerProps;
+</script>
+
+<!-- theme={$mode} -->
+<Sonner
+	class="toaster group w-full bottom-0 right-0 "
+	toastOptions={{
+		classes: {
+			toast:
+				'group toast w-auto right-4 bottom-4 group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+			description: 'group-[.toast]:text-muted-foreground',
+			actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+			cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+			error: '[&_svg]:fill-red-400',
+			success: '[&_svg]:fill-green-400',
+			warning: '[&_svg]:fill-yellow-400',
+			info: '[&_svg]:fill-blue-400'
+		}
+	}}
+	{...$$restProps}
+/>

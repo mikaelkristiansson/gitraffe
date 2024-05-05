@@ -4,8 +4,8 @@ import { formatBytes } from '../bytes';
 
 /** Create the Git LFS progress reporting file and return the path. */
 export async function createLFSProgressFile(): Promise<string> {
-	const path = BaseDirectory.AppData + '/Gitfox-lfs-progress';
-	await createDir('Gitfox-lfs-progress', { dir: BaseDirectory.AppData, recursive: true });
+	const path = BaseDirectory.AppData + '/Gitraffe-lfs-progress';
+	await createDir('Gitraffe-lfs-progress', { dir: BaseDirectory.AppData, recursive: true });
 
 	await exists(path);
 
