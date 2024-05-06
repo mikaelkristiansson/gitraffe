@@ -19,7 +19,7 @@ import { wast } from '@codemirror/lang-wast';
 import { xml } from '@codemirror/lang-xml';
 import { HighlightStyle, StreamLanguage } from '@codemirror/language';
 import { ruby } from '@codemirror/legacy-modes/mode/ruby';
-import { NodeType, Tree, Parser } from '@lezer/common';
+import { NodeType, Tree, type Parser } from '@lezer/common';
 import { tags, highlightTree } from '@lezer/highlight';
 
 const t = tags;

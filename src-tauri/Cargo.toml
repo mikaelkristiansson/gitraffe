@@ -1,11 +1,11 @@
 [package]
-name = "Gitraffe"
+name = "gitraffe-app"
 version = "0.1.0"
 description = "A simple git client"
 authors = ["mikael.kristiansson87@gmail.com"]
 license = ""
 repository = "https://github.com/mikaelkristiansson/gitraffe"
-default-run = "Gitraffe"
+default-run = "gitraffe-app"
 edition = "2021"
 rust-version = "1.60"
 

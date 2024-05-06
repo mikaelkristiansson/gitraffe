@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Toaster as Sonner, type ToasterProps as SonnerProps } from 'svelte-sonner';
-	// import { mode } from 'mode-watcher';
+	import { mode } from 'mode-watcher';
 
 	type $$Props = SonnerProps;
 </script>
 
-<!-- theme={$mode} -->
 <Sonner
+	theme={$mode}
 	class="toaster group w-full bottom-0 right-0 "
 	toastOptions={{
 		classes: {

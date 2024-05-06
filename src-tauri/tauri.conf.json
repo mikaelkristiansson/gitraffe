@@ -49,7 +49,7 @@
 		"bundle": {
 			"active": true,
 			"category": "DeveloperTool",
-			"copyright": "",
+			"copyright": "Copyright © 2024 Gitraffe. All rights reserved.",
 			"deb": {
 				"depends": []
 			},
@@ -61,7 +61,7 @@
 				"icons/icon.icns",
 				"icons/icon.ico"
 			],
-			"identifier": "com.tauri.dev",
+			"identifier": "com.gitraffe.app",
 			"longDescription": "",
 			"macOS": {
 				"entitlements": null,
@@ -83,7 +83,12 @@
 			"csp": null
 		},
 		"updater": {
-			"active": false
+			"active": false,
+			"endpoints": [
+				"https://gitraffe-update-server.vercel.app/update/{{target}}/{{current_version}}"
+			],
+			"dialog": true,
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENEMDE4Q0Q4MDY4NEY1ODMKUldTRDlZUUcySXdCelVEUEp4VW8vWmJiL1pDSTd2WUh1Z1YyMWRTeVJ4eldxRW5IcXJwMmRRSzMK"
 		},
 		"windows": [
 			{

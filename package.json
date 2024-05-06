@@ -42,7 +42,6 @@
 		"@typescript-eslint/eslint-plugin": "^7.7.1",
 		"@typescript-eslint/parser": "^7.7.1",
 		"autoprefixer": "^10.4.19",
-		"dialog": "link:@tauri-apps/api/dialog",
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.38.0",
@@ -58,7 +57,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@tauri-apps/plugin-shell": "2.0.0-beta.2",
 		"bits-ui": "^0.21.5",
 		"clsx": "^2.1.1",
 		"date-fns": "^3.6.0",
