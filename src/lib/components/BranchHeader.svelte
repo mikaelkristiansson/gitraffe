@@ -240,9 +240,9 @@
 								</DropdownMenu.Item>
 							{/if}
 						</DropdownMenu.Group>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Group>
-							{#if branch.currentBranch !== $defaultBranch.name}
+						{#if branch.currentBranch !== $defaultBranch.name}
+							<DropdownMenu.Separator />
+							<DropdownMenu.Group>
 								<DropdownMenu.Item
 									class="cursor-pointer"
 									on:click={async () => {
@@ -252,8 +252,8 @@
 									<Icon name="bin-small" />
 									<span class="pl-2">Delete branch</span>
 								</DropdownMenu.Item>
-							{/if}
-						</DropdownMenu.Group>
+							</DropdownMenu.Group>
+						{/if}
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</div>
