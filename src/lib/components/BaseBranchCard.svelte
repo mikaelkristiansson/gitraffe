@@ -27,7 +27,7 @@
 		<div class="relative flex rounded-md gap-2 p-2 pr-0">
 			{#if isNavCollapsed}
 				{#if (base?.aheadBehind.behind || 0) > 0}
-					<Badge size="sm" variant="secondary"
+					<Badge size="sm" variant="secondary" class="absolute top-0 right-0"
 						><span class="font-bold">{base?.aheadBehind.behind || 0}</span></Badge
 					>
 				{/if}
