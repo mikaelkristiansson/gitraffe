@@ -6,14 +6,14 @@
 </script>
 
 <button
-	class="relative overflow-hidden flex p-2 flex-row gap-6 items-center text-left rounded-lg border bg-card hover:bg-secondary focus:outline-0"
+	class="relative overflow-hidden flex p-2 flex-row gap-6 items-center text-left rounded-lg border bg-card hover:bg-neutral-100 dark:hover:bg-neutral-900 focus:outline-0"
 	class:loading
 	on:click
 	on:mousedown
 	disabled={loading}
 >
 	<div
-		class="rounded-lg border bg-accent [&>svg]:fill-primary-foreground dark:[&>svg]:fill-primary opacity-80 flex items-center justify-center flex-shrink-0 w-16 h-16 p-2"
+		class="[&>svg]:fill-muted dark:[&>svg]:fill-primary opacity-80 flex items-center justify-center flex-shrink-0 w-16 h-16 p-2"
 	>
 		<slot name="icon" />
 	</div>

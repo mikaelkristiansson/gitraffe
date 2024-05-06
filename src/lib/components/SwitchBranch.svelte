@@ -10,6 +10,7 @@
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import { activeRepository } from '$lib/stores/repository';
 	import { Button } from './ui/button';
+	import { toast } from 'svelte-sonner';
 
 	export let branch: Branch;
 	export let href: string;
@@ -79,12 +80,17 @@
 								null
 							);
 						} else {
-							await checkoutAndBringChanges(
-								$activeRepository,
-								branch$,
-								$workingBranch?.workingDirectory,
-								null
-							);
+							try {
+								await checkoutAndBringChanges(
+									$activeRepository,
+									branch$,
+									$workingBranch?.workingDirectory,
+									null
+								);
+							} catch (e) {
+								console.error(e);
+								toast.error('Failed to switch branch');
+							}
 						}
 						await updateCurrentBranch($activeRepository, branch$);
 						if (href) goto(href);

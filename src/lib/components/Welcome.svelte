@@ -17,9 +17,11 @@
 </script>
 
 <div class="welcome z-10">
-	<div class="welcome-content">
-		<h1 class="text-center text-4xl font-extrabold">Welcome to Gitraffe</h1>
-		<div class="[&>svg]:fill-primary opacity-80">{@html giraffeSvg}</div>
+	<div class="welcome-content" data-tauri-drag-region>
+		<h1 class="text-center text-4xl font-bold">Welcome to Gitraffe</h1>
+		<div class="[&>svg]:fill-gray-900 [&>svg]:dark:fill-gray-50 opacity-80">
+			{@html giraffeSvg}
+		</div>
 		<div class="welcome__actions">
 			<WelcomeAction
 				title="Add new project"

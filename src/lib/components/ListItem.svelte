@@ -2,6 +2,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type iconsJson from '$lib/icons/icons.json';
+	import Spinner from '$lib/icons/Spinner.svelte';
 
 	export let icon: keyof typeof iconsJson | undefined = undefined;
 	export let selected = false;
@@ -16,8 +17,10 @@
 	</div>
 	{#if icon || selected}
 		<div class="icon">
-			{#if icon}
-				<Icon name={loading ? 'spinner' : icon} />
+			{#if loading}
+				<Spinner />
+			{:else if icon}
+				<Icon name={icon} />
 			{:else}
 				<Icon name="tick" />
 			{/if}

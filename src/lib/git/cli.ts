@@ -37,8 +37,8 @@ export async function git(
 		}
 	}
 
-	const gitErrorDescription = gitError !== null ? getDescriptionForError(gitError) : null;
-	//   gitError !== null ? getDescriptionForError(gitError, result.stderr) : null
+	const gitErrorDescription =
+		gitError !== null ? getDescriptionForError(gitError, result.stderr) : null;
 	const gitResult = {
 		...result,
 		exitCode,
@@ -145,33 +145,28 @@ export async function getCurrentBranchName(path: string): Promise<string> {
 	return stdout.trim();
 }
 
-function getDescriptionForError(
-	error: IGitError
-	// stderr: string
-): string | null {
-	// 	if (isAuthFailureError(error)) {
-	// 	  const menuHint = __DARWIN__
-	// 		? 'GitHub Desktop > Settings.'
-	// 		: 'File > Options.'
-	// 	  return `Authentication failed. Some common reasons include:
+function getDescriptionForError(error: IGitError, stderr: string): string | null {
+	if (isAuthFailureError(error)) {
+		const menuHint = 'File > Options.';
+		return `Authentication failed. Some common reasons include:
 
-	//   - You are not logged in to your account: see ${menuHint}
-	//   - You may need to log out and log back in to refresh your token.
-	//   - You do not have permission to access this repository.
-	//   - The repository is archived on GitHub. Check the repository settings to confirm you are still permitted to push commits.
-	//   - If you use SSH authentication, check that your key is added to the ssh-agent and associated with your account.
-	//   - If you use SSH authentication, ensure the host key verification passes for your repository hosting service.
-	//   - If you used username / password authentication, you might need to use a Personal Access Token instead of your account password. Check the documentation of your repository hosting service.`
-	// 	}
+	  - You are not logged in to your account: see ${menuHint}
+	  - You may need to log out and log back in to refresh your token.
+	  - You do not have permission to access this repository.
+	  - The repository is archived on GitHub. Check the repository settings to confirm you are still permitted to push commits.
+	  - If you use SSH authentication, check that your key is added to the ssh-agent and associated with your account.
+	  - If you use SSH authentication, ensure the host key verification passes for your repository hosting service.
+	  - If you used username / password authentication, you might need to use a Personal Access Token instead of your account password. Check the documentation of your repository hosting service.`;
+	}
 
 	switch (error) {
 		case IGitError.BadConfigValue:
-			// const errorInfo = GitProcess.parseBadConfigValueErrorInfo(stderr)
-			// if (errorInfo === null) {
-			return 'Unsupported git configuration value.';
-		// }
+			const errorInfo = parseBadConfigValueErrorInfo(stderr);
+			if (errorInfo === null) {
+				return 'Unsupported git configuration value.';
+			}
+			return `Unsupported value '${errorInfo.value}' for git config key '${errorInfo.key}'`;
 
-		// return `Unsupported value '${errorInfo.value}' for git config key '${errorInfo.key}'`
 		case IGitError.SSHKeyAuditUnverified:
 			return 'The SSH key is unverified.';
 		case IGitError.RemoteDisconnection:
@@ -285,6 +280,27 @@ function getDescriptionForError(
 	}
 }
 
+/**
+ * Determine whether the provided `error` is an authentication failure
+ * as per our definition. Note that this is not an exhaustive list of
+ * authentication failures, only a collection of errors that we treat
+ * equally in terms of error message and presentation to the user.
+ */
+export function isAuthFailureError(
+	error: IGitError
+): error is
+	| IGitError.SSHAuthenticationFailed
+	| IGitError.SSHPermissionDenied
+	| IGitError.HTTPSAuthenticationFailed {
+	switch (error) {
+		case IGitError.SSHAuthenticationFailed:
+		case IGitError.SSHPermissionDenied:
+		case IGitError.HTTPSAuthenticationFailed:
+			return true;
+	}
+	return false;
+}
+
 export class GitError extends Error {
 	/** The result from the failed command. */
 	public readonly result: IGitResult;
@@ -317,6 +333,21 @@ export class GitError extends Error {
 		this.args = args;
 		this.isRawMessage = rawMessage;
 	}
+}
+
+function parseBadConfigValueErrorInfo(stderr: string) {
+	const errorEntry = Object.entries(GitErrorRegexes).find(([_, v]) => v === 0);
+	if (errorEntry === undefined) {
+		return null;
+	}
+	const m = stderr.match(errorEntry[0]);
+	if (m === null) {
+		return null;
+	}
+	if (!m[1] || !m[2]) {
+		return null;
+	}
+	return { key: m[2], value: m[1] };
 }
 
 export interface IGitResult {

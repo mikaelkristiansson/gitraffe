@@ -34,6 +34,6 @@
 		<Dialog.Header>
 			<Dialog.Title>Repository settings</Dialog.Title>
 		</Dialog.Header>
-		<RepositorySettings {repository} />
+		<RepositorySettings {repository} bind:dialogSettingsOpen />
 	</Dialog.Content>
 </Dialog.Root>

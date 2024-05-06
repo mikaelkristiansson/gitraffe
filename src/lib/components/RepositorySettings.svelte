@@ -8,6 +8,7 @@
 	import { toast } from 'svelte-sonner';
 
 	export let repository: Repository;
+	export let dialogSettingsOpen = false;
 
 	let isDeleting = false;
 
@@ -30,6 +31,7 @@
 			toast.error('Failed to delete project');
 		} finally {
 			isDeleting = false;
+			dialogSettingsOpen = false;
 		}
 	}
 </script>
