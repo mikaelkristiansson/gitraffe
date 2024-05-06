@@ -3,6 +3,7 @@
 	import { SETTINGS_CONTEXT, loadUserSettings } from '$lib/settings/userSettings';
 	import { initTheme } from '$lib/utils/theme';
 	import { onMount, setContext } from 'svelte';
+	import { dev } from '$app/environment';
 	import { Toaster as Sonner } from '$lib/components/ui/sonner';
 	import * as hotkeys from '$lib/utils/hotkeys';
 	import { unsubscribe } from '$lib/utils/unsubscribe';
@@ -27,7 +28,12 @@
 	});
 </script>
 
-<div data-tauri-drag-region class="flex h-full select-none cursor-default">
+<div
+	data-tauri-drag-region
+	class="flex h-full select-none cursor-default"
+	role="application"
+	on:contextmenu={(e) => !dev && e.preventDefault()}
+>
 	<slot />
 </div>
 <Sonner />
