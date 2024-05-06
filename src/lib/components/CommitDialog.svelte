@@ -193,7 +193,7 @@
 	}
 
 	.commit-box__textarea__title {
-		@apply pt-3 px-3 pb-0;
+		@apply pt-4 px-3 pb-0;
 	}
 
 	.commit-box__textarea__description {

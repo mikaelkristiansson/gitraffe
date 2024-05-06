@@ -66,7 +66,9 @@
 				<div class="commit__header">
 					<div class="commit__message">
 						<div class="commit__row">
-							<span class="commit__title font-semibold text-xs">
+							<span
+								class="commit__title whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%] font-semibold text-xs"
+							>
 								{commit.summary}
 							</span>
 							{#if index === 0}
