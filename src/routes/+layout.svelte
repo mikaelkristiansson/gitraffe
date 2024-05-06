@@ -1,17 +1,20 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import '../styles/main.css';
 	import { SETTINGS_CONTEXT, loadUserSettings } from '$lib/settings/userSettings';
 	import { initTheme } from '$lib/utils/theme';
-	import { onMount, setContext } from 'svelte';
+	import { setContext } from 'svelte';
 	import { Toaster as Sonner } from '$lib/components/ui/sonner';
 	import * as hotkeys from '$lib/utils/hotkeys';
 	import { unsubscribe } from '$lib/utils/unsubscribe';
 
+	let { children } = $props();
 	const userSettings = loadUserSettings();
 	initTheme(userSettings);
 	setContext(SETTINGS_CONTEXT, userSettings);
 
-	onMount(() => {
+	$effect(() => {
 		return unsubscribe(
 			hotkeys.on('Meta+T', () => {
 				userSettings.update((s) => ({
@@ -28,7 +31,7 @@
 </script>
 
 <div data-tauri-drag-region class="flex h-full select-none cursor-default">
-	<slot />
+	{@render children()}
 </div>
 <Sonner />
 
