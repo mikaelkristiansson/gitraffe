@@ -1,6 +1,6 @@
 import { assertNever } from '$lib/fatal-error';
 import type { Repository } from '$lib/models/repository';
-import { platform } from '@tauri-apps/api/os';
+import { platform } from '@tauri-apps/plugin-os';
 import { git } from './cli';
 
 /** The reset modes which are supported. */

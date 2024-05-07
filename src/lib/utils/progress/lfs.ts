@@ -1,11 +1,11 @@
-import { BaseDirectory, createDir, exists } from '@tauri-apps/api/fs';
+import { BaseDirectory, mkdir, exists } from '@tauri-apps/plugin-fs';
 import type { IGitOutput, IGitProgress, IGitProgressInfo } from './git';
 import { formatBytes } from '../bytes';
 
 /** Create the Git LFS progress reporting file and return the path. */
 export async function createLFSProgressFile(): Promise<string> {
 	const path = BaseDirectory.AppData + '/Gitraffe-lfs-progress';
-	await createDir('Gitraffe-lfs-progress', { dir: BaseDirectory.AppData, recursive: true });
+	await mkdir('Gitraffe-lfs-progress', { baseDir: BaseDirectory.AppData, recursive: true });
 
 	await exists(path);
 

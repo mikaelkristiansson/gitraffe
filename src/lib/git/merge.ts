@@ -1,8 +1,8 @@
 import type { Repository } from '$lib/models/repository';
 import { join } from '@tauri-apps/api/path';
 import { git } from './cli';
-import { exists } from '@tauri-apps/api/fs';
-import { invoke } from '@tauri-apps/api/tauri';
+import { exists } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import { IGitError } from '$lib/models/git-errors';
 
 export enum MergeResult {

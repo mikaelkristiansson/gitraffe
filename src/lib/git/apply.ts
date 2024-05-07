@@ -1,7 +1,7 @@
 import { assertNever } from '$lib/fatal-error';
 import { DiffType } from '$lib/models/diff';
 import { AppFileStatusKind, WorkingDirectoryFileChange } from '$lib/models/status';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { getWorkingDirectoryDiff } from './diff';
 import type { Repository } from '$lib/models/repository';
 import { formatPatch } from '$lib/utils/patch-formatter';

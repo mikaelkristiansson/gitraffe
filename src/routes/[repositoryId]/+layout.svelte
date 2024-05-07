@@ -5,9 +5,11 @@
 	import type { Repository } from '$lib/models/repository';
 	import { activeRepository, updatingRepositories } from '$lib/stores/repository';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
-	import { appWindow } from '@tauri-apps/api/window';
+	import { getCurrent } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
+
+	const appWindow = getCurrent();
 
 	let repository$: Repository | null = null;
 	const unsubscribeActiveRepository = activeRepository.subscribe(async (repo) => {

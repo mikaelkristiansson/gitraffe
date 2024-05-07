@@ -19,7 +19,7 @@ import { extname, join } from '@tauri-apps/api/path';
 import { getConfigValue } from './config';
 import { forceUnwrap } from '$lib/fatal-error';
 import { DiffParser } from './diff-parser';
-import { readBinaryFile } from '@tauri-apps/api/fs';
+import { readFile } from '@tauri-apps/plugin-fs';
 import { getBlobContents } from './show';
 import { getOldPathOrDefault } from './get-old-path';
 import type { Repository } from '$lib/models/repository';
@@ -256,7 +256,7 @@ export async function getWorkingDirectoryImage(
 	repository: Repository,
 	file: FileChange
 ): Promise<Image> {
-	const contents = await readBinaryFile(await join(repository.path, file.path));
+	const contents = await readFile(await join(repository.path, file.path));
 	return new Image(contents.toString(), getMediaType(await extname(file.path)), contents.length);
 }
 

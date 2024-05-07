@@ -1,4 +1,4 @@
-import { platform } from '@tauri-apps/api/os';
+import { platform } from '@tauri-apps/plugin-os';
 import { parsePACString } from './parse-pac-string';
 
 export async function resolveGitProxy(): Promise<string | undefined> {

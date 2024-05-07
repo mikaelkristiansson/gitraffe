@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { getStatus, type IStatusResult } from './status';
 import type { GitResponse } from './type';
 import type { Branch } from '$lib/models/branch';
@@ -6,7 +6,7 @@ import type { Repository } from '$lib/models/repository';
 import { GitErrorRegexes, IGitError } from '$lib/models/git-errors';
 import { assertNever } from '$lib/fatal-error';
 import { getFileFromExceedsError } from '$lib/utils/regex';
-import type { ChildProcess } from '@tauri-apps/api/shell';
+import type { ChildProcess } from '@tauri-apps/plugin-shell';
 
 export async function git(
 	path: string,

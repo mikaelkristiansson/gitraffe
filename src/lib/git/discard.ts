@@ -1,13 +1,13 @@
 import type { Repository } from '$lib/models/repository';
 import { AppFileStatusKind, type ChangedFile } from '$lib/models/status';
 import { queueWorkHigh } from '$lib/utils/queue-work';
-import { removeFile } from '@tauri-apps/api/fs';
+import { remove as removeFile } from '@tauri-apps/plugin-fs';
 import { resolve } from '@tauri-apps/api/path';
 import { listSubmodules, resetSubmodulePaths } from './submodule';
 import { IndexStatus, getIndexChanges } from './diff-index';
 import { GitResetMode, resetPaths } from './reset';
 import { checkoutIndex } from './checkout-index';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { performFailableOperation } from '$lib/utils/failable-operation';
 
 export async function discardChanges(

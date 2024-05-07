@@ -1,4 +1,4 @@
-import { platform } from '@tauri-apps/api/os';
+import { platform } from '@tauri-apps/plugin-os';
 import { normalize as pathNormalize } from '@tauri-apps/api/path';
 import type { Repository } from '$lib/models/repository';
 import type { CloningRepository } from '$lib/models/cloning-repository';

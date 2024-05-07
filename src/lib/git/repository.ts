@@ -1,4 +1,4 @@
-import { exists } from '@tauri-apps/api/fs';
+import { exists } from '@tauri-apps/plugin-fs';
 import { resolve } from '@tauri-apps/api/path';
 import { git } from './cli';
 

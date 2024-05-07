@@ -1,5 +1,5 @@
 import type { Repository } from '$lib/models/repository';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { git } from './cli';
 import { homeDir } from '@tauri-apps/api/path';
 
