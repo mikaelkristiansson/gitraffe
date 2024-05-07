@@ -1,9 +1,9 @@
 import type { Repository } from '$lib/models/repository';
-import { exists } from '@tauri-apps/api/fs';
+import { exists } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 import { git } from './cli';
 import { SubmoduleEntry } from '$lib/models/submodule';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 
 export async function listSubmodules(
 	repository: Repository

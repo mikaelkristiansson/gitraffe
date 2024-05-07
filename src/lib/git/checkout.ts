@@ -8,7 +8,7 @@ import { executionOptionsWithProgress } from '$lib/utils/progress/from-process';
 import { envForRemoteOperation, getFallbackUrlForProxyResolve } from './environment';
 import { AuthenticationErrors } from './authentication';
 import { CheckoutProgressParser } from '$lib/utils/progress/checkout';
-import { platform } from '@tauri-apps/api/os';
+import { platform } from '@tauri-apps/plugin-os';
 
 /** Check out the paths at HEAD. */
 export async function checkoutPaths(

@@ -1,5 +1,5 @@
 import type { Repository } from '$lib/models/repository';
-import { open } from '@tauri-apps/api/shell';
+import { open } from '@tauri-apps/plugin-shell';
 import { setRepositoryURL } from './remote';
 import { toast } from 'svelte-sonner';
 

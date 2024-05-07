@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { getStorageItem, setStorageItem } from '../persisted';
 import { Repository } from '../models/repository';
 import { getRepositoryType, type RepositoryType } from '../git/repository';
 import { matchExistingRepository } from '../utils/repository-matching';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { emit } from '@tauri-apps/api/event';
 import { toast } from 'svelte-sonner';
 

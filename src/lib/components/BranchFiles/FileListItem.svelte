@@ -9,7 +9,7 @@
 	import { cn } from '$lib/utils';
 	import Icon from '../Icon.svelte';
 	import { join } from '@tauri-apps/api/path';
-	import { open } from '@tauri-apps/api/shell';
+	import { open } from '@tauri-apps/plugin-shell';
 	import { toast } from 'svelte-sonner';
 	import DiscardChanges from './DiscardChanges.svelte';
 	import type { SetSelected } from '$lib/types';

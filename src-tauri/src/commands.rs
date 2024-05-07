@@ -3,7 +3,7 @@ use std::io::Write;
 use std::process::Command;
 use std::process::Stdio;
 use tauri::Error;
-use tauri::Manager;
+use tauri_plugin_fs::FsExt;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -47,15 +47,10 @@ pub async fn git(
 }
 
 #[tauri::command]
-pub fn expand_scope(
-    app_handle: tauri::AppHandle,
-    folder_path: std::path::PathBuf,
-) -> Result<(), String> {
+pub fn expand_scope(app_handle: tauri::AppHandle, folder_path: std::path::PathBuf) {
     // If possible, verify your path if it comes from your frontend.
 
     // true means that we want inner directories allowed too
-    app_handle
-        .fs_scope()
-        .allow_directory(&folder_path, true)
-        .map_err(|err| err.to_string())
+
+    app_handle.fs_scope().allow_directory(&folder_path, true)
 }

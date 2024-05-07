@@ -1,5 +1,5 @@
 import type { IGitExecutionOptions } from '$lib/git/cli';
-import type { ChildProcess } from '@tauri-apps/api/shell';
+import type { ChildProcess } from '@tauri-apps/plugin-shell';
 import { mergeObject } from '../object';
 import type { GitProgressParser, IGitOutput, IGitProgress } from './git';
 import { GitLFSProgressParser, createLFSProgressFile } from './lfs';
