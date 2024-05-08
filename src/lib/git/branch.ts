@@ -40,9 +40,9 @@ export async function getBranches(
 
 	const branches = [];
 
-	const status = await git(repository.path, ['branch', '-vv']);
+	const { stdout } = await git(repository.path, ['branch', '-vv']);
 
-	const states = status.stdout
+	const states = stdout
 		.split(/\n/)
 		.filter((branch) => branch.trim())
 		.map((branch) => {
@@ -72,14 +72,10 @@ export async function getBranches(
 		const type = ref.fullName.startsWith('refs/heads') ? BranchType.Local : BranchType.Remote;
 
 		const upstream = ref.upstreamShortName.length > 0 ? ref.upstreamShortName : null;
-		let ahead = 0;
-		let behind = 0;
 		const state = states.find((state) => state?.name === ref.shortName);
-		if (state) {
-			ahead = state.ahead;
-			behind = state.behind;
-		}
-		const aheadBehind = state?.isGone ? null : { ahead: Number(ahead), behind: Number(behind) };
+
+		const aheadBehind =
+			state?.isGone || !state ? null : { ahead: state.ahead, behind: state.behind };
 
 		branches.push(new Branch(ref.shortName, upstream, tip, type, ref.fullName, aheadBehind));
 	}
@@ -97,26 +93,6 @@ export async function getRecentBranches(repository: Repository, limit: number): 
 		/.*? (renamed|checkout)(?:: moving from|\s*) (?:refs\/heads\/|\s*)(.*?) to (?:refs\/heads\/|\s*)(.*?)$/i
 	);
 
-	// const result = await git(
-	//   [
-	//     'log',
-	//     '-g',
-	//     '--no-abbrev-commit',
-	//     '--pretty=oneline',
-	//     'HEAD',
-	//     '-n',
-	//     '2500',
-	//     '--',
-	//   ],
-	//   repository.path,
-	//   'getRecentBranches',
-	//   { successExitCodes: new Set([0, 128]) }
-	// )
-
-	// if (result.exitCode === 128) {
-	//   // error code 128 is returned if the branch is unborn
-	//   return []
-	// }
 	const { stdout, exitCode } = await git(
 		repository.path,
 		['log', '-g', '--no-abbrev-commit', '--pretty=oneline', 'HEAD', '-n', '2500', '--'],
