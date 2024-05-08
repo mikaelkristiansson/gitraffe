@@ -36,7 +36,7 @@ export class Branch {
 		public readonly tip: IBranchTip,
 		public readonly type: BranchType,
 		public readonly ref: string,
-		public readonly aheadBehind: IAheadBehind,
+		public readonly aheadBehind: IAheadBehind | null,
 		public remoteExists: boolean = false
 	) {}
 

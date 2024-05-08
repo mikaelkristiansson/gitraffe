@@ -44,7 +44,11 @@
 			<p class="text-sm whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]">
 				{branch.name}
 			</p>
-			<AheadBehind ahead={branch.aheadBehind.ahead} behind={branch.aheadBehind.behind} />
+			{#if branch.aheadBehind}
+				<AheadBehind ahead={branch.aheadBehind.ahead} behind={branch.aheadBehind.behind} />
+			{:else}
+				<Icon name="removed-branch-small" class="text-muted" />
+			{/if}
 		</div>
 		<div class="flex items-center justify-between gap-1">
 			<span class="text-gray-400 text-[0.7rem] details truncate">
