@@ -128,7 +128,9 @@
 						onSelectedChange={(sel) => sel?.value && setFilesForCommit(sel?.value)}
 					>
 						<Select.Trigger class="w-[296px]">
-							<div class="flex flex-row items-center gap-2">
+							<div
+								class="flex flex-row items-center gap-2 whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]"
+							>
 								<Icon name="commit" />
 								<Select.Value
 									placeholder="Select a commit"

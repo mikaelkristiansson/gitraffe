@@ -1,3 +1,4 @@
+import { IGitError } from '$lib/models/git-errors';
 import type { IRemote } from '$lib/models/remote';
 import type { Repository } from '$lib/models/repository';
 import { git } from './cli';
@@ -7,9 +8,11 @@ import { getSymbolicRef } from './refs';
  * List the remotes, sorted alphabetically by `name`, for a repository.
  */
 export async function getRemotes(repository: Repository): Promise<ReadonlyArray<IRemote>> {
-	const result = await git(repository.path, ['remote', '-v']);
+	const result = await git(repository.path, ['remote', '-v'], {
+		expectedErrors: new Set([IGitError.NotAGitRepository])
+	});
 
-	if (result.stderr.length > 0) {
+	if (result.gitError === IGitError.NotAGitRepository) {
 		return [];
 	}
 

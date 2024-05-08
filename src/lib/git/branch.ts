@@ -14,7 +14,6 @@ import { getRemoteURL } from './remote';
 /** Get all the branches. */
 export async function getBranches(
 	repository: Repository,
-	defaultBranchUpstreamName: string,
 	...prefixes: string[]
 ): Promise<Array<Branch>> {
 	const { formatArgs, parse } = createForEachRefParser({
@@ -23,8 +22,7 @@ export async function getBranches(
 		upstreamShortName: '%(upstream:short)',
 		sha: '%(objectname)',
 		author: '%(author)',
-		symRef: '%(symref)',
-		aheadBehind: `%(ahead-behind:${defaultBranchUpstreamName})`
+		symRef: '%(symref)'
 	});
 
 	if (!prefixes || !prefixes.length) {
@@ -34,21 +32,9 @@ export async function getBranches(
 	// TODO: use expectedErrors here to handle a specific error
 	// see https://github.com/desktop/desktop/pull/5299#discussion_r206603442 for
 	// discussion about what needs to change
-	// const result = await git(
-	//   ['for-each-ref', ...formatArgs, ...prefixes],
-	//   repository.path,
-	//   'getBranches',
-	//   { expectedErrors: new Set([GitError.NotAGitRepository]) }
-	// )
-
-	// if (result.gitError === GitError.NotAGitRepository) {
-	//   return []
-	// }
-
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
 	const result = await git(repository.path, args, {
-		expectedErrors: new Set([IGitError.NotAGitRepository]),
-		successExitCodes: new Set([0, 128])
+		expectedErrors: new Set([IGitError.NotAGitRepository])
 	});
 	//TODO: investigate why this is returning 128
 
@@ -57,6 +43,26 @@ export async function getBranches(
 	}
 
 	const branches = [];
+
+	const status = await git(repository.path, ['branch', '-vv']);
+
+	const states = status.stdout
+		.split(/\n/)
+		.filter((branch) => branch.trim())
+		.map((branch) => {
+			const pattern = /([* ]) +([^ ]+) +([^ ]+) +\[(.*?)\]+ +(.+)/;
+			const matches = branch.match(pattern);
+			if (!matches) return;
+			const [_, flag, name, sha, aheadBehind, commit] = matches;
+			const ahead = aheadBehind.includes('ahead')
+				? Number(aheadBehind.split('ahead').pop()?.trim())
+				: 0;
+			const behind = aheadBehind.includes('behind')
+				? Number(aheadBehind.split('behind').pop()?.trim())
+				: 0;
+			const isGone = aheadBehind.includes('gone');
+			return { flag, name, sha, ahead, behind, isGone, commit };
+		});
 
 	for (const ref of parse(result.stdout)) {
 		// excude symbolic refs from the branch list
@@ -70,9 +76,14 @@ export async function getBranches(
 		const type = ref.fullName.startsWith('refs/heads') ? BranchType.Local : BranchType.Remote;
 
 		const upstream = ref.upstreamShortName.length > 0 ? ref.upstreamShortName : null;
-
-		const [ahead, behind] = ref.aheadBehind.length > 0 ? ref.aheadBehind.split(' ') : [0, 0];
-		const aheadBehind = { ahead: Number(ahead), behind: Number(behind) };
+		let ahead = 0;
+		let behind = 0;
+		const state = states.find((state) => state?.name === ref.shortName);
+		if (state) {
+			ahead = state.ahead;
+			behind = state.behind;
+		}
+		const aheadBehind = state?.isGone ? null : { ahead: Number(ahead), behind: Number(behind) };
 
 		branches.push(new Branch(ref.shortName, upstream, tip, type, ref.fullName, aheadBehind));
 	}
