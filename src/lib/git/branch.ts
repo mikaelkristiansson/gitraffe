@@ -29,14 +29,10 @@ export async function getBranches(
 		prefixes = ['refs/heads', 'refs/remotes'];
 	}
 
-	// TODO: use expectedErrors here to handle a specific error
-	// see https://github.com/desktop/desktop/pull/5299#discussion_r206603442 for
-	// discussion about what needs to change
 	const args = ['for-each-ref', ...formatArgs, ...prefixes];
 	const result = await git(repository.path, args, {
 		expectedErrors: new Set([IGitError.NotAGitRepository])
 	});
-	//TODO: investigate why this is returning 128
 
 	if (result.gitError === IGitError.NotAGitRepository) {
 		return [];
