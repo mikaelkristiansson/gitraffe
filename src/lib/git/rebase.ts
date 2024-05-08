@@ -1,6 +1,7 @@
 import type { RebaseInternalState } from '$lib/models/rebase';
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile, exists } from '@tauri-apps/api/fs';
 import { join } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/tauri';
 
 /**
  * Get the internal state about the rebase being performed on a repository. This
@@ -24,13 +25,15 @@ export async function getRebaseInternalState(
 	let baseBranchTip: string | null = null;
 
 	try {
-		originalBranchTip = await readTextFile(
-			await join(projectPath, '.git', 'rebase-merge', 'orig-head')
-		);
+		const rebaseMergePath = await join(projectPath, '.git', 'rebase-merge');
+		await invoke('expand_scope', { folderPath: rebaseMergePath });
+
+		const origHeadFile = await join(projectPath, '.git', 'rebase-merge', 'orig-head');
+		originalBranchTip = (await exists(origHeadFile)) ? await readTextFile(origHeadFile) : null;
 
 		originalBranchTip = originalBranchTip && originalBranchTip.trim();
-
-		targetBranch = await readTextFile(await join(projectPath, '.git', 'rebase-merge', 'head-name'));
+		const headNameFile = await join(projectPath, '.git', 'rebase-merge', 'head-name');
+		targetBranch = (await exists(headNameFile)) ? await readTextFile(headNameFile) : null;
 
 		if (targetBranch?.startsWith('refs/heads/')) {
 			targetBranch = targetBranch.substring(11).trim();

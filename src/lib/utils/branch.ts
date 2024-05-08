@@ -98,8 +98,7 @@ export async function findDefaultBranch(
 	const defaultBranchName = remoteHead ?? (await getDefaultBranch(repository));
 	const remoteRef = remoteHead ? `${remoteName}/${remoteHead}` : undefined;
 
-	const upstreamName = remoteRef || `${defaultRemoteName}/${defaultBranchName}`;
-	const branches = await getBranches(repository, upstreamName);
+	const branches = await getBranches(repository);
 
 	let localHit: Branch | undefined = undefined;
 	let localTrackingHit: Branch | undefined = undefined;
@@ -135,10 +134,10 @@ export async function findDefaultBranch(
 }
 
 /**
- * The default branch name that GitHub Desktop will use when
+ * The default branch name that Gitraffe will use when
  * initializing a new repository.
  */
-const DefaultBranchInDesktop = 'main';
+const DefaultBranchInGitraffe = 'main';
 
 /**
  * The name of the Git configuration variable which holds what
@@ -157,7 +156,7 @@ async function getConfiguredDefaultBranch(repository: Repository): Promise<strin
  * Returns the configured default branch when creating new repositories
  */
 export async function getDefaultBranch(repository: Repository): Promise<string> {
-	return (await getConfiguredDefaultBranch(repository)) ?? DefaultBranchInDesktop;
+	return (await getConfiguredDefaultBranch(repository)) ?? DefaultBranchInGitraffe;
 }
 
 /**
@@ -514,7 +513,9 @@ export const pushActiveBranch = async (
 	try {
 		if (activeBranch) {
 			await push(repository.path);
-			const update = { behind: activeBranch.aheadBehind.behind, ahead: 0 };
+			const update = activeBranch.aheadBehind
+				? { behind: activeBranch.aheadBehind.behind, ahead: 0 }
+				: null;
 			const newBranch = new Branch(
 				activeBranch.name,
 				activeBranch.upstream,

@@ -14,24 +14,24 @@
  *               `const { args, parse } = createLogParser({ sha: '%H' })`
  */
 export function createLogParser<T extends Record<string, string>>(fields: T) {
-  const keys: Array<keyof T> = Object.keys(fields)
-  const format = Object.values(fields).join('%x00')
-  const formatArgs = ['-z', `--format=${format}`]
+	const keys: Array<keyof T> = Object.keys(fields);
+	const format = Object.values(fields).join('%x00');
+	const formatArgs = ['-z', `--format=${format}`];
 
-  const parse = (value: string) => {
-    const records = value.split('\0')
-    const entries = []
+	const parse = (value: string) => {
+		const records = value.split('\0');
+		const entries = [];
 
-    for (let i = 0; i < records.length - keys.length; i += keys.length) {
-      const entry = {} as { [K in keyof T]: string }
-      keys.forEach((key, ix) => (entry[key] = records[i + ix]))
-      entries.push(entry)
-    }
+		for (let i = 0; i < records.length - keys.length; i += keys.length) {
+			const entry = {} as { [K in keyof T]: string };
+			keys.forEach((key, ix) => (entry[key] = records[i + ix]));
+			entries.push(entry);
+		}
 
-    return entries
-  }
+		return entries;
+	};
 
-  return { formatArgs, parse }
+	return { formatArgs, parse };
 }
 
 /**
@@ -49,43 +49,41 @@ export function createLogParser<T extends Record<string, string>>(fields: T) {
  *
  *               `const { args, parse } = createForEachRefParser({ sha: '%(objectname)' })`
  */
-export function createForEachRefParser<T extends Record<string, string>>(
-  fields: T
-) {
-  const keys: Array<keyof T> = Object.keys(fields)
-  const format = Object.values(fields).join('%00')
-  const formatArgs = [`--format=%00${format}%00`]
+export function createForEachRefParser<T extends Record<string, string>>(fields: T) {
+	const keys: Array<keyof T> = Object.keys(fields);
+	const format = Object.values(fields).join('%00');
+	const formatArgs = [`--format=%00${format}%00`];
 
-  const parse = (value: string) => {
-    const records = value.split('\0')
-    const entries = new Array<{ [K in keyof T]: string }>()
+	const parse = (value: string) => {
+		const records = value.split('\0');
+		const entries = new Array<{ [K in keyof T]: string }>();
 
-    let entry
-    let consumed = 0
+		let entry;
+		let consumed = 0;
 
-    // start at 1 to avoid 0 modulo X problem. The first record is guaranteed
-    // to be empty anyway (due to %00 at the start of --format)
-    for (let i = 1; i < records.length - 1; i++) {
-      if (i % (keys.length + 1) === 0) {
-        if (records[i] !== '\n') {
-          throw new Error('Expected newline')
-        }
-        continue
-      }
+		// start at 1 to avoid 0 modulo X problem. The first record is guaranteed
+		// to be empty anyway (due to %00 at the start of --format)
+		for (let i = 1; i < records.length - 1; i++) {
+			if (i % (keys.length + 1) === 0) {
+				if (records[i] !== '\n') {
+					throw new Error('Expected newline');
+				}
+				continue;
+			}
 
-      entry = entry ?? ({} as { [K in keyof T]: string })
-      const key = keys[consumed % keys.length]
-      entry[key] = records[i]
-      consumed++
+			entry = entry ?? ({} as { [K in keyof T]: string });
+			const key = keys[consumed % keys.length];
+			entry[key] = records[i];
+			consumed++;
 
-      if (consumed % keys.length === 0) {
-        entries.push(entry)
-        entry = undefined
-      }
-    }
+			if (consumed % keys.length === 0) {
+				entries.push(entry);
+				entry = undefined;
+			}
+		}
 
-    return entries
-  }
+		return entries;
+	};
 
-  return { formatArgs, parse }
+	return { formatArgs, parse };
 }

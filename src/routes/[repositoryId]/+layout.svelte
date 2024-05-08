@@ -24,7 +24,6 @@
 
 	async function update(newRepo: boolean = false, isFocus: boolean = true) {
 		if (repository$) {
-			console.info('UPDATING');
 			if (isFocus) {
 				clearTimeout(timeoutId);
 				timeoutId = window.setTimeout(async () => {
@@ -92,7 +91,6 @@
 		unsubscribeActiveRepository();
 		clearTimeout(timeoutId);
 	});
-	$: baseError = null;
 </script>
 
 {#if !repository$}
@@ -100,8 +98,6 @@
 	<button on:click={() => goto('/')}>Go back</button>
 {:else if $defaultBranch === null}
 	<slot />
-{:else if $baseError}
-	<p>Error in base</p>
 {:else}
 	<div class="flex relative w-full" role="group" on:dragover|preventDefault>
 		<!-- user={$user$} -->

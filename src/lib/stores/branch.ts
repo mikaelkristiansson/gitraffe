@@ -5,6 +5,7 @@ import { getBranches } from '../git/branch';
 import { type Branch } from '../models/branch';
 import { findDefaultBranch } from '../utils/branch';
 import type { Repository } from '../models/repository';
+import { toast } from 'svelte-sonner';
 
 function createBranches() {
 	const { subscribe, set, update } = writable([] as Array<Branch>);
@@ -19,7 +20,7 @@ function createBranches() {
 			const { defaultBranchUpstreamName = 'HEAD', prevBranches } = params;
 			fetchingBranches.set(true);
 			try {
-				const branches = await getBranches(repository, defaultBranchUpstreamName);
+				const branches = await getBranches(repository);
 				if (
 					prevBranches &&
 					branches.length === prevBranches.length &&
@@ -113,15 +114,20 @@ function createDefautBranch() {
 		subscribe,
 		set,
 		setDefault: async (repository: Repository) => {
-			const branch = await findDefaultBranch(repository, 'origin');
-			if (!branch) {
-				return;
+			try {
+				const branch = await findDefaultBranch(repository, 'origin');
+				if (!branch) {
+					return;
+				}
+				if (branch.upstream) {
+					branch.remoteExists = true;
+				}
+				set(branch);
+				return branch;
+			} catch (error) {
+				console.error(error);
+				toast.error('Failed to find default branch');
 			}
-			if (branch.upstream) {
-				branch.remoteExists = true;
-			}
-			set(branch);
-			return branch;
 		}
 	};
 }
