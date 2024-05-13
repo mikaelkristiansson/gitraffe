@@ -1,5 +1,5 @@
 <script lang="ts">
-	import noBranchesSvg from '$lib/assets/empty-state/no-branches.svg?raw';
+	import noBranchesSvg from '$lib/assets/illu/big-dipper.svg?raw';
 	import BranchItem from './BranchItem.svelte';
 	import ScrollableContainer from './ScrollableContainer.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
@@ -144,10 +144,10 @@
 		</ScrollableContainer>
 	{:else}
 		<div class="flex flex-1 flex-col justify-center items-center gap-2">
-			<div class="w-32">
+			<div class="[&>svg]:w-40 [&>svg]:h-40 [&>svg>path]:fill-muted-foreground opacity-20">
 				{@html noBranchesSvg}
 			</div>
-			<span class="text-center text-base font-semibold text-gray-400 dark:text-gray-600"
+			<span class="text-center text-xs font-semibold text-gray-400 dark:text-gray-600"
 				>You have no branches</span
 			>
 		</div>

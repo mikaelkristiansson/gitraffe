@@ -1,5 +1,5 @@
 <script lang="ts">
-	import newProjectSvg from '$lib/assets/book.svg?raw';
+	import newProjectSvg from '$lib/assets/illu/space-rover.svg?raw';
 	import giraffeSvg from '$lib/assets/giraffe.svg?raw';
 	import { addRepository } from '$lib/stores/repository';
 	import WelcomeAction from './WelcomeAction.svelte';

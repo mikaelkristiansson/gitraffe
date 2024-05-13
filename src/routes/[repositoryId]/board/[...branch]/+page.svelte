@@ -2,7 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
 	import BranchHeader from '$lib/components/BranchHeader.svelte';
-	import noChangesSvg from '$lib/assets/empty-state/lane-no-changes.svg?raw';
+	import noChangesSvg from '$lib/assets/illu/rocket-launch.svg?raw';
 	import * as hotkeys from '$lib/utils/hotkeys';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
@@ -27,6 +27,8 @@
 	import FilePreview from '$lib/components/FilePreview.svelte';
 	import * as Alert from '$lib/components/ui/alert';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
+	import { cn } from '$lib/utils';
+	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<ChangedFile[]>([]);
@@ -122,7 +124,10 @@
 			<div class="flex flex-grow flex-shrink items-start h-full p-3">
 				<div class="flex h-full w-full items-start flex-shrink-0 relative gap-3">
 					<div
-						class={`relative select-none flex flex-col gap-2 max-w-80 overflow-x-hidden overflow-y-scroll ${$isLaneCollapsed ? 'h-full' : 'min-w-80'}`}
+						class={cn(
+							'relative select-none flex flex-col gap-2 max-w-80 overflow-x-hidden h-full',
+							!$isLaneCollapsed && 'min-w-80'
+						)}
 					>
 						<BranchHeader
 							branch={branch$}
@@ -131,18 +136,19 @@
 							{isPushing}
 						/>
 						{#if !$isLaneCollapsed}
-							<div>
+							<div class="flex grow overflow-hidden">
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
-									<Card.Root class="flex flex-col">
-										<BranchFiles
-											files={branch$.workingDirectory.files}
-											repository={$activeRepository}
-											{selectedFiles}
-											showCheckboxes={$commitBoxOpen}
-											{selected}
-											{setSelected}
-											class="max-h-[12rem] overflow-x-scroll"
-										/>
+									<Card.Root class="flex flex-col w-full justify-between">
+										<ScrollArea orientation="vertical" class="flex">
+											<BranchFiles
+												files={branch$.workingDirectory.files}
+												repository={$activeRepository}
+												{selectedFiles}
+												showCheckboxes={$commitBoxOpen}
+												{selected}
+												{setSelected}
+											/>
+										</ScrollArea>
 										{#if branch$.doConflictedFilesExist}
 											<div class="flex flex-col pt-0 px-3 pb-3">
 												<Alert.Root variant="destructive">
@@ -174,7 +180,9 @@
 										data-dnd-ignore
 									>
 										<div class="flex flex-col items-center gap-2 max-w-56">
-											<div class="w-[7.5rem] mb-3">
+											<div
+												class="[&>svg]:w-40 [&>svg]:h-40 [&>svg>path]:fill-muted-foreground opacity-20"
+											>
 												{@html noChangesSvg}
 											</div>
 											<h2 class="select-none text-muted-foreground text-center text-xs opacity-60">
