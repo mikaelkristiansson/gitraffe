@@ -57,6 +57,7 @@ export function mergeRemoteAndLocalBranches(branches: Array<Branch>): Array<Bran
 		} else {
 			branch.remoteExists = false;
 		}
+		branch.localExists = true;
 		allBranchesWithUpstream.push(branch);
 		if (branch.upstream) {
 			upstreamBranchesAdded.add(branch.upstream);

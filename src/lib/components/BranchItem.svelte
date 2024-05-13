@@ -19,9 +19,7 @@
 	const changeName = async (newName: string) => {
 		await renameBranch(repository, branch, newName);
 		toast.success('Branch renamed to ' + newName);
-		await allBranches.fetch(repository, {
-			defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
-		});
+		await allBranches.fetch(repository);
 		if (branch.tip.sha === $workingBranch?.currentTip) {
 			await workingBranch.setWorking(repository);
 		}

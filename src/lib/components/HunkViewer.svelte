@@ -1,11 +1,9 @@
 <script lang="ts">
 	import type { DiffHunk } from '$lib/models/diff';
 	import HunkLine from './HunkLine.svelte';
-	import Scrollbar from './Scrollbar.svelte';
 	import { Button } from './ui/button';
+	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 
-	export let viewport: HTMLDivElement | undefined = undefined;
-	export let contents: HTMLDivElement | undefined = undefined;
 	export let filePath: string;
 	export let section: DiffHunk;
 	export let minWidth: number;
@@ -15,16 +13,15 @@
 	let alwaysShow = false;
 </script>
 
-<div class="scrollable">
-	<div
-		bind:this={viewport}
-		tabindex="0"
-		role="cell"
-		on:contextmenu|preventDefault
-		class="hunk bg-muted/40 border hide-native-scrollbar"
-		class:readonly
-	>
-		<div bind:this={contents} class="hunk__bg-stretch">
+<div
+	tabindex="0"
+	role="cell"
+	on:contextmenu|preventDefault
+	class="hunk bg-muted/40 border"
+	class:readonly
+>
+	<ScrollArea orientation="both" class="w-full">
+		<div class="hunk__bg-stretch">
 			{#if linesModified > 1000 && !alwaysShow}
 				<div class="flex flex-col p-1 text-sm gap-2">
 					Change hidden as large diffs may slow down the UI
@@ -37,30 +34,15 @@
 				{/each}
 			{/if}
 		</div>
-	</div>
-	<Scrollbar {viewport} {contents} horz />
+	</ScrollArea>
 </div>
 
 <style lang="postcss">
-	.scrollable {
-		display: flex;
-		flex-direction: column;
-		position: relative;
-		/* border-radius: var(--radius-s); */
-		@apply rounded-sm;
-		overflow: hidden;
-	}
-
 	.hunk {
 		display: flex;
 		flex-direction: column;
-		overflow-x: auto;
 		user-select: text;
 		@apply rounded-sm border bg-card;
-		/* background: var(--clr-theme-container-light); */
-		/* border-radius: var(--radius-s); */
-		/* border: 1px solid var(--clr-theme-container-outline-light); */
-		/* transition: border-color var(--transition-fast); */
 	}
 
 	.hunk__bg-stretch {

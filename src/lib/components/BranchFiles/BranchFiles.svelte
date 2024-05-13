@@ -5,6 +5,7 @@
 	import type { ChangedFile } from '$lib/models/status';
 	import type { Repository } from '$lib/models/repository';
 	import type { SetSelected } from '$lib/types';
+	import ScrollArea from '../ui/scroll-area/scroll-area.svelte';
 
 	export let repository: Repository;
 	export let files: ChangedFile[];
@@ -14,12 +15,12 @@
 	export let setSelected: SetSelected;
 </script>
 
-<div>
-	<div class="px-3 pt-3 pb-2 sticky top-0 bg-card w-[96.5%] z-[1]">
+<div class="overflow-hidden flex flex-col">
+	<div class="px-3 pt-3 pb-2">
 		<BranchFilesHeader {files} {showCheckboxes} {selectedFiles} />
 	</div>
 	{#if files.length > 0}
-		<div class="pt-0 pb-2 px-3 {$$props.class || ''}">
+		<ScrollArea orientation="vertical" class="h-full px-3">
 			<BranchFilesList
 				{files}
 				{selectedFiles}
@@ -28,6 +29,6 @@
 				{selected}
 				{setSelected}
 			/>
-		</div>
+		</ScrollArea>
 	{/if}
 </div>

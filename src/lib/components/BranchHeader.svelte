@@ -152,11 +152,11 @@
 							disabled={!branch.branchAheadBehind?.behind}
 							loading={isPulling}
 							on:click={pullBranch}
+							icon="pull-small"
 						>
-							Pull <Badge size="sm" variant="secondary" class="ml-1"
+							Pull <Badge size="sm" variant="outline" class="ml-1"
 								>{branch.branchAheadBehind?.behind || 0}</Badge
 							>
-							<Icon name="pull-small" size={14} />
 						</Button>
 					</Tooltip.Trigger>
 					<Tooltip.Content>Pull origin</Tooltip.Content>
@@ -169,16 +169,11 @@
 							disabled={!branch.branchAheadBehind?.ahead}
 							loading={isPushing}
 							on:click={pushBranch}
+							icon="push-small"
 						>
-							<kbd
-								class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-xs font-medium opacity-60"
-							>
-								<span>⌘</span>P
-							</kbd>
-							Push <Badge size="sm" variant="secondary" class="ml-1"
+							Push <Badge size="sm" variant="outline" class="ml-1"
 								>{branch.branchAheadBehind?.ahead || 0}</Badge
 							>
-							<Icon name="push-small" size={14} />
 						</Button>
 					</Tooltip.Trigger>
 					<Tooltip.Content>Push origin</Tooltip.Content>
@@ -196,7 +191,6 @@
 				{/if}
 			</div>
 			<div class="header__buttons">
-				<!-- help="Collapse lane" -->
 				<Button icon="fold-lane" on:click={collapseLane} size="icon" variant="outline" />
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>

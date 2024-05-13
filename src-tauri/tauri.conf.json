@@ -93,9 +93,11 @@
 			{
 				"fullscreen": false,
 				"height": 720,
-				"resizable": false,
+				"resizable": true,
 				"title": "Gitraffe",
 				"width": 1024,
+				"minHeight": 400,
+				"minWidth": 700,
 				"hiddenTitle": true,
 				"titleBarStyle": "Overlay"
 			}

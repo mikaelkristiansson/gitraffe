@@ -37,7 +37,8 @@ export class Branch {
 		public readonly type: BranchType,
 		public readonly ref: string,
 		public readonly aheadBehind: IAheadBehind | null,
-		public remoteExists: boolean = false
+		public remoteExists: boolean = false,
+		public localExists: boolean = false
 	) {}
 
 	/** The name of the upstream's remote. */

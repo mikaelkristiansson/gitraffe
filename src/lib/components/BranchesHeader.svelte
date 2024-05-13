@@ -15,9 +15,7 @@
 	const createNewBranch = async (branchName: string) => {
 		const promise = createBranch(repository, branchName, null)
 			.then(async () => {
-				await allBranches.fetch(repository, {
-					defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
-				});
+				await allBranches.fetch(repository);
 			})
 			.finally(() => {
 				dialogOpen = false;

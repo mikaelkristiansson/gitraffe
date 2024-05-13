@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { checkout } from '$lib/git/cli';
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { workingBranch } from '$lib/stores/branch';
 	import { toast } from 'svelte-sonner';
@@ -11,6 +10,7 @@
 	import type { Repository } from '$lib/models/repository';
 	import SwitchBranch from './SwitchBranch.svelte';
 	import Icon from './Icon.svelte';
+	import { checkoutBranch } from '$lib/git/checkout';
 
 	export let selected = false;
 	export let repository: Repository;
@@ -26,7 +26,7 @@
 		if (selected) return;
 		if ($workingBranch?.workingDirectory.files.length === 0) {
 			try {
-				await checkout(repository.path, branch.name);
+				await checkoutBranch(repository, null, branch);
 				updateCurrentBranch(repository, branch);
 				if (href) goto(href);
 			} catch (e) {
@@ -38,10 +38,12 @@
 		}
 	}}
 >
-	<Icon name={branch.remoteExists ? 'remote' : 'local'} />
+	<Icon name={branch.localExists ? (branch.remoteExists ? 'local-remote' : 'local') : 'remote'} />
 	<div class="flex flex-col flex-grow overflow-hidden gap-1">
 		<div class="flex items-center justify-between gap-1">
-			<p class="text-xs whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]">
+			<p
+				class="text-xs font-medium whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]"
+			>
 				{branch.name}
 			</p>
 			{#if branch.aheadBehind}

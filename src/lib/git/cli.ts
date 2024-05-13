@@ -105,15 +105,6 @@ export async function fetchAll(path: string): Promise<string> {
 	return stdout;
 }
 
-export async function checkout(path: string, branch: string): Promise<string> {
-	const args = ['checkout', branch];
-	const { stderr, stdout } = await git(path, args);
-	if (stderr) {
-		throw new Error(stderr);
-	}
-	return stdout;
-}
-
 export async function getBranchStatus(repository: Repository): Promise<IStatusResult | null> {
 	return await getStatus(repository);
 }

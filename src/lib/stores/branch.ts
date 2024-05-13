@@ -13,11 +13,8 @@ function createBranches() {
 	return {
 		subscribe,
 		set,
-		fetch: async (
-			repository: Repository,
-			params: { defaultBranchUpstreamName: string; prevBranches?: Branch[] }
-		) => {
-			const { defaultBranchUpstreamName = 'HEAD', prevBranches } = params;
+		fetch: async (repository: Repository, params: { prevBranches?: Branch[] } = {}) => {
+			const { prevBranches } = params;
 			fetchingBranches.set(true);
 			try {
 				const branches = await getBranches(repository);
@@ -122,6 +119,7 @@ function createDefautBranch() {
 				if (branch.upstream) {
 					branch.remoteExists = true;
 				}
+				branch.localExists = true;
 				set(branch);
 				return branch;
 			} catch (error) {

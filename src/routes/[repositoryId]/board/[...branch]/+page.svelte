@@ -28,7 +28,6 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import { cn } from '$lib/utils';
-	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	let branch$: IStatusResult | null = $workingBranch;
 	const selectedFiles = writable<ChangedFile[]>([]);
@@ -139,16 +138,14 @@
 							<div class="flex grow overflow-hidden">
 								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
 									<Card.Root class="flex flex-col w-full justify-between">
-										<ScrollArea orientation="vertical" class="flex">
-											<BranchFiles
-												files={branch$.workingDirectory.files}
-												repository={$activeRepository}
-												{selectedFiles}
-												showCheckboxes={$commitBoxOpen}
-												{selected}
-												{setSelected}
-											/>
-										</ScrollArea>
+										<BranchFiles
+											files={branch$.workingDirectory.files}
+											repository={$activeRepository}
+											{selectedFiles}
+											showCheckboxes={$commitBoxOpen}
+											{selected}
+											{setSelected}
+										/>
 										{#if branch$.doConflictedFilesExist}
 											<div class="flex flex-col pt-0 px-3 pb-3">
 												<Alert.Root variant="destructive">
