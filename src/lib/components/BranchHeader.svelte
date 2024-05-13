@@ -70,7 +70,12 @@
 		isPulling = true;
 		try {
 			if (branch.currentBranch) {
-				await pullOrigin(repository.path, branch.currentBranch);
+				try {
+					await pullOrigin(repository.path, branch.currentBranch);
+				} catch (e) {
+					toast.error('Failed to pull from origin');
+					console.error('Failed to pull from origin', e);
+				}
 				const update = { behind: 0, ahead: $activeBranch.aheadBehind?.ahead || 0 };
 				const newBranch = new Branch(
 					$activeBranch.name,
