@@ -42,7 +42,7 @@
 		&:focus:enabled {
 			@apply bg-muted;
 			& .icon {
-				@apply text-secondary-foreground;
+				@apply text-muted-foreground;
 			}
 		}
 		&:disabled {
