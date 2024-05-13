@@ -1,9 +1,9 @@
 import { deleteLocalBranch, deleteRemoteBranch, getBranches } from '$lib/git/branch';
 import { checkoutBranch } from '$lib/git/checkout';
-import { GitError, push } from '$lib/git/cli';
+import { GitError } from '$lib/git/cli';
 import { getGlobalConfigValue, setGlobalConfigValue } from '$lib/git/config';
 import { MergeResult, merge } from '$lib/git/merge';
-import { getRemoteHEAD } from '$lib/git/remote';
+import { getRemoteHEAD, getRemotes } from '$lib/git/remote';
 import {
 	createGitraffeStashEntry,
 	dropGitraffeStashEntry,
@@ -15,7 +15,7 @@ import { Branch, BranchType } from '$lib/models/branch';
 import { ErrorWithMetadata } from '$lib/models/error-with-metadata';
 import type { IGitAccount } from '$lib/models/git-account';
 import { IGitError } from '$lib/models/git-errors';
-import { UpstreamRemoteName } from '$lib/models/remote';
+import { UpstreamRemoteName, type IRemote } from '$lib/models/remote';
 import { Repository, isForkedRepositoryContributingToParent } from '$lib/models/repository';
 import type { WorkingDirectoryStatus } from '$lib/models/status';
 import { updateCurrentBranch } from '$lib/store-updater';
@@ -24,6 +24,8 @@ import { stashStore } from '$lib/stores/stash';
 import { toast } from 'svelte-sonner';
 import { performFailableOperation } from './failable-operation';
 import { getUntrackedFiles } from './status';
+import { push } from '$lib/git/push';
+import { findDefaultRemote } from './find-default-remote';
 
 export function normalizeBranchName(value: string) {
 	return value.toLowerCase().replace(/[^0-9a-z/_.]+/g, '-');
@@ -512,7 +514,20 @@ export const pushActiveBranch = async (
 	}
 	try {
 		if (activeBranch) {
-			await push(repository.path);
+			const remotes = await getRemotes(repository);
+			const remote = findDefaultRemote(remotes);
+			if (remote) {
+				const remoteName = activeBranch.upstreamRemoteName ?? remote.name;
+				const safeRemote: IRemote = { name: remoteName, url: remote.url };
+				await push(
+					repository,
+					null,
+					safeRemote,
+					activeBranch.name,
+					activeBranch.upstreamWithoutRemote,
+					null
+				);
+			}
 			const update = activeBranch.aheadBehind
 				? { behind: activeBranch.aheadBehind.behind, ahead: 0 }
 				: null;

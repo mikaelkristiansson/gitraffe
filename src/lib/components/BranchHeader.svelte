@@ -4,7 +4,6 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Badge } from '$lib/components/ui/badge';
 	import ActiveBranchStatus from './ActiveBranchStatus.svelte';
-	import { pullOrigin } from '$lib/git/cli';
 	import { push as pushUpstream } from '$lib/git/push';
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import type { Persisted } from '$lib/persisted';
@@ -22,6 +21,7 @@
 	import { toast } from 'svelte-sonner';
 	import { MergeResult } from '$lib/git/merge';
 	import DeleteBranch from './DeleteBranch.svelte';
+	import { pull } from '$lib/git/pull';
 
 	export let branch: IStatusResult;
 	export let repository: Repository;
@@ -71,24 +71,28 @@
 		try {
 			if (branch.currentBranch) {
 				try {
-					await pullOrigin(repository.path, branch.currentBranch);
+					const remotes = await getRemotes(repository);
+					const remote = findDefaultRemote(remotes);
+					if (remote) {
+						await pull(repository, null, remote);
+					}
+					const update = { behind: 0, ahead: $activeBranch.aheadBehind?.ahead || 0 };
+					const newBranch = new Branch(
+						$activeBranch.name,
+						$activeBranch.upstream,
+						$activeBranch.tip,
+						$activeBranch.type,
+						$activeBranch.ref,
+						update
+					);
+					allBranches.updateBranch(newBranch);
+					await defaultBranch.setDefault(repository);
+					await workingBranch.setWorking(repository);
+					toast.success('Pulled from origin');
 				} catch (e) {
 					toast.error('Failed to pull from origin');
 					console.error('Failed to pull from origin', e);
 				}
-				const update = { behind: 0, ahead: $activeBranch.aheadBehind?.ahead || 0 };
-				const newBranch = new Branch(
-					$activeBranch.name,
-					$activeBranch.upstream,
-					$activeBranch.tip,
-					$activeBranch.type,
-					$activeBranch.ref,
-					update
-				);
-				allBranches.updateBranch(newBranch);
-				await defaultBranch.setDefault(repository);
-				await workingBranch.setWorking(repository);
-				toast.success('Pulled from origin');
 			}
 		} finally {
 			isPulling = false;
