@@ -13,6 +13,7 @@ import { markdown } from '@codemirror/lang-markdown';
 import { php } from '@codemirror/lang-php';
 import { python } from '@codemirror/lang-python';
 // import { svelte } from '@replit/codemirror-lang-svelte';
+import { csharp } from '@replit/codemirror-lang-csharp';
 import { rust } from '@codemirror/lang-rust';
 import { vue } from '@codemirror/lang-vue';
 import { wast } from '@codemirror/lang-wast';
@@ -119,6 +120,9 @@ export function parserFromFilename(filename: string): Parser | null {
 		case 'hpp':
 		case 'h++':
 			return cpp().language.parser;
+
+		case 'cs':
+			return csharp().language.parser;
 
 		// case 'text/x-go':
 		//     return new LanguageSupport(await CodeMirror.go());
