@@ -34,7 +34,7 @@
 
 <div class="header flex items-center justify-between w-full gap-2 px-4 pt-4 pb-3">
 	<div class="flex items-center gap-1">
-		<span class="text-base font-semibold">Branches</span>
+		<span class=" text-sm font-semibold">Branches</span>
 
 		{#if count !== undefined}
 			<Badge size="sm" variant="secondary">{count}</Badge>

@@ -26,9 +26,9 @@
 	<Tooltip.Trigger class="cursor-default">
 		<div class="relative flex rounded-md gap-2 p-2 pr-0">
 			{#if isNavCollapsed}
-				{#if (base?.aheadBehind.behind || 0) > 0}
+				{#if (base?.aheadBehind?.behind || 0) > 0}
 					<Badge size="sm" variant="secondary" class="absolute top-0 right-0"
-						><span class="font-bold">{base?.aheadBehind.behind || 0}</span></Badge
+						><span class="font-bold">{base?.aheadBehind?.behind || 0}</span></Badge
 					>
 				{/if}
 			{/if}
@@ -38,10 +38,10 @@
 				<div class="flex flex-col flex-grow gap-2">
 					<div class="flex items-center justify-between gap-1">
 						<div class="flex gap-1 items-center">
-							<span class="text-base font-semibold">Base</span>
-							{#if (base?.aheadBehind.behind || 0) > 0}
+							<span class="text-sm font-semibold">Base</span>
+							{#if (base?.aheadBehind?.behind || 0) > 0}
 								<Badge size="sm" variant="secondary"
-									><span class="font-bold">{base?.aheadBehind.behind || 0}</span></Badge
+									><span class="font-bold">{base?.aheadBehind?.behind || 0}</span></Badge
 								>
 							{/if}
 						</div>

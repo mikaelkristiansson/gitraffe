@@ -12,7 +12,7 @@
 </script>
 
 <button disabled={selected} class="button" class:selected on:click={() => dispatch('click')}>
-	<div class="text-ellipsis overflow-hidden text-sm font-semibold">
+	<div class="text-ellipsis overflow-hidden text-xs font-semibold">
 		<slot />
 	</div>
 	{#if icon || selected}

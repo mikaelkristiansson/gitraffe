@@ -41,13 +41,11 @@
 	<Icon name={branch.remoteExists ? 'remote' : 'local'} />
 	<div class="flex flex-col flex-grow overflow-hidden gap-1">
 		<div class="flex items-center justify-between gap-1">
-			<p class="text-sm whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]">
+			<p class="text-xs whitespace-nowrap overflow-x-hidden overflow-ellipsis leading-[120%]">
 				{branch.name}
 			</p>
 			{#if branch.aheadBehind}
 				<AheadBehind ahead={branch.aheadBehind.ahead} behind={branch.aheadBehind.behind} />
-			{:else}
-				<Icon name="removed-branch-small" class="text-muted" />
 			{/if}
 		</div>
 		<div class="flex items-center justify-between gap-1">
