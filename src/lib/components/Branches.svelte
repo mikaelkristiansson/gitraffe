@@ -1,8 +1,7 @@
 <script lang="ts">
 	import noBranchesSvg from '$lib/assets/illu/big-dipper.svg?raw';
 	import BranchItem from './BranchItem.svelte';
-	import ScrollableContainer from './ScrollableContainer.svelte';
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import BranchesHeader from './BranchesHeader.svelte';
 	import { allBranches, defaultBranch, fetchingBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
@@ -18,12 +17,10 @@
 	import type { Branch } from '$lib/models/branch';
 	import { Input, type FormInputEvent } from './ui/input';
 	import { cn } from '$lib/utils';
+	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 
 	export let repository: Repository;
 	export let isNavCollapsed: boolean;
-
-	let viewport: HTMLDivElement;
-	const dispatch = createEventDispatcher<{ scrollbarDragging: boolean }>();
 
 	let groups$: IFilterListGroup<IBranchListItem>[] = [];
 	let filteredGroups$: IFilterListGroup<IBranchListItem>[] = [];
@@ -97,7 +94,7 @@
 
 <div
 	class={cn(
-		'flex flex-1 relative overflow-hidden flex-col border-t w-full',
+		'flex flex-1 overflow-hidden relative flex-col border-t w-full',
 		isNavCollapsed && 'w-0'
 	)}
 >
@@ -106,24 +103,19 @@
 		count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0}
 	/>
 	{#if groups$ && groups$.length > 0}
-		<ScrollableContainer
-			bind:viewport
-			showBorderWhenScrolled
-			on:dragging={(e) => dispatch('scrollbarDragging', e.detail)}
-			fillViewport={groups$?.length == 0}
-		>
-			<div class="flex flex-col gap-4 w-full h-full px-4 pt-2 pb-4">
-				<Input
-					type="search"
-					value={filterValue}
-					icon="search"
-					placeholder="Search"
-					on:input={onInputChange}
-				/>
-				<div class="flex flex-col justify-center gap-0.5">
-					{#if $fetchingBranches && $updatingRepositories}
-						<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
-					{:else}
+		<div class="flex flex-col gap-4 overflow-hidden w-full h-full px-4 pt-2 pb-4">
+			<Input
+				type="search"
+				value={filterValue}
+				icon="search"
+				placeholder="Search"
+				on:input={onInputChange}
+			/>
+			<div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+				{#if $fetchingBranches && $updatingRepositories}
+					<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
+				{:else}
+					<ScrollArea orientation="vertical" class="h-full">
 						{#each filteredGroups$ as group}
 							{#if group.items.length > 0}
 								<div class="group__header">
@@ -138,10 +130,10 @@
 								{/each}
 							{/if}
 						{/each}
-					{/if}
-				</div>
+					</ScrollArea>
+				{/if}
 			</div>
-		</ScrollableContainer>
+		</div>
 	{:else}
 		<div class="flex flex-1 flex-col justify-center items-center gap-2">
 			<div class="[&>svg]:w-40 [&>svg]:h-40 [&>svg>path]:fill-muted-foreground opacity-20">
