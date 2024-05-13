@@ -14,7 +14,7 @@
 	export let setSelected: SetSelected;
 </script>
 
-<div class="max-w-xs">
+<div>
 	<div class="px-3 pt-3 pb-2 sticky top-0 bg-card w-[96.5%] z-[1]">
 		<BranchFilesHeader {files} {showCheckboxes} {selectedFiles} />
 	</div>
