@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Repository } from '$lib/models/repository';
 	import type { ChangedFile } from '$lib/models/status';
-	import noSelectSvg from '$lib/assets/empty-state/lane-new.svg?raw';
+	import noSelectSvg from '$lib/assets/illu/galaxy.svg?raw';
 	import { slide } from 'svelte/transition';
 	import FileCard from './FileCard.svelte';
 	import { quintOut } from 'svelte/easing';
@@ -35,7 +35,9 @@
 	<div
 		class="flex flex-grow flex-col items-center text-center justify-center h-full cursor-default select-none text-card-foreground/30"
 	>
-		{@html noSelectSvg}
+		<div class="[&>svg]:w-40 [&>svg]:h-40 [&>svg>path]:fill-muted-foreground opacity-20 mb-3">
+			{@html noSelectSvg}
+		</div>
 		<h2 class="text-muted-foreground text-center text-xs opacity-60">No selected file</h2>
 	</div>
 {/if}

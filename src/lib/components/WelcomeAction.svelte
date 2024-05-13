@@ -13,7 +13,7 @@
 	disabled={loading}
 >
 	<div
-		class="[&>svg]:fill-muted dark:[&>svg]:fill-primary opacity-80 flex items-center justify-center flex-shrink-0 w-16 h-16 p-2"
+		class="[&>svg>path]:fill-muted-foreground opacity-80 flex items-center justify-center flex-shrink-0 w-16 h-16 p-2"
 	>
 		<slot name="icon" />
 	</div>

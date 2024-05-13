@@ -14,8 +14,8 @@
 	export let setSelected: SetSelected;
 </script>
 
-<div class="flex-1">
-	<div class="px-3 pt-3 pb-2">
+<div class="max-w-xs">
+	<div class="px-3 pt-3 pb-2 sticky top-0 bg-card w-[96.5%] z-[1]">
 		<BranchFilesHeader {files} {showCheckboxes} {selectedFiles} />
 	</div>
 	{#if files.length > 0}

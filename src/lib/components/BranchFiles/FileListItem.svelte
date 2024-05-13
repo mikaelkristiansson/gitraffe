@@ -64,7 +64,7 @@
 			>
 				<div class="flex items-center flex-grow flex-shrink overflow-hidden gap-3">
 					<div class="flex items-center flex-grow flex-shrink overflow-hidden gap-[0.4rem]">
-						<img draggable="false" class="w-3" src={getVSIFileIcon(file.path)} alt="js" />
+						<img class="w-3" src={getVSIFileIcon(file.path)} alt="js" />
 						<span
 							class="text-xs whitespace-nowrap flex-shrink-0 text-ellipsis overflow-hidden leading-[120%]"
 						>
