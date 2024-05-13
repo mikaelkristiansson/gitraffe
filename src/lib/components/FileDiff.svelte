@@ -73,25 +73,21 @@
 		max-height: 100%;
 		flex-shrink: 0;
 		@apply p-4 gap-4;
-		/* padding: var(--size-16);
-		gap: var(--size-16); */
 	}
 	.hunk-wrapper {
 		display: flex;
 		flex-direction: column;
-		/* gap: var(--size-10); */
 		@apply gap-2;
 	}
 	.indicators {
 		display: flex;
 		align-items: center;
-		/* gap: var(--size-2); */
-		@apply gap-0.5;
+		@apply gap-1;
 	}
 	.added {
-		color: #45b156;
+		@apply text-green-500;
 	}
 	.removed {
-		color: #ff3e00;
+		@apply text-red-500;
 	}
 </style>

@@ -43,7 +43,6 @@
 
 	async function setBranches() {
 		const branches = await allBranches.fetch(repository, {
-			defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD',
 			prevBranches: $allBranches
 		});
 		recentBranches = await getRecentBranches(repository, RecentBranchesLimit + 1);
@@ -117,7 +116,7 @@
 				{#if $fetchingBranches && $updatingRepositories}
 					<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 				{:else}
-					<ScrollArea orientation="vertical" class="h-full">
+					<ScrollArea orientation="vertical" class="h-full mb-2">
 						<div class="px-4">
 							{#each filteredGroups$ as group}
 								{#if group.items.length > 0}

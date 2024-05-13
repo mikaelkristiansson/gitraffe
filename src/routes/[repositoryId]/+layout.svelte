@@ -37,7 +37,6 @@
 			try {
 				const base = newRepo ? await defaultBranch.setDefault(repository$) : $defaultBranch;
 				const allBranches$ = await allBranches.fetch(repository$, {
-					defaultBranchUpstreamName: base?.upstream || 'HEAD',
 					prevBranches: $allBranches
 				});
 				let activeBranch = await workingBranch.setWorking(repository$, $workingBranch);

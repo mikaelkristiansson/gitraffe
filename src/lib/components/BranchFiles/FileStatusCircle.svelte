@@ -15,24 +15,20 @@
 <style lang="postcss">
 	.status {
 		border-radius: 100%;
-		width: var(--size-8);
-		height: var(--size-8);
+		@apply w-2 h-2;
 		border-radius: 100%;
 		flex-shrink: 0;
 	}
 	.added {
-		/* background: rgba(101, 199, 154, 0.5); */
-		background: color-mix(in srgb, var(--clr-core-succ-50), transparent 50%);
+		@apply bg-green-200/80;
 	}
 	.untracked {
-		background: color-mix(in srgb, var(--clr-core-purple-50), transparent 50%);
+		@apply bg-purple-200/80;
 	}
 	.modified {
-		/* background: rgba(255, 184, 46, 0.5); */
-		background: color-mix(in srgb, var(--clr-core-warn-50), transparent 50%);
+		@apply bg-orange-200/80;
 	}
 	.deleted {
-		/* background: rgba(255, 61, 78, 0.5); */
-		background: color-mix(in srgb, var(--clr-core-err-50), transparent 50%);
+		@apply bg-red-200/80;
 	}
 </style>

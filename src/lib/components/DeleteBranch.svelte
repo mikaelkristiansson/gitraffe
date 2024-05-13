@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { activeBranch, allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
-	import { checkout } from '$lib/git/cli';
 	import { type Branch as BranchModel } from '$lib/models/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Icon from './Icon.svelte';
@@ -9,6 +8,7 @@
 	import { Button } from './ui/button';
 	import { deleteBranch } from '$lib/utils/branch';
 	import { toast } from 'svelte-sonner';
+	import { checkoutBranch } from '$lib/git/checkout';
 
 	export let repository: Repository;
 	export let branch: BranchModel;
@@ -65,11 +65,9 @@
 							await deleteBranch(repository, branch, $activeBranch, $defaultBranch);
 							dialogDeleteOpen = false;
 							toast.success(`Deleted branch ${branch.name}`);
-							await allBranches.fetch(repository, {
-								defaultBranchUpstreamName: $defaultBranch.upstream || 'HEAD'
-							});
+							await allBranches.fetch(repository);
 							if (branch.name === $workingBranch?.currentBranch) {
-								await checkout(repository.path, $defaultBranch.name);
+								await checkoutBranch(repository, null, $defaultBranch);
 								activeBranch.setActive($defaultBranch);
 								await workingBranch.setWorking(repository);
 							}

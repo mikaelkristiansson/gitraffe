@@ -26,9 +26,8 @@
 				busy$ = true;
 				try {
 					await fetchAll(repository.path);
-					const dBranch = await defaultBranch.setDefault(repository);
+					await defaultBranch.setDefault(repository);
 					await allBranches.fetch(repository, {
-						defaultBranchUpstreamName: dBranch?.upstream || 'HEAD',
 						prevBranches: $allBranches
 					});
 					workingBranch.setWorking(repository);

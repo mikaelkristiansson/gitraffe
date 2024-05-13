@@ -16,7 +16,7 @@
 {#if !branch.currentUpstreamBranch || branch.branchAheadBehind === undefined}
 	<Tooltip.Root>
 		<Tooltip.Trigger class="cursor-auto"
-			><Badge variant="secondary" icon="local" vertical={isLaneCollapsed}>Local</Badge
+			><Badge variant="secondary" size="sm" icon="local" vertical={isLaneCollapsed}>Local</Badge
 			></Tooltip.Trigger
 		>
 		<Tooltip.Content>
@@ -26,7 +26,7 @@
 {:else}
 	<Tooltip.Root>
 		<Tooltip.Trigger class="cursor-auto"
-			><Badge variant="default" icon="remote" vertical={isLaneCollapsed}>Remote</Badge
+			><Badge variant="default" size="sm" icon="remote" vertical={isLaneCollapsed}>Remote</Badge
 			></Tooltip.Trigger
 		>
 		<Tooltip.Content>

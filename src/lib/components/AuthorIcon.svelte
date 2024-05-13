@@ -13,10 +13,15 @@
 <Tooltip.Root>
 	<Tooltip.Trigger class="cursor-auto">
 		<Avatar.Root
-			class="h-5 w-5 rounded-full border bg-muted text-xs font-bold uppercase text-muted-foreground"
+			delayMs={1500}
+			class="h-5 w-5 rounded-full bg-muted text-xs font-bold uppercase text-muted-foreground"
 		>
-			<Avatar.Image src={url} alt={imgCaption} />
-			<Avatar.Fallback>{email.substring(0, 1)}</Avatar.Fallback>
+			<div
+				class="flex h-full w-full items-center justify-center overflow-hidden rounded-full border-2 border-muted"
+			>
+				<Avatar.Image src={url} alt={imgCaption} />
+				<Avatar.Fallback>{email.substring(0, 1)}</Avatar.Fallback>
+			</div>
 		</Avatar.Root>
 	</Tooltip.Trigger>
 	<Tooltip.Content>
