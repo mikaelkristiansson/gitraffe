@@ -103,33 +103,37 @@
 		count={isSearching ? `${countFiltered}/${countAll}` : countAll ?? 0}
 	/>
 	{#if groups$ && groups$.length > 0}
-		<div class="flex flex-col gap-4 overflow-hidden w-full h-full px-4 pt-2 pb-4">
-			<Input
-				type="search"
-				value={filterValue}
-				icon="search"
-				placeholder="Search"
-				on:input={onInputChange}
-			/>
+		<div class="flex flex-col gap-4 overflow-hidden w-full h-full pt-2">
+			<div class="px-4">
+				<Input
+					type="search"
+					value={filterValue}
+					icon="search"
+					placeholder="Search"
+					on:input={onInputChange}
+				/>
+			</div>
 			<div class="flex flex-col justify-center gap-0.5 overflow-hidden">
 				{#if $fetchingBranches && $updatingRepositories}
 					<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 				{:else}
 					<ScrollArea orientation="vertical" class="h-full">
-						{#each filteredGroups$ as group}
-							{#if group.items.length > 0}
-								<div class="group__header">
-									<span class="capitalize text-sm font-semibold">{group.identifier}</span>
-								</div>
-								{#each group.items as item}
-									<BranchItem
-										{repository}
-										selected={$workingBranch?.currentBranch === item.branch.name}
-										branch={item.branch}
-									/>
-								{/each}
-							{/if}
-						{/each}
+						<div class="px-4">
+							{#each filteredGroups$ as group}
+								{#if group.items.length > 0}
+									<div class="group__header">
+										<span class="capitalize text-xs font-semibold">{group.identifier}</span>
+									</div>
+									{#each group.items as item}
+										<BranchItem
+											{repository}
+											selected={$workingBranch?.currentBranch === item.branch.name}
+											branch={item.branch}
+										/>
+									{/each}
+								{/if}
+							{/each}
+						</div>
 					</ScrollArea>
 				{/if}
 			</div>

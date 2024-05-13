@@ -36,7 +36,7 @@
 			>
 				<ProjectAvatar {name} />
 				{#if !isNavCollapsed}
-					<span class="button__label text-sm font-bold">{name}</span>
+					<span class="button__label text-sm font-semibold">{name}</span>
 					<div class="button__icon">
 						<Icon name="select-chevron" />
 					</div>
@@ -53,17 +53,13 @@
 <style lang="postcss">
 	.wrapper {
 		position: relative;
-		/* margin-bottom: var(--size-16); */
 		@apply mb-4;
 		height: fit-content;
 	}
 
 	.button {
 		display: flex;
-		/* gap: var(--size-10); */
 		width: 100%;
-		/* padding: var(--size-10); */
-		/* border-radius: var(--radius-m); */
 		@apply bg-muted/60 rounded-md p-2 gap-2;
 
 		align-items: center;
