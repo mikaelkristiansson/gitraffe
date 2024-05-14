@@ -116,8 +116,8 @@
 				{#if $fetchingBranches && $updatingRepositories}
 					<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 				{:else}
-					<ScrollArea orientation="vertical" class="h-full mb-2">
-						<div class="px-4">
+					<ScrollArea orientation="vertical" class="h-full">
+						<div class="px-4 pb-2">
 							{#each filteredGroups$ as group}
 								{#if group.items.length > 0}
 									<div class="group__header">

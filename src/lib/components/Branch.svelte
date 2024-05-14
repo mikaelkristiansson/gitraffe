@@ -9,6 +9,7 @@
 	import type { Branch } from '$lib/models/branch';
 	import type { Repository } from '$lib/models/repository';
 	import SwitchBranch from './SwitchBranch.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import Icon from './Icon.svelte';
 	import { checkoutBranch } from '$lib/git/checkout';
 
@@ -38,7 +39,23 @@
 		}
 	}}
 >
-	<Icon name={branch.localExists ? (branch.remoteExists ? 'local-remote' : 'local') : 'remote'} />
+	<Tooltip.Root>
+		<Tooltip.Trigger class="cursor-auto flex">
+			<Icon
+				color={branch.localExists ? (branch.remoteExists ? 'neutral' : 'secondary') : 'pop'}
+				name={branch.localExists ? (branch.remoteExists ? 'local-remote' : 'local') : 'remote'}
+			/>
+		</Tooltip.Trigger>
+		<Tooltip.Content>
+			<p>
+				{branch.localExists
+					? branch.remoteExists
+						? 'Local and remote branch'
+						: 'Local branch'
+					: 'Remote branch'}
+			</p>
+		</Tooltip.Content>
+	</Tooltip.Root>
 	<div class="flex flex-col flex-grow overflow-hidden gap-1">
 		<div class="flex items-center justify-between gap-1">
 			<p

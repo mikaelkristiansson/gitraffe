@@ -20,13 +20,6 @@
 		vertical={isLaneCollapsed}
 		on:click={() => createRequestUrl(repository, currentBranch.name)}
 	>
-		{#if !isLaneCollapsed}
-			<kbd
-				class="pointer-events-none inline-flex select-none items-center gap-1 rounded px-1 leading-[15px] border border-gray-400 bg-gray-400/60 mr-1 font-mono text-[0.6rem] font-medium opacity-60"
-			>
-				<span>⌘</span>R
-			</kbd>
-		{/if}
 		Open Pull Request
 	</Button>
 {/if}
