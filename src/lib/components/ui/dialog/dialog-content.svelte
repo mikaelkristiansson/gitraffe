@@ -29,7 +29,7 @@
 				'max-w-md': size === 'md',
 				'max-w-lg': size === 'lg',
 				'max-w-xl': size === 'xl',
-				'max-w-[90%]': size === 'full'
+				'max-w-[90%] h-[90%]': size === 'full'
 			},
 			className
 		)}

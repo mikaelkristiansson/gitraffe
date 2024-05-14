@@ -86,17 +86,17 @@
 </script>
 
 <Tag color="warning" size="medium" wide clickable on:click={() => (dialogStashFilesOpen = true)}>
-	<span class="text-sm font-semibold">Stashed changes</span>
+	<span class="text-xs font-semibold">Stashed changes</span>
 	<Icon name="pr-draft" />
 </Tag>
 
 <Dialog.Root bind:open={dialogStashFilesOpen}>
-	<Dialog.Content size="full">
+	<Dialog.Content size="full" class="flex flex-col justify-stretch">
 		<Dialog.Header>
 			<Dialog.Title>Stashed Files</Dialog.Title>
 		</Dialog.Header>
-		<div class="h-[520px] grid grid-cols-2 divide-x">
-			<div class="flex flex-col gap-2 px-2">
+		<div class="grid grid-cols-2 h-full w-full divide-x">
+			<div class="flex flex-col gap-2 px-2 grow">
 				{#if $persistedStash.files && $activeRepository}
 					{@const files =
 						$persistedStash.files.kind === StashedChangesLoadStates.Loaded
@@ -110,16 +110,18 @@
 					/>
 				{/if}
 			</div>
-			{#if $activeRepository}
-				<FilePreview
-					{selected}
-					isCommitedFile={true}
-					repository={$activeRepository}
-					setSelected={(file) => (selected = file)}
-				/>
-			{/if}
+			<div class="pl-2 grow">
+				{#if $activeRepository}
+					<FilePreview
+						{selected}
+						isCommitedFile={true}
+						repository={$activeRepository}
+						setSelected={(file) => (selected = file)}
+					/>
+				{/if}
+			</div>
 		</div>
-		<Dialog.Footer>
+		<Dialog.Footer class="row-span-1">
 			<Button variant="default" color="success" on:click={onRestoreClick}>Restore</Button>
 			<Button variant="secondary" color="error" on:click={onDiscardClick}>Discard</Button>
 		</Dialog.Footer>

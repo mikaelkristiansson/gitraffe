@@ -202,6 +202,7 @@
 						{selected}
 						{setSelected}
 						repository={$activeRepository}
+						showCommands
 					/>
 				</div>
 			</div>

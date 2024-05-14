@@ -41,13 +41,15 @@
 			<Dialog.Title>Manage Branch</Dialog.Title>
 		</Dialog.Header>
 		<div class="flex flex-col gap-4">
-			You have changes on the branch that are not committed. What would you like to do?
+			<span class="text-sm font-normal"
+				>You have changes on the branch that are not committed. What would you like to do?</span
+			>
 			<form bind:this={form} on:change={(e) => onFormChange(e.currentTarget)}>
 				<RadioGroup.Root bind:value={selectedChangeBranchType} class="gap-0">
 					<Card.Root class="rounded-b-none hover:bg-muted">
 						<Card.Content class="flex items-center gap-3 pt-4">
-							<Label for="stash" class="cursor-pointer">
-								<p class="text-base font-bold">Leave my changes on {$activeBranch.name}</p>
+							<Label for="stash" class="cursor-pointer font-normal">
+								<p class="text-sm font-bold">Leave my changes on {$activeBranch.name}</p>
 								Your in-progress work will be stashed on this branch for you to return to later</Label
 							>
 							<RadioGroup.Item name="changeBranch" value="stashed" id="stash" />
@@ -55,8 +57,8 @@
 					</Card.Root>
 					<Card.Root class="rounded-t-none border-t-0 hover:bg-muted">
 						<Card.Content class="flex items-center gap-3 pt-4">
-							<Label for="bring-changes" class="cursor-pointer">
-								<p class="text-base font-bold">Bring my changes to {branch$.name}</p>
+							<Label for="bring-changes" class="cursor-pointer font-normal">
+								<p class="text-sm font-bold">Bring my changes to {branch$.name}</p>
 								Your in-progress work will follow you to the new branch
 							</Label>
 							<RadioGroup.Item name="changeBranch" value="bringChanges" id="bring-changes" />

@@ -32,8 +32,10 @@
 		--secondary-foreground: 327 88% 72%; */
 		--secondary: 41 89% 82%;
 		--secondary-foreground: 41 89% 22%;
-		--accent: 87 88% 12%;
-		--accent-foreground: 87 88% 52%;
+		--accent: 240 4.8% 95.9%;
+		--accent-foreground: 240 5.9% 10%;
+		/* --accent: 87 88% 12%;
+		--accent-foreground: 87 88% 52%; */
 		--destructive: 1 81% 23%;
 		--destructive-foreground: 1 81% 83%;
 		--ring: 207 88% 12%;

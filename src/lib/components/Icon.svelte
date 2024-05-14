@@ -1,6 +1,13 @@
 <script lang="ts" context="module">
 	import { pxToRem } from '$lib/utils/pxToRem';
-	export type IconColor = 'success' | 'error' | 'pop' | 'warn' | 'neutral' | undefined;
+	export type IconColor =
+		| 'success'
+		| 'error'
+		| 'pop'
+		| 'warn'
+		| 'neutral'
+		| 'secondary'
+		| undefined;
 </script>
 
 <script lang="ts">
@@ -23,7 +30,8 @@
 	class:error={color == 'error'}
 	class:pop={color == 'pop'}
 	class:warn={color == 'warn'}
-	class:default={!color}
+	class:neutral={color == 'neutral'}
+	class:secondary={color == 'secondary'}
 	style:fill-opacity={opacity}
 	style:width={pxToRem(size)}
 	style:height={pxToRem(size)}
@@ -48,23 +56,28 @@
 
 <style lang="postcss">
 	.icon-wrapper {
-		--spinner-stroke-width: calc(var(--size-2) / 1.4);
 		flex-shrink: 0;
 		pointer-events: none;
 		display: inline-block;
 	}
 
 	.success {
-		color: var(--clr-theme-scale-succ-50);
+		@apply text-green-700 dark:text-green-300;
 	}
 	.error {
-		color: var(--clr-theme-scale-err-50);
+		@apply text-red-900 dark:text-red-300;
 	}
 	.pop {
-		color: var(--clr-theme-scale-pop-50);
+		@apply text-purple-900 dark:text-purple-300;
 	}
 	.warn {
-		color: var(--clr-theme-scale-warn-50);
+		@apply text-orange-400;
+	}
+	.neutral {
+		@apply text-gray-500;
+	}
+	.secondary {
+		@apply text-secondary-foreground dark:text-secondary;
 	}
 
 	.spinner {
@@ -77,13 +90,13 @@
 		}
 	}
 	.spinner-path {
-		stroke-width: var(--spinner-stroke-width);
+		stroke-width: 2px;
 		stroke: currentColor;
 		animation: spinning-path 2s infinite ease-in-out;
 	}
 
 	.spinner-back-path {
-		stroke-width: var(--spinner-stroke-width);
+		stroke-width: 2px;
 		stroke: currentColor;
 		opacity: 0.3;
 	}

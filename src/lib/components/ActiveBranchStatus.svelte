@@ -26,7 +26,7 @@
 {:else}
 	<Tooltip.Root>
 		<Tooltip.Trigger class="cursor-auto"
-			><Badge variant="default" size="sm" icon="remote" vertical={isLaneCollapsed}>Remote</Badge
+			><Badge variant="pop" size="sm" icon="remote" vertical={isLaneCollapsed}>Remote</Badge
 			></Tooltip.Trigger
 		>
 		<Tooltip.Content>

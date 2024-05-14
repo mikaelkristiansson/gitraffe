@@ -114,11 +114,11 @@
 </button>
 
 <Dialog.Root bind:open={dialogCommitFilesOpen}>
-	<Dialog.Content size="full">
+	<Dialog.Content size="full" class="flex flex-col justify-stretch">
 		<Dialog.Header>
 			<Dialog.Title>Commited Files</Dialog.Title>
 		</Dialog.Header>
-		<div class="h-[520px] flex flex-col gap-4 divide-y">
+		<div class="flex flex-col gap-4 divide-y h-full">
 			<div class="flex flex-row gap-8">
 				<div class="flex gap-2 flex-col">
 					<Label for="currentCommit" class="text-md">Select commit</Label>
@@ -168,16 +168,20 @@
 					</Alert.Root>
 				{/if}
 			</div>
-			<div class="grid grid-cols-2 divide-x h-full pt-4">
-				<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
-				{#if $activeRepository}
-					<FilePreview
-						isCommitedFile={true}
-						{selected}
-						{repository}
-						setSelected={(file) => (selected = file)}
-					/>
-				{/if}
+			<div class="grid grid-cols-2 h-full w-full divide-x pt-4">
+				<div class="flex flex-col gap-2 px-2 grow">
+					<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
+				</div>
+				<div class="pl-2 grow">
+					{#if $activeRepository}
+						<FilePreview
+							isCommitedFile={true}
+							{selected}
+							{repository}
+							setSelected={(file) => (selected = file)}
+						/>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</Dialog.Content>

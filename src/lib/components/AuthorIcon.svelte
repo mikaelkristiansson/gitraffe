@@ -13,7 +13,7 @@
 <Tooltip.Root>
 	<Tooltip.Trigger class="cursor-auto">
 		<Avatar.Root
-			delayMs={1500}
+			delayMs={500}
 			class="h-5 w-5 rounded-full bg-muted text-xs font-bold uppercase text-muted-foreground"
 		>
 			<div
