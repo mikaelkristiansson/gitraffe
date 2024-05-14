@@ -6,13 +6,13 @@
 	import { createRepositories } from '$lib/stores/repository.svelte';
 	import WelcomeAction from './WelcomeAction.svelte';
 
-	const repositoryStore = createRepositories();
+	const { addRepository } = createRepositories();
 	let newProjectLoading = $state(false);
 
 	async function onNewProject() {
 		newProjectLoading = true;
 		try {
-			await repositoryStore.addRepository();
+			await addRepository();
 		} finally {
 			newProjectLoading = false;
 		}

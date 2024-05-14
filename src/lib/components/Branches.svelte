@@ -6,7 +6,7 @@
 	import { allBranches, defaultBranch, fetchingBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Spinner from '$lib/icons/Spinner.svelte';
-	import { updatingRepositories } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import {
 		groupBranches,
 		mergeRemoteAndLocalBranches,
@@ -21,6 +21,8 @@
 
 	export let repository: Repository;
 	export let isNavCollapsed: boolean;
+
+	const repositoryStore = createRepositories();
 
 	let groups$: IFilterListGroup<IBranchListItem>[] = [];
 	let filteredGroups$: IFilterListGroup<IBranchListItem>[] = [];
@@ -113,7 +115,7 @@
 				/>
 			</div>
 			<div class="flex flex-col justify-center gap-0.5 overflow-hidden">
-				{#if $fetchingBranches && $updatingRepositories}
+				{#if $fetchingBranches && repositoryStore.isUpdating}
 					<div class="flex justify-center"><Spinner size={22} opacity={0.5} /></div>
 				{:else}
 					<ScrollArea orientation="vertical" class="h-full">

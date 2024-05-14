@@ -6,7 +6,7 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import FolderX from 'lucide-svelte/icons/folder-x';
 	// import type { Repository } from '$lib/models/repository';
-	import { createRepositories, updatingRepositories } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
@@ -40,7 +40,7 @@
 				}, 10000);
 			}
 			if (newRepo) {
-				updatingRepositories.set(true);
+				repositoryStore.isUpdating = true;
 			}
 			try {
 				const base = newRepo
@@ -82,7 +82,7 @@
 				console.error(e);
 				toast.error('Failed to fetch branches');
 			} finally {
-				updatingRepositories.set(false);
+				repositoryStore.isUpdating = false;
 			}
 		}
 	}

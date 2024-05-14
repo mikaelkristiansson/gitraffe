@@ -1,4 +1,3 @@
-import { writable } from 'svelte/store';
 import { open } from '@tauri-apps/api/dialog';
 import { getStorageItem, setStorageItem } from '../persisted';
 import { Repository } from '../models/repository';
@@ -7,7 +6,6 @@ import { matchExistingRepository } from '../utils/repository-matching';
 import { invoke } from '@tauri-apps/api/tauri';
 import { emit } from '@tauri-apps/api/event';
 import { toast } from 'svelte-sonner';
-// import { Map } from 'svelte/reactivity';
 import { defaultBranch } from './branch';
 
 export interface Project {
@@ -20,29 +18,13 @@ let repositories = $state<Repository[]>((getStorageItem('repositories') as Repos
 let activeRepository = $state<Repository | null>(
 	(getStorageItem('activeRepository') as Repository) || null
 );
-
-// class RepositoryStore {
-// 	repositories = $state<Map<string, Repository>>(new Map());
-// 	activeRepository = $state<Repository | null>(null);
-// }
+let isUpdating = $state(false);
 
 export function createRepositories() {
-	// if (hasContext(context)) {
-	// 	return getContext<typeof params>(context);
-	// }
-	// const storedRepositories =
-	// 	(getStorageItem('repositories') as Map<string, Repository>) || new Map();
-	// const storedActiveRepository = (getStorageItem('activeRepository') as Repository) || null;
-	// let { repositories, activeRepository } = new RepositoryStore();
-	// repositories = storedRepositories;
-	// activeRepository = storedActiveRepository;
-	// let repositoryStore = $state(<Repository[]>(storedRepositories))
-	// const { subscribe, set, update } = writable(storedRepositories as Repository[] | []);
-
 	const addRepository = async () => {
 		const path = await promptForDirectory();
 		if (!path) return;
-		const id = Math.random().toString(36).substr(2, 9);
+		const id = Math.random().toString(36).substring(2, 9);
 		const title = path.split('/').pop() || path;
 		const repository = await addNewRepository(path, id, repositories);
 		if (!repository) {
@@ -80,6 +62,12 @@ export function createRepositories() {
 		get activeRepository() {
 			return activeRepository;
 		},
+		get isUpdating() {
+			return isUpdating;
+		},
+		set isUpdating(newValue: boolean) {
+			isUpdating = newValue;
+		},
 		addRepository,
 		removeRepository,
 		removeActive,
@@ -88,46 +76,6 @@ export function createRepositories() {
 
 	return params;
 }
-
-// function createActiveRepository() {
-// 	const storedActiveRepository = getStorageItem('activeRepository') || (null as Repository | null);
-// 	let activeRepositoryStore = $state(<Repository>(storedActiveRepository))
-// 	// const { subscribe, set } = writable(storedActiveRepository as Repository | null);
-
-// 	const removeActive = () => {
-// 		activeRepositoryStore = null;
-// 		localStorage.removeItem('activeRepository');
-// 	}
-// 	const setActive = (id: string) => {
-// 		activeRepositoryStore =
-
-// 	return {
-// 		get activeRepository() {
-// 			return activeRepositoryStore;
-// 		},
-// 		removeActive,
-// 		// removeActive: () => {
-// 		// 	set(null);
-// 		// 	localStorage.removeItem('activeRepository');
-// 		// },
-// 		// setActive: (id: string) => {
-// 		// 	let newRepository: Repository = getStorageItem('activeRepository') as Repository;
-// 		// 	const unsub = repositories.subscribe((repos) =>
-// 		// 		repos.find((repo) => repo.id === id && (newRepository = repo))
-// 		// 	);
-// 		// 	if (!newRepository) return;
-// 		// 	set(newRepository);
-// 		// 	unsub();
-// 		// 	// // This is needed to expand the scope of the repository in the main process
-// 		// 	invoke('expand_scope', { folderPath: newRepository.path });
-// 		// 	setStorageItem('activeRepository', newRepository);
-// 		// }
-// 	};
-// }
-
-// export const repositoryStore = createRepositories();
-// export const activeRepository = createActiveRepository();
-export const updatingRepositories = writable(false);
 
 async function promptForDirectory(): Promise<string | undefined> {
 	const defaultPath = await (await import('@tauri-apps/api/path')).homeDir();
@@ -138,37 +86,13 @@ async function promptForDirectory(): Promise<string | undefined> {
 	});
 }
 
-// export async function addRepository(repositories, setActiveRepository: (id: string) => void) {
-// 	const path = await promptForDirectory();
-// 	if (!path) return;
-// 	const id = Math.random().toString(36).substr(2, 9);
-// 	const title = path.split('/').pop() || path;
-
-// 	// const unsub = repositories.subscribe(async (repos) => {
-// 	// 	const repository = await addNewRepository(path, id, repos);
-// 	// 	//TODO: show error message if repository is null
-// 	// 	if (!repository) {
-// 	// 		toast.error(`${title} is not an existing git repository.`);
-// 	// 		return;
-// 	// 	}
-// 	// 	repositories.add(repository);
-// 	// 	activeRepository.setActive(id);
-// 	// });
-// 	// unsub();
-// 	return { id, title, path };
-// }
-
 async function addNewRepository(
 	path: Readonly<string>,
 	id: string,
 	allRepositories: Repository[]
 ): Promise<Repository | null> {
-	// const addedRepositories = new Array<Repository>()
-	// let repository: Repository | null = null;
-	// const lfsRepositories = new Array<Repository>()
 	const invalidPaths = new Array<string>();
 
-	// for (const path of paths) {
 	const repositoryType = await getRepositoryType(path).catch((e) => {
 		console.error('Could not determine repository type', e);
 		return { kind: 'missing' } as RepositoryType;
@@ -194,34 +118,11 @@ async function addNewRepository(
 		}
 		const newRepo = new Repository(validatedPath, id, null, false);
 		return newRepo;
-
-		// We don't have to worry about repositoryWithRefreshedGitHubRepository
-		// and isUsingLFS if the repo already exists in the app.
-
-		// const addedRepo = await this.repositoriesStore.addRepository(
-		//   validatedPath
-		// )
-
-		// initialize the remotes for this new repository to ensure it can fetch
-		// it's GitHub-related details using the GitHub API (if applicable)
-		// const gitStore = this.gitStoreCache.get(addedRepo)
-		// await gitStore.loadRemotes()
-
-		// const [refreshedRepo, usingLFS] = await Promise.all([
-		//   this.repositoryWithRefreshedGitHubRepository(addedRepo),
-		//   this.isUsingLFS(addedRepo),
-		// ])
-		// addedRepositories.push(refreshedRepo)
-
-		// if (usingLFS) {
-		//   lfsRepositories.push(refreshedRepo)
-		// }
 	} else {
 		invalidPaths.push(path);
 	}
 
 	if (invalidPaths.length > 0) {
-		//   this.emitError(new Error(this.getInvalidRepoPathsMessage(invalidPaths)))
 		emit('error', new Error(getInvalidRepoPathsMessage(invalidPaths)));
 	}
 
