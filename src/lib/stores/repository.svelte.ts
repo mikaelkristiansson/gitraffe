@@ -7,9 +7,8 @@ import { matchExistingRepository } from '../utils/repository-matching';
 import { invoke } from '@tauri-apps/api/tauri';
 import { emit } from '@tauri-apps/api/event';
 import { toast } from 'svelte-sonner';
-import { Map } from 'svelte/reactivity';
+// import { Map } from 'svelte/reactivity';
 import { defaultBranch } from './branch';
-import { getContext, hasContext, setContext } from 'svelte';
 
 export interface Project {
 	id: string;
@@ -17,21 +16,24 @@ export interface Project {
 	path: string;
 }
 
-class RepositoryStore {
-	repositories = $state<Map<string, Repository>>(new Map());
-	activeRepository = $state<Repository | null>(null);
-}
+let repositories = $state<Repository[]>((getStorageItem('repositories') as Repository[]) || []);
+let activeRepository = $state<Repository | null>(
+	(getStorageItem('activeRepository') as Repository) || null
+);
 
-const context = 'repositories';
+// class RepositoryStore {
+// 	repositories = $state<Map<string, Repository>>(new Map());
+// 	activeRepository = $state<Repository | null>(null);
+// }
 
 export function createRepositories() {
 	// if (hasContext(context)) {
 	// 	return getContext<typeof params>(context);
 	// }
-	const storedRepositories =
-		(getStorageItem('repositories') as Map<string, Repository>) || new Map();
-	const storedActiveRepository = (getStorageItem('activeRepository') as Repository) || null;
-	let { repositories, activeRepository } = new RepositoryStore();
+	// const storedRepositories =
+	// 	(getStorageItem('repositories') as Map<string, Repository>) || new Map();
+	// const storedActiveRepository = (getStorageItem('activeRepository') as Repository) || null;
+	// let { repositories, activeRepository } = new RepositoryStore();
 	// repositories = storedRepositories;
 	// activeRepository = storedActiveRepository;
 	// let repositoryStore = $state(<Repository[]>(storedRepositories))
@@ -42,21 +44,20 @@ export function createRepositories() {
 		if (!path) return;
 		const id = Math.random().toString(36).substr(2, 9);
 		const title = path.split('/').pop() || path;
-		const repos = Array.from(repositories, ([_, value]) => value);
-		const repository = await addNewRepository(path, id, repos);
+		const repository = await addNewRepository(path, id, repositories);
 		if (!repository) {
 			toast.error(`${title} is not an existing git repository.`);
 			return;
 		}
-		activeRepository = repository;
-		repositories.set(repository.id, repository);
+		repositories.push(repository);
 
 		setStorageItem('repositories', repositories);
+		setActive(repository);
 		return activeRepository;
 	};
 
 	const removeRepository = (id: string) => {
-		repositories.delete(id);
+		repositories = repositories.filter((repo) => repo.id !== id);
 		setStorageItem('repositories', repositories);
 	};
 
@@ -64,8 +65,8 @@ export function createRepositories() {
 		activeRepository = null;
 		localStorage.removeItem('activeRepository');
 	};
-	const setActive = async (id: string) => {
-		activeRepository = repositories.get(id) || null;
+	const setActive = async (repository: Repository) => {
+		activeRepository = repository;
 		setStorageItem('activeRepository', activeRepository);
 		await defaultBranch.setDefault(activeRepository);
 		// This is needed to expand the scope of the repository in the main process
@@ -83,42 +84,10 @@ export function createRepositories() {
 		removeRepository,
 		removeActive,
 		setActive
-		// add: (repository: Repository) => {
-		// 	update((repositories) => {
-		// 		const newRepositories = [...repositories, repository];
-		// 		setStorageItem('repositories', newRepositories);
-		// 		return newRepositories;
-		// 	});
-		// },
-		// remove: (id: string) => {
-		// 	update((repositories) => {
-		// 		const newRepositories = repositories.filter((repo) => repo.id !== id);
-		// 		setStorageItem('repositories', newRepositories);
-		// 		return newRepositories;
-		// 	});
-		// }
 	};
 
-	// setContext(context, params);
 	return params;
 }
-
-export const rune = () => {
-	if (hasContext(context)) {
-		return getContext<{ store: typeof _state }>(context);
-	}
-	let _state = createRepositories();
-	const _rune = {
-		get store() {
-			return _state;
-		},
-		set store(v) {
-			_state = v;
-		}
-	};
-	setContext(context, _rune);
-	return _rune;
-};
 
 // function createActiveRepository() {
 // 	const storedActiveRepository = getStorageItem('activeRepository') || (null as Repository | null);
@@ -156,7 +125,7 @@ export const rune = () => {
 // 	};
 // }
 
-export const repositoryStore = createRepositories();
+// export const repositoryStore = createRepositories();
 // export const activeRepository = createActiveRepository();
 export const updatingRepositories = writable(false);
 
@@ -192,7 +161,7 @@ async function promptForDirectory(): Promise<string | undefined> {
 async function addNewRepository(
 	path: Readonly<string>,
 	id: string,
-	repositories: Repository[]
+	allRepositories: Repository[]
 ): Promise<Repository | null> {
 	// const addedRepositories = new Array<Repository>()
 	// let repository: Repository | null = null;
@@ -219,7 +188,7 @@ async function addNewRepository(
 	} else if (repositoryType.kind === 'regular') {
 		const validatedPath = repositoryType.topLevelWorkingDirectory;
 		console.info(`adding repository at ${validatedPath} to store`);
-		const existing = await matchExistingRepository(repositories, validatedPath);
+		const existing = await matchExistingRepository(allRepositories, validatedPath);
 		if (existing !== undefined) {
 			return existing;
 		}

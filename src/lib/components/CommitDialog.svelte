@@ -8,14 +8,14 @@
 	import { createCommit } from '$lib/git/commit';
 	import type { WorkingDirectoryFileChange } from '$lib/models/status';
 	import { activeBranch, allBranches, workingBranch } from '$lib/stores/branch';
-	import { repositoryStore } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { Button } from './ui/button';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { CommitDialogProps } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 
-	let { activeRepository } = repositoryStore;
+	const repositoryStore = createRepositories();
 
 	let { selectedFiles, expanded, setSelected }: CommitDialogProps = $props();
 
@@ -50,15 +50,15 @@
 		const message = concatMessage(title, description);
 		isCommitting = true;
 		try {
-			if (activeRepository) {
+			if (repositoryStore.activeRepository) {
 				const createPromise = await createCommit(
-					activeRepository,
+					repositoryStore.activeRepository,
 					message.trim(),
 					$selectedFiles as WorkingDirectoryFileChange[]
 				);
-				const updatePromise = await workingBranch.setWorking(activeRepository);
+				const updatePromise = await workingBranch.setWorking(repositoryStore.activeRepository);
 				allBranches.updateBranch($activeBranch);
-				const commits = await loadLocalCommits(activeRepository, $activeBranch);
+				const commits = await loadLocalCommits(repositoryStore.activeRepository, $activeBranch);
 				commitStore.set(commits);
 				const allPromises = Promise.all([createPromise, updatePromise, commits]);
 				toast.promise(allPromises, {

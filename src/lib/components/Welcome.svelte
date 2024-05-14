@@ -3,21 +3,16 @@
 <script lang="ts">
 	import newProjectSvg from '$lib/assets/illu/space-rover.svg?raw';
 	import giraffeSvg from '$lib/assets/giraffe.svg?raw';
-	import { createRepositories, rune } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import WelcomeAction from './WelcomeAction.svelte';
 
-	let { store } = rune();
-	$inspect('welcom component', store);
-	// const repositoryStore = createRepositories();
-	// $inspect(repositoryStore);
-	// const { addRepository } = repositoryStore;
-
+	const repositoryStore = createRepositories();
 	let newProjectLoading = $state(false);
 
 	async function onNewProject() {
 		newProjectLoading = true;
 		try {
-			await store.addRepository();
+			await repositoryStore.addRepository();
 		} finally {
 			newProjectLoading = false;
 		}

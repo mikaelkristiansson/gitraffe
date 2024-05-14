@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
 	import type { Repository } from '$lib/models/repository';
-	import { repositoryStore } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import { toast } from 'svelte-sonner';
 
 	let {
@@ -16,7 +16,7 @@
 	// export let dialogSettingsOpen = false;
 	// $inspect(dialogSettingsOpen);
 
-	let { repositories, removeRepository, setActive, removeActive } = repositoryStore;
+	const repositoryStore = createRepositories();
 
 	let isDeleting = $state(false);
 
@@ -24,13 +24,13 @@
 		isDeleting = true;
 		try {
 			if (!repository) return;
-			removeRepository(repository.id);
-			if (repositories.size !== 0) {
-				const firstRepository = repositories[0];
-				setActive(firstRepository.id);
+			repositoryStore.removeRepository(repository.id);
+			if (repositoryStore.repositories.length !== 0) {
+				const firstRepository = repositoryStore.repositories[0];
+				repositoryStore.setActive(firstRepository);
 				goto(`/${firstRepository.id}`);
 			} else {
-				removeActive();
+				repositoryStore.removeActive();
 				goto('/');
 			}
 			toast.success('Project deleted');

@@ -12,7 +12,7 @@
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
-	import { repositoryStore } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import type { ChangedFile, CommittedFileChange } from '$lib/models/status';
 	import { getChangedFiles } from '$lib/git/log';
 	import FilePreview from './FilePreview.svelte';
@@ -39,7 +39,7 @@
 	// export let offset: number | undefined = undefined;
 	// export let scaleFactor: number | undefined = undefined;
 
-	let { activeRepository } = repositoryStore;
+	const repositoryStore = createRepositories();
 
 	const CARD_OFFSET = offset || 8;
 	const SCALE_FACTOR = scaleFactor || 0.02;
@@ -189,7 +189,7 @@
 					<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
 				</div>
 				<div class="pl-2 grow">
-					{#if activeRepository}
+					{#if repositoryStore.activeRepository}
 						<FilePreview
 							isCommitedFile={true}
 							{selected}

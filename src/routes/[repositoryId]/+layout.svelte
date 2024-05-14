@@ -4,15 +4,19 @@
 	import { goto } from '$app/navigation';
 	import { allBranches, defaultBranch, workingBranch } from '$lib/stores/branch';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import FolderX from 'lucide-svelte/icons/folder-x';
 	// import type { Repository } from '$lib/models/repository';
-	import { repositoryStore, updatingRepositories } from '$lib/stores/repository.svelte';
+	import { createRepositories, updatingRepositories } from '$lib/stores/repository.svelte';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { appWindow } from '@tauri-apps/api/window';
 	import { onDestroy, onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Alert from '$lib/components/ui/alert';
 
 	// let repository$: Repository | null = null;
-	let { activeRepository } = repositoryStore;
+	const repositoryStore = createRepositories();
+	let { children } = $props();
 
 	// const unsubscribeActiveRepository = activeRepository.subscribe(async (repo) => {
 	// 	if (repo) {
@@ -27,7 +31,7 @@
 	let timeoutId: number;
 
 	async function update(newRepo: boolean = false, isFocus: boolean = true) {
-		if (activeRepository) {
+		if (repositoryStore.activeRepository) {
 			if (isFocus) {
 				clearTimeout(timeoutId);
 				timeoutId = window.setTimeout(async () => {
@@ -39,16 +43,24 @@
 				updatingRepositories.set(true);
 			}
 			try {
-				const base = newRepo ? await defaultBranch.setDefault(activeRepository) : $defaultBranch;
-				const allBranches$ = await allBranches.fetch(activeRepository, {
+				const base = newRepo
+					? await defaultBranch.setDefault(repositoryStore.activeRepository)
+					: $defaultBranch;
+				const allBranches$ = await allBranches.fetch(repositoryStore.activeRepository, {
 					prevBranches: $allBranches
 				});
-				let activeBranch = await workingBranch.setWorking(activeRepository, $workingBranch);
+				let activeBranch = await workingBranch.setWorking(
+					repositoryStore.activeRepository,
+					$workingBranch
+				);
 				let updatePath = JSON.stringify(activeBranch) !== JSON.stringify($workingBranch);
 
 				const currentBranch = allBranches$.find((b) => b.name === activeBranch?.currentBranch);
 
-				const commits = await loadLocalCommits(activeRepository, currentBranch || null);
+				const commits = await loadLocalCommits(
+					repositoryStore.activeRepository,
+					currentBranch || null
+				);
 				const commitsSorted = commits.localCommitSHAs.slice().sort();
 				if (
 					!(
@@ -64,7 +76,7 @@
 					commitStore.set(commits);
 				}
 				if (updatePath) {
-					goto(`/${activeRepository.id}/board/${activeBranch?.currentBranch}`);
+					goto(`/${repositoryStore.activeRepository.id}/board/${activeBranch?.currentBranch}`);
 				}
 			} catch (e) {
 				console.error(e);
@@ -77,7 +89,7 @@
 
 	// $: activeRepository?.path && update(true);
 	$effect(() => {
-		if (activeRepository?.path) {
+		if (repositoryStore.activeRepository?.path) {
 			update(true);
 		}
 	});
@@ -101,15 +113,25 @@
 	});
 </script>
 
-{#if !activeRepository}
-	<p>Project not found!</p>
-	<button on:click={() => goto('/')}>Go back</button>
+{#if !repositoryStore.activeRepository}
+	<div class="flex w-full flex-col justify-center items-center h-full">
+		<div class="flex">
+			<Alert.Root>
+				<FolderX class="h-5 w-5" />
+				<Alert.Title>Project not found!</Alert.Title>
+				<Alert.Description>
+					<p>The project you are looking for does not exist.</p>
+					<Button class="mt-2" onclick={() => goto('/')}>Go back</Button>
+				</Alert.Description>
+			</Alert.Root>
+		</div>
+	</div>
 {:else if $defaultBranch === null}
-	<slot />
+	{@render children()}
 {:else}
-	<div class="flex relative w-full" role="group" on:dragover|preventDefault>
+	<div class="flex relative w-full" role="group">
 		<!-- user={$user$} -->
-		<Navigation repository={activeRepository} />
-		<slot />
+		<Navigation repository={repositoryStore.activeRepository} />
+		{@render children()}
 	</div>
 {/if}

@@ -4,26 +4,19 @@
 	import { goto } from '$app/navigation';
 	import Welcome from '$lib/components/Welcome.svelte';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
-	import { rune } from '$lib/stores/repository.svelte';
 	import { activeBranch } from '$lib/stores/branch';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 
-	let { store } = rune();
-	$inspect('page component', store);
-	// let repositoryStore = createRepositories();
-	// let { activeRepository } = repositoryStore;
-	// $inspect(repositoryStore);
+	const repositoryStore = createRepositories();
 
-	let redirect = store.activeRepository?.id || null;
+	let redirect = repositoryStore.activeRepository?.id || null;
 	console.info('[ROUTE] index');
 	$effect(() => {
-		console.log('helo');
-		console.log('$activeBranch', $activeBranch);
-		if (store.activeRepository) {
-			$inspect('if store.activeRepository update', store.activeRepository);
+		if (repositoryStore.activeRepository) {
 			if ($activeBranch) {
-				goto(`/${store.activeRepository.id}/board/${$activeBranch.name}`);
+				goto(`/${repositoryStore.activeRepository.id}/board/${$activeBranch.name}`);
 			} else {
-				goto(`/${store.activeRepository.id}/`);
+				goto(`/${repositoryStore.activeRepository.id}/`);
 			}
 		}
 	});

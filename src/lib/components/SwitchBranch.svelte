@@ -8,13 +8,15 @@
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { goto } from '$app/navigation';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
-	import { repositoryStore } from '$lib/stores/repository.svelte';
+	import { createRepositories } from '$lib/stores/repository.svelte';
 	import { Button } from './ui/button';
 	import { toast } from 'svelte-sonner';
 
 	export let branch: Branch;
 	export let href: string;
 	export let dialogSwitchOpen = false;
+
+	const repositoryStore = createRepositories();
 
 	let form: HTMLFormElement;
 	let selectedChangeBranchType = 'stashed';
