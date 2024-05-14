@@ -1,12 +1,15 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import ListItem from './ListItem.svelte';
 	import { goto } from '$app/navigation';
-	import { activeRepository, addRepository, repositories } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 
-	export let isNavCollapsed: boolean;
+	let { isNavCollapsed }: { isNavCollapsed: boolean } = $props();
 
-	let hidden = true;
-	let loading = false;
+	let hidden = $state(true);
+	let loading = $state(false);
+	let { repositories, addRepository, activeRepository, setActive } = repositoryStore;
 
 	export function toggle() {
 		hidden = !hidden;
@@ -19,30 +22,33 @@
 
 	async function addNewRepository() {
 		const repository = await addRepository();
-		const unsubscribeActiveRepository = activeRepository.subscribe((repo) => {
-			if (repo?.id === repository?.id) {
-				if (repository) {
-					goto(`/${repository.id}/board`);
-				}
-			}
-		});
-		unsubscribeActiveRepository();
-		return repository;
+		if (repository) {
+			goto(`/${repository.id}/board`);
+		}
+		// const unsubscribeActiveRepository = activeRepository.subscribe((repo) => {
+		// 	if (repo?.id === repository?.id) {
+		// 		if (repository) {
+		// 			goto(`/${repository.id}/board`);
+		// 		}
+		// 	}
+		// });
+		// unsubscribeActiveRepository();
+		// return repository;
 	}
 </script>
 
 {#if !hidden}
 	<div class="popup" class:collapsed={isNavCollapsed}>
-		{#if $repositories.length > 0}
+		{#if repositories.size > 0}
 			<div class="popup__projects">
-				{#each $repositories as repository}
-					{@const selected = repository.id == $activeRepository?.id}
+				{#each repositories as [id, repository] (id)}
+					{@const selected = repository.id == activeRepository.id}
 					<ListItem
 						{selected}
 						icon={selected ? 'tick' : undefined}
 						on:click={() => {
 							hide();
-							activeRepository.setActive(repository.id);
+							setActive(repository.id);
 							goto(`/${repository.id}/board`);
 						}}
 					>

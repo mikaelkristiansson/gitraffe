@@ -31,8 +31,12 @@
 	});
 </script>
 
-<div data-tauri-drag-region class="flex h-full select-none cursor-default" role="application"
-on:contextmenu={(e) => !dev && e.preventDefault()}>
+<div
+	data-tauri-drag-region
+	class="flex h-full select-none cursor-default"
+	role="application"
+	oncontextmenu={(e) => !dev && e.preventDefault()}
+>
 	{@render children()}
 </div>
 <Sonner />

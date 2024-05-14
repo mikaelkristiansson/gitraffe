@@ -47,7 +47,7 @@
 		tabindex="0"
 	>
 		<div class="flex flex-col px-4 pb-4">
-			<div class="shrink-0 h-8" data-tauri-drag-region />
+			<div class="shrink-0 h-8" data-tauri-drag-region></div>
 			<ProjectSelector {repository} {isNavCollapsed} />
 			<BaseBranchCard {repository} {isNavCollapsed} />
 		</div>

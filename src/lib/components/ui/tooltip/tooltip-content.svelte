@@ -25,5 +25,4 @@
 	{...$$restProps}
 >
 	<slot />
-	asdf
 </TooltipPrimitive.Content>

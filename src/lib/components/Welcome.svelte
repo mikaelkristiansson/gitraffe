@@ -1,15 +1,23 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import newProjectSvg from '$lib/assets/illu/space-rover.svg?raw';
 	import giraffeSvg from '$lib/assets/giraffe.svg?raw';
-	import { addRepository } from '$lib/stores/repository';
+	import { createRepositories, rune } from '$lib/stores/repository.svelte';
 	import WelcomeAction from './WelcomeAction.svelte';
 
-	let newProjectLoading = false;
+	let { store } = rune();
+	$inspect('welcom component', store);
+	// const repositoryStore = createRepositories();
+	// $inspect(repositoryStore);
+	// const { addRepository } = repositoryStore;
+
+	let newProjectLoading = $state(false);
 
 	async function onNewProject() {
 		newProjectLoading = true;
 		try {
-			await addRepository();
+			await store.addRepository();
 		} finally {
 			newProjectLoading = false;
 		}

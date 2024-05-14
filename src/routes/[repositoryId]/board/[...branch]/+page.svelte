@@ -1,3 +1,5 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
@@ -13,7 +15,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { ChangedFile } from '$lib/models/status';
 	import CommitDialog from '$lib/components/CommitDialog.svelte';
-	import { activeRepository } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import { commitStore } from '$lib/stores/commits';
 	import type { Commit } from '$lib/models/commit';
 	import type { IStashEntry } from '$lib/models/stash-entry';
@@ -21,7 +23,6 @@
 	import Stash from '$lib/components/Stash.svelte';
 	import { unsubscribe } from '$lib/utils/unsubscribe';
 	import { createRequestUrl } from '$lib/utils/url';
-	import type { Repository } from '$lib/models/repository';
 	import { pushActiveBranch } from '$lib/utils/branch';
 	import Commits from '$lib/components/Commits.svelte';
 	import FilePreview from '$lib/components/FilePreview.svelte';
@@ -29,12 +30,16 @@
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import { cn } from '$lib/utils';
 
-	let branch$: IStatusResult | null = $workingBranch;
+	let { activeRepository } = repositoryStore;
+
+	// let $workingBranch: IStatusResult | null = $state($workingBranch);
 	const selectedFiles = writable<ChangedFile[]>([]);
-	let commits: Commit[] | null = null;
-	let selected: ChangedFile | undefined = $selectedFiles[0];
-	let stash: IStashEntry | null = null;
-	let isPushing = false;
+	let commits: Commit[] | null = $state(null);
+	let selected: ChangedFile | undefined = $state($selectedFiles[0]);
+	let stash: IStashEntry | null = $state(null);
+	let isPushing = $state(false);
+
+	let isLaneCollapsed = $state(projectLaneCollapsed(activeRepository.id));
 
 	function setSelected(file: ChangedFile | undefined) {
 		selected = file;
@@ -46,18 +51,18 @@
 	});
 
 	const unsubscribeStashStore = stashStore.subscribe((store) => {
-		if (!$activeRepository || !branch$) return;
-		const identifier = $activeRepository.id + '_' + branch$.currentBranch;
+		if (!activeRepository || !$workingBranch) return;
+		const identifier = activeRepository.id + '_' + $workingBranch.currentBranch;
 		stash = store[identifier];
 	});
 
 	const unsubscribeWorkingBranch = workingBranch.subscribe((branch) => {
-		branch$ = branch;
+		// $workingBranch = branch;
 		if (branch?.workingDirectory) {
 			selectedFiles.set(branch.workingDirectory.files);
 		}
 		if (branch) {
-			const identifier = $activeRepository!.id + '_' + branch.currentBranch;
+			const identifier = activeRepository!.id + '_' + branch.currentBranch;
 			stash = $stashStore[identifier];
 		}
 	});
@@ -65,24 +70,24 @@
 	console.info('[ROUTE] branch');
 
 	onMount(() => {
-		if ($activeRepository) {
+		if (activeRepository) {
 			const notMatching = $workingBranch?.currentTip !== $activeBranch?.tip.sha;
 			const shouldUpdate = !$workingBranch || notMatching;
 			if (shouldUpdate) {
-				workingBranch.setWorking($activeRepository);
+				workingBranch.setWorking(activeRepository);
 			}
 			return unsubscribe(
 				hotkeys.on('Meta+R', () => {
 					createRequestUrl(
-						$activeRepository as Repository,
+						activeRepository,
 						($workingBranch as IStatusResult).currentBranch as string
 					);
 				}),
 				hotkeys.on('Meta+P', async () => {
-					if ($activeRepository && $workingBranch && $activeBranch) {
+					if (activeRepository && $workingBranch && $activeBranch) {
 						isPushing = true;
 						await pushActiveBranch(
-							$activeRepository as Repository,
+							activeRepository,
 							$workingBranch as IStatusResult,
 							$activeBranch
 						);
@@ -101,24 +106,32 @@
 
 	const commitBoxOpen = persisted<boolean>(
 		true,
-		'commitBoxExpanded_' + $activeRepository?.id || '' + '_' + branch$?.currentTip || ''
+		'commitBoxExpanded_' + activeRepository?.id || '' + '_' + $workingBranch?.currentTip || ''
 	);
 
-	$: isLaneCollapsed = projectLaneCollapsed($activeRepository?.id || '');
-	$: if ($isLaneCollapsed) {
-		$selectedFiles = [];
-	}
+	// $: isLaneCollapsed = projectLaneCollapsed(activeRepository?.id || '');
+	$effect(() => {
+		if (isLaneCollapsed) {
+			$selectedFiles = [];
+		}
+		if ($commitBoxOpen && $workingBranch?.workingDirectory.files?.length === 0) {
+			$commitBoxOpen = false;
+		}
+	});
+	// $: if ($isLaneCollapsed) {
+	// 	$selectedFiles = [];
+	// }
 
-	$: if ($commitBoxOpen && branch$?.workingDirectory.files?.length === 0) {
-		$commitBoxOpen = false;
-	}
+	// $: if ($commitBoxOpen && $workingBranch?.workingDirectory.files?.length === 0) {
+	// 	$commitBoxOpen = false;
+	// }
 </script>
 
-{#if !branch$ || !$activeRepository}
+{#if !$workingBranch || !activeRepository}
 	<FullviewLoading />
 {:else}
 	<div class="flex h-full w-full max-w-full flex-grow flex-col overflow-hidden">
-		<div class="z-10 absolute top-0 left-0 w-full h-5" data-tauri-drag-region />
+		<div class="z-10 absolute top-0 left-0 w-full h-5" data-tauri-drag-region></div>
 		<div class="relative flex flex-col flex-grow h-full">
 			<div class="flex flex-grow flex-shrink items-start h-full p-3">
 				<div class="flex h-full w-full items-start flex-shrink-0 relative gap-3">
@@ -129,29 +142,29 @@
 						)}
 					>
 						<BranchHeader
-							branch={branch$}
+							branch={$workingBranch}
 							bind:isLaneCollapsed
-							repository={$activeRepository}
+							repository={activeRepository}
 							{isPushing}
 						/>
 						{#if !$isLaneCollapsed}
 							<div class="flex grow overflow-hidden">
-								{#if $activeRepository && branch$.workingDirectory.files && branch$.workingDirectory.files?.length > 0}
+								{#if activeRepository && $workingBranch.workingDirectory.files && $workingBranch.workingDirectory.files?.length > 0}
 									<Card.Root class="flex flex-col w-full justify-between">
 										<BranchFiles
-											files={branch$.workingDirectory.files}
-											repository={$activeRepository}
+											files={$workingBranch.workingDirectory.files}
+											repository={activeRepository}
 											{selectedFiles}
 											showCheckboxes={$commitBoxOpen}
 											{selected}
 											{setSelected}
 										/>
-										{#if branch$.doConflictedFilesExist}
+										{#if $workingBranch.doConflictedFilesExist}
 											<div class="flex flex-col pt-0 px-3 pb-3">
 												<Alert.Root variant="destructive">
 													<CircleAlert class="h-4 w-4" />
 													<Alert.Description>
-														{#if branch$.workingDirectory.files?.some((f) => f.status.kind == 'Conflicted')}
+														{#if $workingBranch.workingDirectory.files?.some((f) => f.status.kind == 'Conflicted')}
 															This virtual branch conflicts with upstream changes. Please resolve
 															all conflicts and commit before you can continue.
 														{:else}
@@ -163,8 +176,8 @@
 										{/if}
 										<div class="bg-muted/40">
 											<CommitDialog
-												repositoryId={$activeRepository.id}
-												branch={branch$}
+												repositoryId={activeRepository.id}
+												branch={$workingBranch}
 												expanded={commitBoxOpen}
 												{setSelected}
 												{selectedFiles}
@@ -194,14 +207,14 @@
 							<Stash {stash} />
 						{/if}
 						{#if commits && commits.length > 0 && !$isLaneCollapsed}
-							<Commits {commits} repository={$activeRepository} />
+							<Commits {commits} repository={activeRepository} />
 						{/if}
 					</div>
 					<FilePreview
 						isCommitedFile={false}
 						{selected}
 						{setSelected}
-						repository={$activeRepository}
+						repository={activeRepository}
 						showCommands
 					/>
 				</div>

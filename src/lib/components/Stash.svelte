@@ -1,8 +1,10 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import * as Dialog from './ui/dialog';
 	import { dropGitraffeStashEntry, getStashedFiles, popStashEntry } from '$lib/git/stash';
 	import { StashedChangesLoadStates, type IStashEntry } from '$lib/models/stash-entry';
-	import { activeRepository } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import { onMount } from 'svelte';
 	import Icon from './Icon.svelte';
 	import type { ChangedFile } from '$lib/models/status';
@@ -16,11 +18,13 @@
 	import { Button } from './ui/button';
 	import { toast } from 'svelte-sonner';
 
-	export let stash: IStashEntry;
+	let { stash }: { stash: IStashEntry } = $props();
+
+	let { activeRepository } = repositoryStore;
 
 	let persistedStash = writable(stash);
-	let selected: ChangedFile | undefined = undefined;
-	let dialogStashFilesOpen = false;
+	let selected: ChangedFile | undefined = $state(undefined);
+	let dialogStashFilesOpen = $state(false);
 
 	async function loadFilesForCurrentStashEntry() {
 		if (!stash || stash.files.kind !== StashedChangesLoadStates.NotLoaded) {
@@ -32,9 +36,9 @@
 				kind: StashedChangesLoadStates.Loading
 			}
 		}));
-		if ($activeRepository) {
+		if (activeRepository) {
 			try {
-				const files = await getStashedFiles($activeRepository, stash.stashSha);
+				const files = await getStashedFiles(activeRepository, stash.stashSha);
 				persistedStash.update((prev) => ({
 					...prev,
 					files: {
@@ -50,12 +54,12 @@
 
 	const onDiscardClick = async () => {
 		try {
-			if ($activeRepository) {
-				await dropGitraffeStashEntry($activeRepository, $persistedStash.stashSha);
-				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
+			if (activeRepository) {
+				await dropGitraffeStashEntry(activeRepository, $persistedStash.stashSha);
+				stashStore.removeStash(activeRepository.id + '_' + $activeBranch.name);
 				dialogStashFilesOpen = false;
 				toast.success('Stash discarded');
-				await updateCurrentBranch($activeRepository, $activeBranch);
+				await updateCurrentBranch(activeRepository, $activeBranch);
 			}
 		} catch (e) {
 			console.error(e);
@@ -66,12 +70,12 @@
 
 	const onRestoreClick = async () => {
 		try {
-			if ($activeRepository) {
-				await popStashEntry($activeRepository, $persistedStash.stashSha);
-				stashStore.removeStash($activeRepository.id + '_' + $activeBranch.name);
+			if (activeRepository) {
+				await popStashEntry(activeRepository, $persistedStash.stashSha);
+				stashStore.removeStash(activeRepository.id + '_' + $activeBranch.name);
 				dialogStashFilesOpen = false;
 				toast.success('Stash restored');
-				await updateCurrentBranch($activeRepository, $activeBranch);
+				await updateCurrentBranch(activeRepository, $activeBranch);
 			}
 		} catch (e) {
 			console.error(e);
@@ -97,25 +101,25 @@
 		</Dialog.Header>
 		<div class="grid grid-cols-2 h-full w-full divide-x">
 			<div class="flex flex-col gap-2 px-2 grow">
-				{#if $persistedStash.files && $activeRepository}
+				{#if $persistedStash.files && activeRepository}
 					{@const files =
 						$persistedStash.files.kind === StashedChangesLoadStates.Loaded
 							? $persistedStash.files.files
 							: []}
 					<BranchFiles
 						{files}
-						repository={$activeRepository}
+						repository={activeRepository}
 						{selected}
 						setSelected={(file) => (selected = file)}
 					/>
 				{/if}
 			</div>
 			<div class="pl-2 grow">
-				{#if $activeRepository}
+				{#if activeRepository}
 					<FilePreview
 						{selected}
 						isCommitedFile={true}
-						repository={$activeRepository}
+						repository={activeRepository}
 						setSelected={(file) => (selected = file)}
 					/>
 				{/if}

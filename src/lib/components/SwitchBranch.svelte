@@ -8,7 +8,7 @@
 	import { updateCurrentBranch } from '$lib/store-updater';
 	import { goto } from '$app/navigation';
 	import { activeBranch, workingBranch } from '$lib/stores/branch';
-	import { activeRepository } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import { Button } from './ui/button';
 	import { toast } from 'svelte-sonner';
 
@@ -72,10 +72,10 @@
 			<Button
 				variant="default"
 				on:click={async () => {
-					if ($activeRepository && $workingBranch?.workingDirectory) {
+					if (repositoryStore.activeRepository && $workingBranch?.workingDirectory) {
 						if (selectedChangeBranchType === 'stashed') {
 							await checkoutAndLeaveChanges(
-								$activeRepository,
+								repositoryStore.activeRepository,
 								branch$,
 								$activeBranch,
 								$workingBranch.workingDirectory,
@@ -84,7 +84,7 @@
 						} else {
 							try {
 								await checkoutAndBringChanges(
-									$activeRepository,
+									repositoryStore.activeRepository,
 									branch$,
 									$workingBranch?.workingDirectory,
 									null
@@ -94,7 +94,7 @@
 								toast.error('Failed to switch branch');
 							}
 						}
-						await updateCurrentBranch($activeRepository, branch$);
+						await updateCurrentBranch(repositoryStore.activeRepository, branch$);
 						if (href) goto(href);
 					}
 					dialogSwitchOpen = false;

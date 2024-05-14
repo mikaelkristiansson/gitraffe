@@ -1,3 +1,5 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from './ui/dialog';
@@ -10,7 +12,7 @@
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import AuthorIcon from './AuthorIcon.svelte';
 	import TimeAgo from './TimeAgo.svelte';
-	import { activeRepository } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import type { ChangedFile, CommittedFileChange } from '$lib/models/status';
 	import { getChangedFiles } from '$lib/git/log';
 	import FilePreview from './FilePreview.svelte';
@@ -20,17 +22,31 @@
 	import { Label } from './ui/label';
 	import { toast } from 'svelte-sonner';
 
-	export let commits: Commit[];
-	export let repository: Repository;
-	export let offset: number | undefined = undefined;
-	export let scaleFactor: number | undefined = undefined;
+	let {
+		commits,
+		repository,
+		offset,
+		scaleFactor
+	}: {
+		commits: Commit[];
+		repository: Repository;
+		offset?: number | undefined;
+		scaleFactor?: number | undefined;
+	} = $props();
+
+	// export let commits: Commit[];
+	// export let repository: Repository;
+	// export let offset: number | undefined = undefined;
+	// export let scaleFactor: number | undefined = undefined;
+
+	let { activeRepository } = repositoryStore;
 
 	const CARD_OFFSET = offset || 8;
 	const SCALE_FACTOR = scaleFactor || 0.02;
-	let files: CommittedFileChange[] = [];
-	let selected: ChangedFile | undefined = undefined;
-	let selectedCommit: Commit | undefined = commits[0];
-	let dialogCommitFilesOpen = false;
+	let files: CommittedFileChange[] = $state([]);
+	let selected: ChangedFile | undefined = $state(undefined);
+	let selectedCommit: Commit | undefined = $state(commits[0]);
+	let dialogCommitFilesOpen = $state(false);
 
 	const setFilesForCommit = (sha: Commit['sha']) => {
 		selectedCommit = commits.find((commit) => commit.sha === sha);
@@ -50,7 +66,7 @@
 
 <button
 	type="button"
-	on:click={openModal}
+	onclick={openModal}
 	class="relative w-full h-20 btn flex flex-col text-left"
 	style:margin-top={`${(commits.length - 1) * CARD_OFFSET}px`}
 >
@@ -173,7 +189,7 @@
 					<BranchFiles {files} {repository} {selected} setSelected={(file) => (selected = file)} />
 				</div>
 				<div class="pl-2 grow">
-					{#if $activeRepository}
+					{#if activeRepository}
 						<FilePreview
 							isCommitedFile={true}
 							{selected}

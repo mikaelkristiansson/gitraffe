@@ -6,7 +6,7 @@
 	import { allBranches, defaultBranch, fetchingBranches, workingBranch } from '$lib/stores/branch';
 	import type { Repository } from '$lib/models/repository';
 	import Spinner from '$lib/icons/Spinner.svelte';
-	import { updatingRepositories } from '$lib/stores/repository';
+	import { updatingRepositories } from '$lib/stores/repository.svelte';
 	import {
 		groupBranches,
 		mergeRemoteAndLocalBranches,
@@ -29,7 +29,7 @@
 	let recentBranches: string[] = [];
 	const RecentBranchesLimit = 5;
 
-	let timer: number;
+	let timer;
 	const debounce = (callback: Function) => {
 		clearTimeout(timer);
 		timer = setTimeout(() => {

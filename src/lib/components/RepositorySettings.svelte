@@ -1,28 +1,36 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
 	import type { Repository } from '$lib/models/repository';
-	import { activeRepository, repositories } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import { toast } from 'svelte-sonner';
 
-	export let repository: Repository;
-	export let dialogSettingsOpen = false;
+	let {
+		repository,
+		dialogSettingsOpen = $bindable()
+	}: { repository: Repository; dialogSettingsOpen: boolean } = $props();
+	// export let dialogSettingsOpen = false;
+	// $inspect(dialogSettingsOpen);
 
-	let isDeleting = false;
+	let { repositories, removeRepository, setActive, removeActive } = repositoryStore;
+
+	let isDeleting = $state(false);
 
 	async function onDeleteClicked() {
 		isDeleting = true;
 		try {
 			if (!repository) return;
-			repositories.remove(repository.id);
-			if ($repositories.length !== 0) {
-				const firstRepository = $repositories[0];
-				activeRepository.setActive(firstRepository.id);
+			removeRepository(repository.id);
+			if (repositories.size !== 0) {
+				const firstRepository = repositories[0];
+				setActive(firstRepository.id);
 				goto(`/${firstRepository.id}`);
 			} else {
-				activeRepository.removeActive();
+				removeActive();
 				goto('/');
 			}
 			toast.success('Project deleted');

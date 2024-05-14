@@ -1,41 +1,42 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import { persistedCommitMessage } from '$lib/stores/config';
+	// import { persistedCommitMessage } from '$lib/stores/config';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
-	import type { Writable } from 'svelte/store';
-	import type { IStatusResult } from '$lib/git/status';
 	import { createCommit } from '$lib/git/commit';
-	import type { ChangedFile, WorkingDirectoryFileChange } from '$lib/models/status';
+	import type { WorkingDirectoryFileChange } from '$lib/models/status';
 	import { activeBranch, allBranches, workingBranch } from '$lib/stores/branch';
-	import type { Repository } from '$lib/models/repository';
-	import { activeRepository } from '$lib/stores/repository';
+	import { repositoryStore } from '$lib/stores/repository.svelte';
 	import { commitStore, loadLocalCommits } from '$lib/stores/commits';
 	import { Button } from './ui/button';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import type { SetSelected } from '$lib/types';
+	import type { CommitDialogProps } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 
-	export let repositoryId: Repository['id'];
-	export let branch: IStatusResult;
-	export let selectedFiles: Writable<ChangedFile[]>;
-	export let expanded: Writable<boolean>;
-	export let setSelected: SetSelected;
+	let { activeRepository } = repositoryStore;
 
-	const commitMessage = persistedCommitMessage(repositoryId, branch.currentTip || '');
+	let { selectedFiles, expanded, setSelected }: CommitDialogProps = $props();
 
-	let isCommitting = false;
-	let aiLoading = false;
+	let commitMessage = $state('');
 
-	let titleTextArea: HTMLTextAreaElement;
-	let descriptionTextArea: HTMLTextAreaElement;
+	let isCommitting = $state(false);
+	let aiLoading = $state(false);
 
-	$: [title, description] = splitMessage($commitMessage);
+	let titleTextArea: HTMLTextAreaElement = $state();
+	let descriptionTextArea: HTMLTextAreaElement = $state();
 
-	function splitMessage(message: string) {
-		const parts = message.split(/\n+(.*)/s);
+	const [title, description] = $derived.by(() => {
+		const parts = commitMessage.split(/\n+(.*)/s);
 		return [parts[0] || '', parts[1] || ''];
-	}
+	});
+	// const [title, description] = splitMessage(commitMessage);
+
+	// function splitMessage(message: string) {
+	// 	const parts = message.split(/\n+(.*)/s);
+	// 	return [parts[0] || '', parts[1] || ''];
+	// }
 
 	function concatMessage(title: string, description: string) {
 		return `${title}\n\n${description}`;
@@ -49,15 +50,15 @@
 		const message = concatMessage(title, description);
 		isCommitting = true;
 		try {
-			if ($activeRepository) {
+			if (activeRepository) {
 				const createPromise = await createCommit(
-					$activeRepository,
+					activeRepository,
 					message.trim(),
 					$selectedFiles as WorkingDirectoryFileChange[]
 				);
-				const updatePromise = await workingBranch.setWorking($activeRepository);
+				const updatePromise = await workingBranch.setWorking(activeRepository);
 				allBranches.updateBranch($activeBranch);
-				const commits = await loadLocalCommits($activeRepository, $activeBranch);
+				const commits = await loadLocalCommits(activeRepository, $activeBranch);
 				commitStore.set(commits);
 				const allPromises = Promise.all([createPromise, updatePromise, commits]);
 				toast.promise(allPromises, {
@@ -67,7 +68,7 @@
 				});
 				setSelected(undefined);
 			}
-			$commitMessage = '';
+			commitMessage = '';
 		} catch (e) {
 			toast.error('Failed to commit changes');
 		} finally {
@@ -91,17 +92,17 @@
 					rows="1"
 					bind:this={titleTextArea}
 					use:focusTextareaOnMount
-					on:input={(e) => {
-						$commitMessage = concatMessage(e.currentTarget.value, description);
+					oninput={(e) => {
+						commitMessage = concatMessage(e.currentTarget.value, description);
 					}}
-					on:keydown={(e) => {
+					onkeydown={(e) => {
 						if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commit();
 						if (e.key === 'Tab' || e.key === 'Enter') {
 							e.preventDefault();
 							descriptionTextArea.focus();
 						}
 					}}
-				/>
+				></textarea>
 
 				{#if title.length > 0}
 					<textarea
@@ -112,10 +113,10 @@
 						spellcheck="false"
 						rows="1"
 						bind:this={descriptionTextArea}
-						on:input={(e) => {
-							$commitMessage = concatMessage(title, e.currentTarget.value);
+						oninput={(e) => {
+							commitMessage = concatMessage(title, e.currentTarget.value);
 						}}
-						on:keydown={(e) => {
+						onkeydown={(e) => {
 							const value = e.currentTarget.value;
 							if (e.key == 'Backspace' && value.length == 0) {
 								e.preventDefault();
@@ -126,7 +127,7 @@
 								titleTextArea.select();
 							}
 						}}
-					/>
+					></textarea>
 				{/if}
 
 				{#if title.length > 50}
