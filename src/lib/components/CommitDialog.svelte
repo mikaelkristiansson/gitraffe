@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import { persistedCommitMessage } from '$lib/config/config';
+	import { persistedCommitMessage } from '$lib/stores/config';
 	import { quintOut } from 'svelte/easing';
 	import { fly, slide } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';

@@ -6,7 +6,7 @@
 	import * as hotkeys from '$lib/utils/hotkeys';
 	import { writable } from 'svelte/store';
 	import { persisted } from '$lib/persisted';
-	import { projectLaneCollapsed } from '$lib/config/config';
+	import { projectLaneCollapsed } from '$lib/stores/config';
 	import BranchFiles from '$lib/components/BranchFiles/BranchFiles.svelte';
 	import FullviewLoading from '$lib/components/FullviewLoading.svelte';
 	import type { IStatusResult } from '$lib/git/status';
