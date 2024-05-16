@@ -8,6 +8,7 @@
 	import { DiffType, type IDiff } from '$lib/models/diff';
 	import { getCommitDiff, getWorkingDirectoryDiff } from '$lib/git/diff';
 	import { computeAddedRemovedByDiff } from '$lib/utils/metrics';
+	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 
 	export let file: ChangedFile;
 	export let isCommitedFile: boolean = false;
@@ -36,9 +37,11 @@
 			: { added: 0, removed: 0 }}
 		on:close
 	/>
-	<ScrollableContainer wide>
-		{#if diff}
+	<!-- <ScrollableContainer wide> -->
+	{#if diff}
+		<ScrollArea>
 			<FileDiff filePath={file.path} {readonly} {diff} />
-		{/if}
-	</ScrollableContainer>
+		</ScrollArea>
+	{/if}
+	<!-- </ScrollableContainer> -->
 </Card.Root>

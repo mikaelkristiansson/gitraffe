@@ -3,6 +3,7 @@
 	import { type DiffHunk, DiffType, type IDiff, DiffLineType } from '$lib/models/diff';
 	import { Button } from './ui/button';
 	import * as Alert from '$lib/components/ui/alert';
+	import { computeAddedRemovedByDiff } from '$lib/utils/metrics';
 
 	export let filePath: string;
 	export let diff: IDiff;
@@ -31,6 +32,7 @@
 	$: hunks = diff.kind === DiffType.Text ? diff.hunks : [];
 	$: maxLineNumber = diff.kind === DiffType.Text ? diff.maxLineNumber : 0;
 	$: minWidth = getGutterMinWidth(maxLineNumber);
+	$: computed = diff.kind === DiffType.Text && computeAddedRemovedByDiff(diff);
 
 	let alwaysShow = false;
 </script>
@@ -40,7 +42,7 @@
 		Binary content not shown
 	{:else if isLarge}
 		Diff too large to be shown
-	{:else if diff.kind === DiffType.Text && diff.hunks.length > 50 && !alwaysShow}
+	{:else if computed && computed.added + computed.removed > 1000 && !alwaysShow}
 		<div class="flex flex-col p-1">
 			Change hidden as large numbers of diffs may slow down the UI
 			<Button variant="outline" on:click={() => (alwaysShow = true)}>show anyways</Button>
@@ -59,7 +61,7 @@
 					<span class="added">+{added}</span>
 					<span class="removed">-{removed}</span>
 				</div>
-				<HunkViewer {filePath} {section} {readonly} {minWidth} linesModified={added + removed} />
+				<HunkViewer {filePath} {section} {readonly} {minWidth} />
 			</div>
 		{/each}
 	{/if}
