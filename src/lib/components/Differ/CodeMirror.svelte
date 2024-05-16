@@ -6,33 +6,46 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { LanguageSupport, syntaxHighlighting } from '@codemirror/language';
 	import { highlightStyle } from './CodeHighlighter';
+	import type { IFileContents } from './helper';
+	import type { ITextDiff } from '$lib/models/diff';
 
-	export let value: string;
+	export let diff: ITextDiff;
 	export let lang: LanguageSupport | null | undefined = undefined;
+	export let fileContents: IFileContents | null;
 
-	let view: EditorView;
+	let view: EditorView | null;
 	let element: HTMLDivElement;
 
 	function create_editor_state(value: string | null | undefined): EditorState {
+		const unified = fileContents
+			? unifiedMergeView({
+					original: fileContents?.oldContents.join(''),
+					mergeControls: false
+				})
+			: [];
 		return EditorState.create({
 			doc: value ?? undefined,
 			extensions: [
 				EditorView.editable.of(false),
 				EditorState.readOnly.of(true),
-				lineNumbers(),
+				// lineNumbers(),
 				EditorView.lineWrapping,
 				syntaxHighlighting(highlightStyle),
 				...(lang ? [lang] : [])
+				// unified
 			]
 		});
 	}
 
-	function create_editor_view(): EditorView {
-		const unified = unifiedMergeView({ original: value, mergeControls: false });
+	function create_editor_view(): EditorView | null {
+		if (!fileContents) {
+			return null;
+		}
+
 		const editor = new EditorView({
-			doc: value,
-			state: create_editor_state(value),
-			extensions: [basicSetup, unified],
+			doc: diff.text,
+			state: create_editor_state(diff.text),
+			extensions: [basicSetup],
 			parent: element
 		});
 

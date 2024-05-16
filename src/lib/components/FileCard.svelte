@@ -11,12 +11,15 @@
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 	import CodeMirror from './Differ/CodeMirror.svelte';
 	import { languageFromFilename } from './Differ/highlight';
+	import { getFileContents, type IFileContents } from './Differ/helper';
+	import { onMount } from 'svelte';
 
 	export let file: ChangedFile;
 	export let isCommitedFile: boolean = false;
 	export let repository: Repository;
 	export let readonly = false;
 	let diff: IDiff | null = null;
+	let fileContents: IFileContents | null = null;
 
 	const setWorkingDirectoryDiff = async () => {
 		let response = null;
@@ -27,6 +30,16 @@
 		}
 		diff = response;
 	};
+
+	const setFileContents = async () => {
+		const fc = await getFileContents(repository, file);
+		fileContents = fc;
+		console.log('🚀 ~ setFileContents ~ fileContents:', fileContents);
+	};
+
+	onMount(() => {
+		setFileContents();
+	});
 
 	$: file && setWorkingDirectoryDiff();
 </script>
@@ -41,12 +54,14 @@
 	/>
 	<!-- <ScrollableContainer wide> -->
 	{#if diff && diff.kind === DiffType.Text}
-		<ScrollArea>
-			<CodeMirror value={diff.text} lang={languageFromFilename(file.path)} />
-		</ScrollArea>
-		<ScrollArea>
+		{#key fileContents}
+			<ScrollArea>
+				<CodeMirror {diff} lang={languageFromFilename(file.path)} {fileContents} />
+			</ScrollArea>
+		{/key}
+		<!-- <ScrollArea>
 			<FileDiff filePath={file.path} {readonly} {diff} />
-		</ScrollArea>
+		</ScrollArea> -->
 	{/if}
 	<!-- </ScrollableContainer> -->
 </Card.Root>
