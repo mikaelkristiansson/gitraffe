@@ -9,6 +9,8 @@
 	import { getCommitDiff, getWorkingDirectoryDiff } from '$lib/git/diff';
 	import { computeAddedRemovedByDiff } from '$lib/utils/metrics';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
+	import CodeMirror from './Differ/CodeMirror.svelte';
+	import { languageFromFilename } from './Differ/highlight';
 
 	export let file: ChangedFile;
 	export let isCommitedFile: boolean = false;
@@ -38,7 +40,10 @@
 		on:close
 	/>
 	<!-- <ScrollableContainer wide> -->
-	{#if diff}
+	{#if diff && diff.kind === DiffType.Text}
+		<ScrollArea>
+			<CodeMirror value={diff.text} lang={languageFromFilename(file.path)} />
+		</ScrollArea>
 		<ScrollArea>
 			<FileDiff filePath={file.path} {readonly} {diff} />
 		</ScrollArea>
