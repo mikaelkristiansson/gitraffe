@@ -75,7 +75,7 @@ export async function getBranches(
 		const state = states.find((state) => state?.name === ref.shortName);
 
 		const aheadBehind =
-			state?.isGone || !state ? null : { ahead: state.ahead, behind: state.behind };
+			state?.isGone || !state ? null : { ahead: isNaN(state.ahead) ? 0 : state.ahead, behind: isNaN(state.behind) ? 0 : state.behind };
 
 		branches.push(new Branch(ref.shortName, upstream, tip, type, ref.fullName, aheadBehind));
 	}
