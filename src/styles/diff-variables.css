@@ -1,0 +1,235 @@
+:root {
+	--gray-000: #fafbfc;
+	--gray-100: #f6f8fa;
+	--gray-200: #e1e4e8;
+	--gray-300: #d1d5da;
+	--gray-400: #959da5;
+	--gray-500: #6a737d;
+	--gray-600: #586069;
+	--gray-700: #444d56;
+	--gray-800: #2f363d;
+	--gray-900: #24292e;
+
+	--blue-000: #f1f8ff;
+	--blue-100: #dbedff;
+	--blue-200: #c8e1ff;
+	--blue-300: #79b8ff;
+	--blue-400: #2188ff;
+	--blue-500: #0366d6;
+	--blue-600: #005cc5;
+	--blue-700: #044289;
+	--blue-800: #032f62;
+	--blue-900: #05264c;
+
+	--green-000: #f0fff4;
+	--green-100: #dcffe4;
+	--green-200: #bef5cb;
+	--green-300: #85e89d;
+	--green-400: #34d058;
+	--green-500: #28a745;
+	--green-600: #22863a;
+	--green-700: #176f2c;
+	--green-800: #165c26;
+	--green-900: #144620;
+
+	--yellow-000: #fffdef;
+	--yellow-100: #fffbdd;
+	--yellow-200: #fff5b1;
+	--yellow-300: #ffea7f;
+	--yellow-400: #ffdf5d;
+	--yellow-500: #ffd33d;
+	--yellow-600: #f9c513;
+	--yellow-700: #dbab09;
+	--yellow-800: #b08800;
+	--yellow-900: #735c0f;
+
+	--orange-000: #fff8f2;
+	--orange-100: #ffebda;
+	--orange-200: #ffd1ac;
+	--orange-300: #ffab70;
+	--orange-400: #fb8532;
+	--orange-500: #f66a0a;
+	--orange-600: #e36209;
+	--orange-700: #d15704;
+	--orange-800: #c24e00;
+	--orange-900: #a04100;
+
+	--red-000: #ffeef0;
+	--red-100: #ffdce0;
+	--red-200: #fdaeb7;
+	--red-300: #f97583;
+	--red-400: #ea4a5a;
+	--red-500: #d73a49;
+	--red-600: #cb2431;
+	--red-700: #b31d28;
+	--red-800: #9e1c23;
+	--red-900: #86181d;
+
+	--purple-000: #f5f0ff;
+	--purple-100: #e6dcfd;
+	--purple-200: #d1bcf9;
+	--purple-300: #b392f0;
+	--purple-400: #8a63d2;
+	--purple-500: #6f42c1;
+	--purple-600: #5a32a3;
+	--purple-700: #4c2889;
+	--purple-800: #3a1d6e;
+	--purple-900: #29134e;
+
+	--font-size-sm: 11px;
+	--font-family-monospace: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace,
+		'Apple Color Emoji', 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol';
+	--box-border-color: var(--gray-200);
+	--base-border: 1px solid var(--box-border-color);
+	--diff-text-color: #24292e;
+	--background-color: #fff;
+	--diff-border-color: var(--gray-200);
+	--diff-hover-text-color: var(--background-color);
+	--diff-hover-border-color: var(--blue-400);
+	--diff-hover-background-color: var(--blue-300);
+	/* --diff-gutter-background-color: var(--background-color); */
+	--diff-hunk-gutter-background-color: var(--blue-100);
+	--diff-hunk-background-color: var(--blue-000);
+	--diff-hunk-text-color: var(--gray-500);
+	--diff-hunk-border-color: var(--blue-200);
+	/* --diff-hunk-gutter-color: var(--blue-200); */
+	--diff-hunk-gutter-color: color-mix(in srgb, var(--blue-200), black 5%);
+
+	--diff-line-number-color: var(--gray-700);
+	--diff-line-number-column-width: 50px;
+
+	--diff-add-background-color: var(--green-000);
+	--diff-add-border-color: var(--green-300);
+	--diff-add-gutter-color: var(--green-300);
+	--diff-add-gutter-background-color: var(--green-100);
+	--diff-add-inner-background-color: #acf2bd;
+	--diff-add-gutter-background-color: var(--green-100);
+	--diff-delete-gutter-background-color: var(--red-100);
+
+	--diff-add-text-color: var(--diff-text-color);
+	--diff-delete-background-color: var(--red-000);
+	--diff-delete-border-color: var(--red-200);
+	--diff-delete-gutter-color: var(--red-200);
+	--diff-delete-gutter-background-color: var(--red-100);
+	--diff-delete-inner-background-color: #fdb8c0;
+	--diff-delete-text-color: var(--diff-text-color);
+
+	--spacing: 10px;
+	--spacing-double: calc(var(--spacing) * 2);
+	--spacing-triple: calc(var(--spacing) * 3);
+	--spacing-quad: calc(var(--spacing) * 4);
+	--spacing-quint: calc(var(--spacing) * 5);
+	--spacing-half: calc(var(--spacing) / 2);
+	--spacing-third: calc(var(--spacing) / 3);
+
+	--syntax-variable-color: var(--purple-500);
+	--syntax-alt-variable-color: #24292e;
+	--syntax-keyword-color: var(--red-500);
+	--syntax-atom-color: var(--blue-600);
+	--syntax-string-color: var(--blue-800);
+	--syntax-qualifier-color: var(--purple-500);
+	--syntax-type-color: var(--red-500);
+	--syntax-comment-color: #6a737d;
+	--syntax-tag-color: var(--green-600);
+	--syntax-attribute-color: var(--purple-500);
+	--syntax-link-color: var(--blue-800);
+	--syntax-header-color: #0000ff;
+}
+
+.dark {
+	--text-secondary-color: var(--gray-400);
+	--diff-add-background-color: var(--green-900);
+	--background-color: var(--gray-900);
+	--diff-text-color: var(--gray-100);
+
+	--diff-border-color: var(--gray-800);
+	--diff-gutter-color: var(--gray-800);
+	--diff-gutter-background-color: color-mix(in srgb, var(--gray-900), black 20%);
+	//--diff-gutter-background-color: var(--gray-900);
+
+	--diff-line-number-color: var(--text-secondary-color);
+	--diff-line-number-column-width: 50px;
+
+	--diff-selected-background-color: var(--blue-700);
+	--diff-selected-border-color: var(--blue-600);
+	--diff-selected-gutter-color: var(--blue-600);
+	--diff-selected-text-color: var(--text-color);
+
+	/* --diff-add-background-color: var(--green-900); */
+	--diff-add-background-color: color-mix(in srgb, var(--green-900), black 15%);
+	--diff-add-border-color: color-mix(in srgb, var(--green-900), black 2%);
+	--diff-add-gutter-color: color-mix(in srgb, var(--green-900), black 2%);
+	--diff-add-gutter-background-color: color-mix(in srgb, var(--green-900), black 20%);
+	/* --diff-add-border-color: var(--green-900);
+	--diff-add-gutter-color: var(--green-900);
+	--diff-add-gutter-background-color: var(--green-900); */
+	--diff-add-inner-background-color: var(--green-600);
+	--diff-add-text-color: var(--diff-text-color);
+
+	--diff-delete-background-color: color-mix(in srgb, var(--red-900), black 15%);
+	--diff-delete-border-color: color-mix(in srgb, var(--red-900), black 10%);
+	--diff-delete-gutter-color: color-mix(in srgb, var(--red-900), black 10%);
+	--diff-delete-gutter-background-color: color-mix(in srgb, var(--red-900), black 20%);
+	/* --diff-delete-background-color: var(--red-900);
+	--diff-delete-border-color: var(--red-900);
+	--diff-delete-gutter-color: var(--red-900);
+	--diff-delete-gutter-background-color: var(--red-900); */
+	--diff-delete-inner-background-color: var(--red-700);
+	--diff-delete-text-color: var(--red-100);
+
+	/* --diff-hunk-background-color: var(--gray-900);
+	--diff-hunk-border-color: var(--gray-900);
+	--diff-hunk-gutter-color: var(--gray-900);
+	--diff-hunk-gutter-background-color: var(--gray-900); */
+	--diff-hunk-background-color: color-mix(in srgb, var(--gray-900), black 20%);
+	--diff-hunk-border-color: color-mix(in srgb, var(--gray-900), black 20%);
+	--diff-hunk-gutter-color: color-mix(in srgb, var(--gray-900), black 20%);
+	--diff-hunk-gutter-background-color: color-mix(in srgb, var(--gray-900), black 20%);
+	--diff-hunk-text-color: var(--text-secondary-color);
+
+	--diff-hover-background-color: var(--blue-500);
+	--diff-hover-border-color: var(--blue-400);
+	--diff-hover-gutter-color: var(--blue-400);
+	--diff-hover-text-color: var(--diff-text-color);
+
+	--diff-add-hover-background-color: var(--green-900);
+	--diff-add-hover-border-color: var(--green-700);
+	--diff-add-hover-gutter-color: var(--green-700);
+	--diff-add-hover-text-color: var(--text-color);
+
+	--diff-delete-hover-background-color: var(--red-800);
+	--diff-delete-hover-border-color: var(--red-700);
+	--diff-delete-hover-gutter-color: var(--red-700);
+	--diff-delete-hover-text-color: var(--text-color);
+
+	--diff-empty-row-background-color: var(--gray-900);
+	--diff-empty-row-gutter-background-color: var(--diff-gutter-background-color);
+	--diff-empty-hunk-handle: var(--gray-700);
+
+	--syntax-variable-color: var(--purple-300);
+	--syntax-alt-variable-color: var(--blue-300);
+	--syntax-keyword-color: var(--red-300);
+	--syntax-atom-color: var(--blue-300);
+	--syntax-string-color: var(--orange-300);
+	--syntax-qualifier-color: var(--purple-300);
+	--syntax-type-color: var(--red-300);
+	--syntax-comment-color: var(--gray-400);
+	--syntax-tag-color: var(--green-400);
+	--syntax-attribute-color: var(--purple-300);
+	--syntax-link-color: var(--blue-300);
+	--syntax-header-color: var(--red-300);
+
+	/* --syntax-variable-color: #79c0ff;
+	--syntax-alt-variable-color: #79c0ff;
+	--syntax-keyword-color: #ff7b72;
+	--syntax-atom-color: #005cc5;
+	--syntax-string-color: #79c0ff;
+	--syntax-qualifier-color: #6f42c1;
+	--syntax-type-color: #d73a49;
+	--syntax-comment-color: #8b949e;
+	--syntax-tag-color: #7ee787;
+	--syntax-attribute-color: #e6edf3;
+	--syntax-link-color: #79c0ff;
+	--syntax-header-color: #0000ff;
+	--syntax-definition-color: #ffa657; */
+}

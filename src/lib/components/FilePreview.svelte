@@ -15,7 +15,7 @@
 
 {#if selected}
 	{#key selected.id}
-		<div class="flex relative w-full h-full overflow-hidden">
+		<div class="flex relative w-full h-full">
 			<FileCard
 				file={selected}
 				{isCommitedFile}

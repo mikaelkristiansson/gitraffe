@@ -1,3 +1,5 @@
+import type { Mode } from 'codemirror';
+
 /**
  * Represents a single token inside of a line.
  * This object is useless without the startIndex
@@ -78,4 +80,16 @@ export interface IHighlightRequest {
 	 * the XML mode will get the cm-m-xml class.
 	 */
 	readonly addModeClass?: boolean;
+
+	readonly mode: string;
+	readonly token: string;
+	readonly startState: string;
+	readonly innerMode: string;
+	readonly blankLine: string;
+}
+
+export enum DiffRowPrefix {
+	Added = '+',
+	Deleted = '-',
+	Nothing = '\u{A0}'
 }

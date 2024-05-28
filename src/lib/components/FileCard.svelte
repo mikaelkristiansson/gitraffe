@@ -10,9 +10,9 @@
 	import { computeAddedRemovedByDiff } from '$lib/utils/metrics';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 	import CodeMirror from './Differ/CodeMirror.svelte';
-	import { languageFromFilename } from './Differ/highlight';
 	import { getFileContents, type IFileContents } from './Differ/helper';
 	import { onMount } from 'svelte';
+	import SideBySide from './Differ/SideBySide.svelte';
 
 	export let file: ChangedFile;
 	export let isCommitedFile: boolean = false;
@@ -34,7 +34,6 @@
 	const setFileContents = async () => {
 		const fc = await getFileContents(repository, file);
 		fileContents = fc;
-		console.log('🚀 ~ setFileContents ~ fileContents:', fileContents);
 	};
 
 	onMount(() => {
@@ -54,11 +53,23 @@
 	/>
 	<!-- <ScrollableContainer wide> -->
 	{#if diff && diff.kind === DiffType.Text}
+		<!-- <ScrollArea>
+			<FileDiff filePath={file.path} {readonly} {diff} />
+		</ScrollArea> -->
 		{#key fileContents}
-			<ScrollArea>
-				<CodeMirror {diff} lang={languageFromFilename(file.path)} {fileContents} />
-			</ScrollArea>
+			<SideBySide
+				{file}
+				{diff}
+				{fileContents}
+				showDiffCheckMarks={false}
+				showSideBySideDiff={false}
+			/>
 		{/key}
+		<!-- {#key fileContents}
+			<ScrollArea>
+				<CodeMirror {diff} {fileContents} />
+			</ScrollArea>
+		{/key} -->
 		<!-- <ScrollArea>
 			<FileDiff filePath={file.path} {readonly} {diff} />
 		</ScrollArea> -->

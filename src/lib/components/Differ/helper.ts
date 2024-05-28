@@ -5,13 +5,16 @@ import {
 	CommittedFileChange,
 	WorkingDirectoryFileChange
 } from '$lib/models/status';
-import { join } from '@tauri-apps/api/path';
+import { basename, extname, join } from '@tauri-apps/api/path';
 import { assertNever } from '../../../lib/fatal-error';
 import type { ITokens } from './types';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 import { DiffLineType, type DiffHunk, type DiffLine } from '$lib/models/diff';
 import { getPartialBlobContents } from '$lib/git/show';
+import { DiffSyntaxToken } from './diff-syntax-mode';
+import { highlight } from './internal-highlight';
+// import { highlight } from './worker';
 
 /** The maximum number of bytes we'll process for highlighting. */
 const MaxHighlightContentLength = 256 * 1024;
@@ -40,6 +43,101 @@ export interface IFileContents {
 interface IFileTokens {
 	readonly oldTokens: ITokens;
 	readonly newTokens: ITokens;
+}
+
+function generateUUID() {
+	// Public Domain/MIT
+	var d = new Date().getTime(); //Timestamp
+	var d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0; //Time in microseconds since page-load or 0 if unsupported
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16; //random number between 0 and 16
+		if (d > 0) {
+			//Use timestamp until depleted
+			r = (d + r) % 16 | 0;
+			d = Math.floor(d / 16);
+		} else {
+			//Use microseconds since page-load if supported
+			r = (d2 + r) % 16 | 0;
+			d2 = Math.floor(d2 / 16);
+		}
+		return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+	});
+}
+
+// This is a custom version of the no-newline octicon that's exactly as
+// tall as it needs to be (8px) which helps with aligning it on the line.
+export const narrowNoNewlineSymbol = {
+	w: 16,
+	h: 8,
+	p: [
+		'm 16,1 0,3 c 0,0.55 -0.45,1 -1,1 l -3,0 0,2 -3,-3 3,-3 0,2 2,0 0,-2 2,0 z M 8,4 C 8,6.2 6.2,8 4,8 1.8,8 0,6.2 0,4 0,1.8 1.8,0 4,0 6.2,0 8,1.8 8,4 Z M 1.5,5.66 5.66,1.5 C 5.18,1.19 4.61,1 4,1 2.34,1 1,2.34 1,4 1,4.61 1.19,5.17 1.5,5.66 Z M 7,4 C 7,3.39 6.81,2.83 6.5,2.34 L 2.34,6.5 C 2.82,6.81 3.39,7 4,7 5.66,7 7,5.66 7,4 Z'
+	]
+};
+
+export function createNoNewlineIndicatorWidget() {
+	const widget = document.createElement('span');
+	const titleId = generateUUID();
+
+	const { w, h, p } = narrowNoNewlineSymbol;
+
+	const xmlns = 'http://www.w3.org/2000/svg';
+	const svgElem = document.createElementNS(xmlns, 'svg');
+	svgElem.setAttribute('version', '1.1');
+	svgElem.setAttribute('viewBox', `0 0 ${w} ${h}`);
+	svgElem.setAttribute('role', 'img');
+	svgElem.setAttribute('aria-labelledby', titleId);
+	svgElem.classList.add('no-newline');
+
+	const titleElem = document.createElementNS(xmlns, 'title');
+	titleElem.setAttribute('id', titleId);
+	titleElem.setAttribute('lang', 'en');
+	titleElem.textContent = 'No newline at end of file';
+	svgElem.appendChild(titleElem);
+
+	const pathElem = document.createElementNS(xmlns, 'path');
+	pathElem.setAttribute('role', 'presentation');
+	pathElem.setAttribute('d', p[0]);
+	pathElem.textContent = 'No newline at end of file';
+	svgElem.appendChild(pathElem);
+
+	widget.appendChild(svgElem);
+	return widget;
+}
+
+export function getNumberOfDigits(val: number): number {
+	return (Math.log(val) * Math.LOG10E + 1) | 0;
+}
+
+/** Gets the width in pixels of the diff line number gutter based on the number of digits in the number */
+export function getLineWidthFromDigitCount(digitAmount: number): number {
+	return Math.max(digitAmount, 3) * 10 + 5;
+}
+
+/**
+ * Used to obtain classes applied to style the row if it is the first or last of
+ * a group of added, deleted, or modified rows in the unified diff.
+ **/
+export function getFirstAndLastClassesUnified(
+	token: DiffSyntaxToken,
+	prevToken: DiffSyntaxToken | undefined,
+	nextToken: DiffSyntaxToken | undefined
+): string[] {
+	const addedOrDeletedTokens = [DiffSyntaxToken.Add, DiffSyntaxToken.Delete];
+	if (!addedOrDeletedTokens.includes(token)) {
+		return [];
+	}
+
+	const classNames = [];
+
+	if (prevToken !== token) {
+		classNames.push('is-first');
+	}
+
+	if (nextToken !== token) {
+		classNames.push('is-last');
+	}
+
+	return classNames;
 }
 
 async function getOldFileContent(
@@ -170,41 +268,45 @@ export function getLineFilters(hunks: ReadonlyArray<DiffHunk>): ILineFilters {
 	return { oldLineFilter, newLineFilter };
 }
 
-// export async function highlightContents(
-//   contents: IFileContents,
-//   tabSize: number,
-//   lineFilters: ILineFilters
-// ): Promise<IFileTokens> {
-//   const { file, oldContents, newContents } = contents
+export async function highlightContents(
+	contents: IFileContents,
+	tabSize: number,
+	lineFilters: ILineFilters
+): Promise<IFileTokens> {
+	const { file, oldContents, newContents } = contents;
 
-//   const oldPath = getOldPathOrDefault(file)
+	const oldPath = getOldPathOrDefault(file);
+	const oldPathBaseName = await basename(oldPath);
+	const oldPathExtName = await extname(oldPath);
+	const newPathBaseName = await basename(file.path);
+	const newPathExtName = await extname(file.path);
 
-//   const [oldTokens, newTokens] = await Promise.all([
-//     oldContents === null
-//       ? {}
-//       : highlight(
-//           oldContents,
-//           Path.basename(oldPath),
-//           Path.extname(oldPath),
-//           tabSize,
-//           lineFilters.oldLineFilter
-//         ).catch(e => {
-//           log.error('Highlighter worked failed for old contents', e)
-//           return {}
-//         }),
-//     newContents === null
-//       ? {}
-//       : highlight(
-//           newContents,
-//           Path.basename(file.path),
-//           Path.extname(file.path),
-//           tabSize,
-//           lineFilters.newLineFilter
-//         ).catch(e => {
-//           log.error('Highlighter worked failed for new contents', e)
-//           return {}
-//         }),
-//   ])
+	const [oldTokens, newTokens] = await Promise.all([
+		oldContents === null
+			? {}
+			: highlight(
+					oldContents,
+					oldPathBaseName,
+					oldPathExtName,
+					tabSize,
+					lineFilters.oldLineFilter
+				).catch((e) => {
+					console.error('Highlighter worked failed for old contents', e);
+					return {};
+				}),
+		newContents === null
+			? {}
+			: highlight(
+					newContents,
+					newPathBaseName,
+					newPathExtName,
+					tabSize,
+					lineFilters.newLineFilter
+				).catch((e) => {
+					console.error('Highlighter worked failed for new contents', e);
+					return {};
+				})
+	]);
 
-//   return { oldTokens, newTokens }
-// }
+	return { oldTokens, newTokens };
+}
